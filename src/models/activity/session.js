@@ -35,4 +35,19 @@ export default class Session {
 
         return this.time / this.item.duration;
     }
+
+    dump() {
+        return {
+            type: 'session',
+
+            key: this.key,
+            state: this.state,
+
+            time: this.time,
+            progress: this.progress,
+
+            item: this.item ? this.item.dump() : null,
+            source: this.source ? this.source.dump() : null
+        };
+    }
 }

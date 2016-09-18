@@ -4,6 +4,15 @@ export class Metadata {
         this.id = id || null;
         this.title = title || null;
     }
+
+    dump() {
+        return {
+            source: this.source ? this.source.dump() : null,
+
+            id: this.id,
+            title: this.title
+        };
+    }
 }
 
 export class Media extends Metadata {
@@ -11,5 +20,12 @@ export class Media extends Metadata {
         super(source, id, title);
 
         this.duration = duration || null;
+    }
+
+    dump() {
+        var result = super.dump();
+        result.duration = this.duration;
+
+        return result;
     }
 }

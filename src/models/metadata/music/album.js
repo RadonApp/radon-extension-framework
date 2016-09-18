@@ -7,4 +7,13 @@ export default class Album extends Metadata {
 
         this.artist = artist;
     }
+
+    dump() {
+        var result = super.dump();
+        result.type = 'album';
+
+        result.artist = this.artist ? this.artist.dump() : null;
+
+        return result;
+    }
 }

@@ -9,6 +9,16 @@ export default class Track extends Media {
         this.album = album || null;
     }
 
+    dump() {
+        var result = super.dump();
+        result.type = 'track';
+
+        result.artist = this.artist ? this.artist.dump() : null;
+        result.album = this.album ? this.album.dump() : null;
+
+        return result;
+    }
+
     matches(track) {
         return (
             this.title === track.title &&

@@ -9,4 +9,12 @@ export default class Plugin {
         // TODO check permissions have been granted and the plugin has been enabled
         return true;
     }
+
+    dump() {
+        return {
+            id: this.id,
+            type: this.type,
+            title: this.title
+        };
+    }
 }
