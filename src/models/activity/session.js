@@ -4,7 +4,8 @@ export var SessionState = {
     loading: 2,
 
     playing: 3,
-    paused: 4
+    paused: 4,
+    ended: 5
 };
 
 
