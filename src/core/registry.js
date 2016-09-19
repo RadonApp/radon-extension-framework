@@ -66,7 +66,7 @@ export class Registry {
         this.plugins[plugin.id] = plugin;
         this.pluginsByType[plugin.type][plugin.id] = plugin;
 
-        console.log('Registered plugin: ' + plugin.id);
+        console.debug('Registered plugin: ' + plugin.id);
         return true;
     }
 
@@ -91,7 +91,7 @@ export class Registry {
         this.services[service.id] = service;
         this.servicesByType[service.type][service.id] = service;
 
-        console.log('Registered service: ' + service.id);
+        console.debug('Registered service: ' + service.id);
 
         // Ensure plugin has been registered
         this.registerPlugin(service.plugin);

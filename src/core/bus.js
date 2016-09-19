@@ -18,7 +18,6 @@ Bus.prototype.configure = function(type) {
 };
 
 Bus.prototype.initialize = function() {
-    console.log('Initializing event bus with type: %s', this.type);
     var self = this;
 
     if(this.type.indexOf('background/') === 0) {
@@ -36,6 +35,8 @@ Bus.prototype.initialize = function() {
             Bus.super_.prototype.emit.apply(self, args);
         });
     }
+
+    console.debug('Initialized event bus (type: %o)', this.type);
 };
 
 Bus.prototype.emit = function(event, a1, a2, a3, a4, a5) {
@@ -48,7 +49,7 @@ Bus.prototype.emit = function(event, a1, a2, a3, a4, a5) {
 
 Bus.prototype.send = function(event, args) {
     if(this.type === null || this.type.indexOf('background/') === 0) {
-        console.log('Ignoring send() on event bus with type: %s', this.type);
+        console.debug('Ignoring send() on event bus with type: %s', this.type);
         return;
     }
 
@@ -74,7 +75,7 @@ Bus.prototype.send = function(event, args) {
     };
 
     // Send message to background script
-    console.log('Sending message to background script:', message);
+    console.debug('Sending message to background script: %O', message);
     Messaging.send(message);
 };
 
