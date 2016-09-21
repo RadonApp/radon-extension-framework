@@ -17,6 +17,14 @@ export class Registry {
         return this.plugins[id] || null;
     }
 
+    getPluginServiceByType(pluginId, type) {
+        if(typeof this.servicesByType[type] === 'undefined') {
+            return null;
+        }
+
+        return this.servicesByType[type][pluginId + ':' + type] || null;
+    }
+
     listPlugins(type, options) {
         options = options || {};
         options.disabled = typeof options.disabled !== 'undefined' ? options.disabled : false;
@@ -66,7 +74,7 @@ export class Registry {
         this.plugins[plugin.id] = plugin;
         this.pluginsByType[plugin.type][plugin.id] = plugin;
 
-        console.debug('Registered plugin: ' + plugin.id);
+        console.debug('Registered plugin: %o', plugin.id, plugin);
         return true;
     }
 
@@ -91,7 +99,7 @@ export class Registry {
         this.services[service.id] = service;
         this.servicesByType[service.type][service.id] = service;
 
-        console.debug('Registered service: ' + service.id);
+        console.debug('Registered service: %o', service.id, service);
 
         // Ensure plugin has been registered
         this.registerPlugin(service.plugin);
