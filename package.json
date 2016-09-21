@@ -7,6 +7,7 @@
     "babel-preset-react": "^6.11.1"
   },
   "dependencies": {
-    "eventemitter3": "^1.2.0"
+    "eventemitter3": "^1.2.0",
+    "underscore": "^1.8.3"
   }
 }
