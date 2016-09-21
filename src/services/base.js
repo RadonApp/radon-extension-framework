@@ -1,4 +1,4 @@
-import Bus from '../../core/bus';
+import Bus from '../core/bus';
 
 
 export default class Service {
@@ -7,6 +7,7 @@ export default class Service {
         this.key = key;
         this.type = type;
 
+        // Generate global identifier
         this.id = plugin.id + ':' + key;
     }
 

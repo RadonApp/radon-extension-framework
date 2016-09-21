@@ -1,4 +1,4 @@
-import {NotImplementedException} from '../../../core/exceptions';
+import {NotImplementedException} from '../../core/exceptions';
 import Service from '../base';
 
 
