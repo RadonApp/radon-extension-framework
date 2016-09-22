@@ -12,8 +12,17 @@ export default class Option extends Model {
     }
 
     _parseOptions(options) {
+        function getProperty(key, defaultValue) {
+            if(typeof options[key] === 'undefined') {
+                return defaultValue;
+            }
+
+            return options[key];
+        }
+
         return {
-            default: options.default || null,
+            default: getProperty('default', null),
+            summary: getProperty('summary', null),
             requires: this._parseRequiresOption(options.requires)
         };
     }
