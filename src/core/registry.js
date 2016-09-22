@@ -1,3 +1,6 @@
+import {Preferences} from 'eon.extension.browser';
+
+
 export var OptionTypes = [
     'checkbox',
     'enable',
@@ -101,9 +104,21 @@ export class Registry {
 
         console.debug('Registered service: %o', service.id, service);
 
+        // Service registration tasks
+        if(service.type === 'configuration') {
+            this.registerConfigurationService(service);
+        }
+
         // Ensure plugin has been registered
         this.registerPlugin(service.plugin);
         return true;
+    }
+
+    registerConfigurationService(service) {
+        // Register options
+        for(var i = 0; i < service.options.length; ++i) {
+            Preferences.register(service.options[i])
+        }
     }
 }
 
