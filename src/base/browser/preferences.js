@@ -1,5 +1,6 @@
 export default class BrowserPreferences {
-    constructor() {
+    constructor(storage) {
+        this._storage = storage;
         this._definitions = {};
     }
 
@@ -31,10 +32,7 @@ export default class BrowserPreferences {
     }
 
     remove(key) {
-        return new Promise(function(resolve, reject) {
-            localStorage.removeItem(key);
-            resolve();
-        });
+        return this._storage.remove('preference:' + key);
     }
 
     // region get
@@ -49,58 +47,114 @@ export default class BrowserPreferences {
             );
         }
 
-        // Retrieve item from local storage
-        return new Promise(function(resolve, reject) {
-            var value = localStorage.getItem(key);
-
+        // Retrieve item from storage
+        return this._storage.get('preference:' + key).then((value) => {
             if(value === null) {
-                resolve(definition.options.default);
-                return;
+                return definition.options.default;
             }
 
-            resolve(value);
+            return value;
         });
     }
 
     getBoolean(key) {
-        return this.get(key).then(function(value) {
-            if(typeof value === 'boolean') {
-                return value;
+        // Retrieve option definition
+        var definition = this._definitions[key];
+
+        if(typeof definition === 'undefined') {
+            return Promise.reject(
+                new Error('No preference definition found for: "' + key + '"')
+            );
+        }
+
+        // Retrieve item from storage
+        return this._storage.getBoolean('preference:' + key).then((value) => {
+            if(value === null) {
+                return definition.options.default;
             }
 
-            if(value === 'true') {
-                return true;
-            }
-
-            if(value === 'false') {
-                return false;
-            }
-
-            console.warn('Invalid boolean stored (%o), using null instead', value);
-            return null;
+            return value;
         });
     }
 
     getFloat(key) {
-        return this.get(key).then(function(value) {
-            return parseFloat(value);
+        // Retrieve option definition
+        var definition = this._definitions[key];
+
+        if(typeof definition === 'undefined') {
+            return Promise.reject(
+                new Error('No preference definition found for: "' + key + '"')
+            );
+        }
+
+        // Retrieve item from storage
+        return this._storage.getFloat('preference:' + key).then((value) => {
+            if(value === null) {
+                return definition.options.default;
+            }
+
+            return value;
         });
     }
 
     getInt(key) {
-        return this.get(key).then(function(value) {
-            return parseInt(value);
+        // Retrieve option definition
+        var definition = this._definitions[key];
+
+        if(typeof definition === 'undefined') {
+            return Promise.reject(
+                new Error('No preference definition found for: "' + key + '"')
+            );
+        }
+
+        // Retrieve item from storage
+        return this._storage.getInt('preference:' + key).then((value) => {
+            if(value === null) {
+                return definition.options.default;
+            }
+
+            return value;
         });
     }
 
     getObject(key) {
-        return this.get(key).then(function(value) {
-            return JSON.parse(value);
+        // Retrieve option definition
+        var definition = this._definitions[key];
+
+        if(typeof definition === 'undefined') {
+            return Promise.reject(
+                new Error('No preference definition found for: "' + key + '"')
+            );
+        }
+
+        // Retrieve item from storage
+        return this._storage.getObject('preference:' + key).then((value) => {
+            if(value === null) {
+                return definition.options.default;
+            }
+
+            return value;
         });
     }
 
     getString(key) {
-        return this.get(key);
+        // Retrieve option definition
+        var definition = this._definitions[key];
+
+        if(typeof definition === 'undefined') {
+            return Promise.reject(
+                new Error('No preference definition found for: "' + key + '"')
+            );
+        }
+
+        // Retrieve item from storage
+        return this._storage.getString('preference:' + key).then((value) => {
+            if(value === null) {
+                return definition.options.default;
+            }
+
+            return value;
+        });
     }
 
     // endregion
@@ -108,60 +162,27 @@ export default class BrowserPreferences {
     // region put
 
     put(key, value) {
-        return new Promise(function(resolve, reject) {
-            localStorage.setItem(key, value);
-            resolve();
-        });
+        return this._storage.put('preference:' + key, value);
     }
 
     putBoolean(key, value) {
-        if(value === true) {
-            value = 'true';
-        } else if(value === false) {
-            value = 'false';
-        } else {
-            console.warn('Invalid boolean provided (%o), using null instead', value);
-            value = null;
-        }
-
-        return this.put(key, value);
+        return this._storage.putBoolean('preference:' + key, value);
     }
 
     putFloat(key, value) {
-        if(typeof value === 'number') {
-            value = value.toString();
-        } else {
-            console.warn('Invalid float provided (%o), using null instead', value);
-            value = null;
-        }
-
-        return this.put(key, value);
+        return this._storage.putFloat('preference:' + key, value);
     }
 
     putInt(key, value) {
-        if(typeof value === 'number') {
-            value = value.toString();
-        } else {
-            console.warn('Invalid int provided (%o), using null instead', value);
-            value = null;
-        }
-
-        return this.put(key, value);
+        return this._storage.putInt('preference:' + key, value);
     }
 
     putObject(key, value) {
-        if(typeof value === 'object') {
-            value = JSON.stringify(value);
-        } else {
-            console.warn('Invalid object provided (%O), using null instead', value);
-            value = null;
-        }
-
-        return this.put(key, value);
+        return this._storage.putObject('preference:' + key, value);
     }
 
     putString(key, value) {
-        return this.put(key, value);
+        return this._storage.putString('preference:' + key, value);
     }
 
     // endregion
