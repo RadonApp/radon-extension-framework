@@ -1,4 +1,4 @@
-import Option from './base';
+import {Option} from './base';
 
 
 export default class EnableOption extends Option {

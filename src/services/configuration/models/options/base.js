@@ -1,7 +1,9 @@
 import Model from '../base';
 
+import merge from 'lodash-es/merge';
 
-export default class Option extends Model {
+
+export class Option extends Model {
     constructor(plugin, type, key, label, options) {
         super(plugin, type, key);
 
@@ -21,8 +23,10 @@ export default class Option extends Model {
         }
 
         return {
+            component: getProperty('component', null),
             default: getProperty('default', null),
             summary: getProperty('summary', null),
+
             requires: this._parseRequiresOption(options.requires)
         };
     }
@@ -39,5 +43,13 @@ export default class Option extends Model {
 
             return this.plugin.id + ':' + key;
         });
+    }
+}
+
+export class PluginOption extends Option {
+    constructor(plugin, type, key, label, component, options) {
+        super(plugin, plugin.id + ':' + type, key, label, merge({
+            component: component
+        }, options));
     }
 }
