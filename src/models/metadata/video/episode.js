@@ -1,9 +1,10 @@
+import {ContentTypes, MediaTypes} from '../../../core/enums';
 import {Media} from '../core/base';
 
 
 export default class Episode extends Media {
     constructor(source, id, title, number, duration, show, season) {
-        super(source, id, title, duration);
+        super(source, id, title, ContentTypes.Video, MediaTypes.Video.Episode, duration);
 
         this.number = number;
 
@@ -13,8 +14,6 @@ export default class Episode extends Media {
 
     dump() {
         var result = super.dump();
-        result.type = 'episode';
-
         result.number = this.number;
 
         result.show = this.show ? this.show.dump() : null;

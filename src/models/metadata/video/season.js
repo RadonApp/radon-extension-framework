@@ -1,9 +1,10 @@
+import {ContentTypes, MediaTypes} from '../../../core/enums';
 import {Metadata} from '../core/base';
 
 
 export default class Season extends Metadata {
     constructor(source, id, title, year, number, show) {
-        super(source, id, title);
+        super(source, id, title, ContentTypes.Video, MediaTypes.Video.Season);
 
         this.year = year;
         this.number = number;
@@ -13,8 +14,6 @@ export default class Season extends Metadata {
 
     dump() {
         var result = super.dump();
-        result.type = 'season';
-
         result.year = this.year;
         result.number = this.number;
 

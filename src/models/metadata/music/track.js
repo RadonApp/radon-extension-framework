@@ -1,9 +1,10 @@
+import {ContentTypes, MediaTypes} from '../../../core/enums';
 import {Media} from '../core/base';
 
 
 export default class Track extends Media {
     constructor(source, id, title, artist, album, duration) {
-        super(source, id, title, duration);
+        super(source, id, title, ContentTypes.Music, MediaTypes.Music.Track, duration);
 
         this.artist = artist || null;
         this.album = album || null;
@@ -11,8 +12,6 @@ export default class Track extends Media {
 
     dump() {
         var result = super.dump();
-        result.type = 'track';
-
         result.artist = this.artist ? this.artist.dump() : null;
         result.album = this.album ? this.album.dump() : null;
 
