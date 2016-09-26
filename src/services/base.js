@@ -9,6 +9,17 @@ export default class Service {
 
         // Generate global identifier
         this.id = plugin.id + ':' + key;
+
+        this._enabled_todo = false;
+    }
+
+    get enabled() {
+        if(!this._enabled_todo) {
+            console.warn('TODO: check if the service has been enabled');
+            this._enabled_todo = true;
+        }
+
+        return true;
     }
 
     emit(type, a1, a2, a3, a4, a5) {

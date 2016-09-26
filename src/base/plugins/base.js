@@ -3,10 +3,16 @@ export default class Plugin {
         this.id = id;
         this.type = type;
         this.title = title;
+
+        this._enabled_todo = false;
     }
 
     get enabled() {
-        // TODO check permissions have been granted and the plugin has been enabled
+        if(!this._enabled_todo) {
+            console.warn('TODO: check if the plugin has been enabled');
+            this._enabled_todo = true;
+        }
+
         return true;
     }
 
