@@ -58,6 +58,36 @@ export class Registry {
         return plugins;
     }
 
+    listServices(type, options) {
+        options = options || {};
+        options.disabled = typeof options.disabled !== 'undefined' ? options.disabled : false;
+
+        if(typeof this.servicesByType[type] === 'undefined') {
+            return [];
+        }
+
+        var plugins = [];
+
+        for(var key in this.servicesByType[type]) {
+            if(!this.servicesByType[type].hasOwnProperty(key)) {
+                continue;
+            }
+
+            // Retrieve plugin
+            var service = this.servicesByType[type][key];
+
+            // Filter by enabled state
+            if(!service.plugin.enabled && options.disabled != true) {
+                continue;
+            }
+
+            // Append to result list
+            plugins.push(service);
+        }
+
+        return plugins;
+    }
+
     registerPlugin(plugin) {
         // Ensure plugin type object has been created
         if(typeof this.pluginsByType[plugin.type] === 'undefined') {
