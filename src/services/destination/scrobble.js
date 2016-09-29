@@ -39,16 +39,10 @@ export default class ScrobbleService extends Service {
 
     onCreated(session) {}
     onProgress(session) {}
+    onPaused(session) {}
+    onEnded(session) {}
 
     onStarted(session) {
-        throw new Error('Not Implemented');
-    }
-
-    onPaused(session) {
-        throw new Error('Not Implemented');
-    }
-
-    onEnded(session) {
         throw new Error('Not Implemented');
     }
 }
