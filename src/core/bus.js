@@ -21,15 +21,18 @@ class Bus extends EventEmitter {
         if(this.type.indexOf('background/') === 0) {
             // Emit received messages to the event bus
             Messaging.addListener((message) => {
-                if(message.type !== 'bus') {
+                // Verify message type
+                if(typeof message.type === 'undefined' || message.type !== 'bus') {
+                    console.warn('Received an invalid message:', message);
                     return;
                 }
 
+                // Build `emit()` arguments
                 var args = [message.event].concat(
                     message.arguments
                 );
 
-                // Emit message to the event bus
+                // Emit message to listeners
                 super.emit.apply(this, args);
             });
         }
