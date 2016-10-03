@@ -36,7 +36,7 @@ export class Option extends Model {
             return [];
         }
 
-        return _.map(requires, (key) => {
+        return requires.map((key) => {
             if(key.indexOf(':') !== -1) {
                 return key;
             }

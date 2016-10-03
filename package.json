@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "eventemitter3": "^1.2.0",
-    "lodash-es": "^4.16.1",
-    "underscore": "^1.8.3"
+    "lodash-es": "^4.16.1"
   }
 }
