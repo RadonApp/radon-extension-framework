@@ -3,7 +3,7 @@ import {WindowMessaging} from '../messaging/window';
 import merge from 'lodash-es/merge';
 import uuid from 'uuid';
 
-var WINDOW_FEATURES = [
+const WINDOW_FEATURES = [
     'width',
     'height',
     'left',
@@ -46,21 +46,22 @@ export default class Popup {
 
         // Construct popup promise
         return new Promise(function(resolve, reject) {
-            var name = 'eon.popup/' + uuid.v4();
-            var features = Popup._buildFeaturesString(options);
+            let name = 'eon.popup/' + uuid.v4();
+            let features = Popup._buildFeaturesString(options);
 
             console.debug('Opening popup %o (name: %o, features: %o)', url, name, features);
 
             // Open empty popup, then navigate to `url` (note: fixes `window.opener` bug in chrome)
-            var handle = window.open('', name, features);
+            let handle = window.open('', name, features);
+
             handle.location.href = url;
 
             // Move to position
             handle.moveTo(options.left, options.top);
 
             // Construct popup
-            var popup = new Popup(name, handle);
-            var done = false;
+            let popup = new Popup(name, handle);
+            let done = false;
 
             // Bind to messaging events
             popup.messaging.on('resolve', (result) => {
@@ -129,11 +130,11 @@ export default class Popup {
     }
 
     static _buildFeaturesString(features) {
-        var keys = Object.keys(features);
-        var fragments = [], i;
+        let keys = Object.keys(features);
+        let fragments = [];
 
-        for(i = 0; i < keys.length; ++i) {
-            var key = keys[i];
+        for(let i = 0; i < keys.length; ++i) {
+            let key = keys[i];
 
             if(WINDOW_FEATURES.indexOf(key) === -1) {
                 continue;

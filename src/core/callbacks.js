@@ -10,10 +10,10 @@ export class Callbacks {
         console.debug('register() plugin: %O', plugin);
 
         // Generate callback id
-        var callbackId = uuid.v4();
+        let callbackId = uuid.v4();
 
         // Build hash
-        var hash;
+        let hash;
 
         if(plugin.type === 'destination') {
             hash = '#/destinations/' + plugin.id;
@@ -35,9 +35,9 @@ export class Callbacks {
 
     get() {
         // Retrieve callback id
-        var callback = this._getCallbackId();
+        let callback = this._getCallbackId();
 
-        if (callback === null) {
+        if(callback === null) {
             return Promise.resolve(null);
         }
 
@@ -53,9 +53,9 @@ export class Callbacks {
 
     remove() {
         // Retrieve callback id
-        var callback = this._getCallbackId();
+        let callback = this._getCallbackId();
 
-        if (callback === null) {
+        if(callback === null) {
             return Promise.resolve(null);
         }
 
@@ -65,26 +65,26 @@ export class Callbacks {
 
     _getCallbackId() {
         // Retrieve parameters
-        var query = window.location.search;
+        let query = window.location.search;
 
-        if (query.length < 2) {
+        if(query.length < 2) {
             return null;
         }
 
         // Parse parameters
-        var params;
+        let params;
 
         try {
             params = querystring.parse(query.substring(1));
-        } catch (e) {
+        } catch(e) {
             console.warn('Unable to parse query: %o', query);
             return null;
         }
 
         // Retrieve callback id
-        var callbackId = this._findCallbackId(params);
+        let callbackId = this._findCallbackId(params);
 
-        if (callbackId === null) {
+        if(callbackId === null) {
             console.warn('Unable to find callback id in params: %O', params);
             return null;
         }

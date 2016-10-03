@@ -10,7 +10,8 @@ export default class Movie extends Media {
     }
 
     dump() {
-        var result = super.dump();
+        let result = super.dump();
+
         result.year = this.year;
 
         return result;

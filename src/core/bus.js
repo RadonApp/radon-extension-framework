@@ -28,7 +28,7 @@ class Bus extends EventEmitter {
                 }
 
                 // Build `emit()` arguments
-                var args = [message.event].concat(
+                let args = [message.event].concat(
                     message.arguments
                 );
 
@@ -55,10 +55,10 @@ class Bus extends EventEmitter {
         }
 
         // Cleanup event arguments
-        var cleanedArgs = [];
+        let cleanedArgs = [];
 
-        for(var i = 0; i < args.length; ++i) {
-            var arg = args[i];
+        for(let i = 0; i < args.length; ++i) {
+            let arg = args[i];
 
             if(typeof arg === 'undefined') {
                 break;
@@ -68,7 +68,7 @@ class Bus extends EventEmitter {
         }
 
         // Build message
-        var message = {
+        let message = {
             type: 'bus',
 
             event: event,

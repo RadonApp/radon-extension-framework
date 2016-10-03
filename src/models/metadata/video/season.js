@@ -13,7 +13,8 @@ export default class Season extends Metadata {
     }
 
     dump() {
-        var result = super.dump();
+        let result = super.dump();
+
         result.year = this.year;
         result.number = this.number;
 

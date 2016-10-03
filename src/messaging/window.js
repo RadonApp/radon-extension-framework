@@ -11,7 +11,7 @@ export class WindowMessaging extends EventEmitter {
 
         // Bind to messages
         window.addEventListener('message', (e) => {
-            var message = e.data;
+            let message = e.data;
 
             // Verify message type
             if(typeof message.type === 'undefined' || message.type !== 'window') {
@@ -28,7 +28,7 @@ export class WindowMessaging extends EventEmitter {
             console.debug('[%s] Received message: %O', this.name, message);
 
             // Build `emit()` arguments
-            var args = [message.event].concat(
+            let args = [message.event].concat(
                 message.arguments
             );
 
@@ -47,10 +47,10 @@ export class WindowMessaging extends EventEmitter {
 
     send(event, args) {
         // Cleanup event arguments
-        var cleanedArgs = [];
+        let cleanedArgs = [];
 
-        for(var i = 0; i < args.length; ++i) {
-            var arg = args[i];
+        for(let i = 0; i < args.length; ++i) {
+            let arg = args[i];
 
             if(typeof arg === 'undefined') {
                 break;
@@ -60,7 +60,7 @@ export class WindowMessaging extends EventEmitter {
         }
 
         // Build message
-        var message = {
+        let message = {
             type: 'window',
 
             window: {

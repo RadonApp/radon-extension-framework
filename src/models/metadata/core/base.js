@@ -30,7 +30,8 @@ export class Media extends Metadata {
     }
 
     dump() {
-        var result = super.dump();
+        let result = super.dump();
+
         result.duration = this.duration;
 
         return result;

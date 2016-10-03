@@ -10,7 +10,8 @@ export default class Show extends Metadata {
     }
 
     dump() {
-        var result = super.dump();
+        let result = super.dump();
+
         result.year = this.year;
 
         return result;

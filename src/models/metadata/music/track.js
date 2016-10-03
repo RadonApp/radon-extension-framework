@@ -11,7 +11,8 @@ export default class Track extends Media {
     }
 
     dump() {
-        var result = super.dump();
+        let result = super.dump();
+
         result.artist = this.artist ? this.artist.dump() : null;
         result.album = this.album ? this.album.dump() : null;
 

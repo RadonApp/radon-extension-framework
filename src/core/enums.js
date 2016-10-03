@@ -1,6 +1,6 @@
 export var ContentTypes = {
     Video: 'video',
-    Music: 'music',
+    Music: 'music'
 };
 
 export var MediaTypes = {
@@ -8,7 +8,7 @@ export var MediaTypes = {
         Movie: ContentTypes.Video + ':movie',
         Show: ContentTypes.Video + ':show',
         Season: ContentTypes.Video + ':season',
-        Episode: ContentTypes.Video + ':episode',
+        Episode: ContentTypes.Video + ':episode'
     },
     Music: {
         Artist: ContentTypes.Music + ':artist',

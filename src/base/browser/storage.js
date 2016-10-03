@@ -49,7 +49,7 @@ export default class BrowserStorage {
                 return value;
             }
 
-            return parseInt(value);
+            return parseInt(value, 10);
         });
     }
 

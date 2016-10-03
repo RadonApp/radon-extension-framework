@@ -31,10 +31,11 @@ export default class ScrobbleService extends Service {
             }
 
             console.warn('Invalid activity event received: %o', event);
-            return false;
         } catch(e) {
             console.error('Unable to process session event %o:', event, e);
         }
+
+        return false;
     }
 
     onCreated(session) {}

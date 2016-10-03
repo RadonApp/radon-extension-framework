@@ -10,13 +10,13 @@ export default class Service {
         // Generate global identifier
         this.id = plugin.id + ':' + key;
 
-        this._enabled_todo = false;
+        this._enabledTodo = false;
     }
 
     get enabled() {
-        if(!this._enabled_todo) {
+        if(!this._enabledTodo) {
             console.warn('TODO: check if the service has been enabled');
-            this._enabled_todo = true;
+            this._enabledTodo = true;
         }
 
         return true;

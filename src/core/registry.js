@@ -1,7 +1,7 @@
 import {Preferences} from 'eon.extension.browser';
 
 
-export var OptionTypes = [
+export const OptionTypes = [
     'checkbox',
     'enable',
     'slider'
@@ -36,18 +36,18 @@ export class Registry {
             return [];
         }
 
-        var plugins = [];
+        let plugins = [];
 
-        for(var key in this.pluginsByType[type]) {
+        for(let key in this.pluginsByType[type]) {
             if(!this.pluginsByType[type].hasOwnProperty(key)) {
                 continue;
             }
 
             // Retrieve plugin
-            var plugin = this.pluginsByType[type][key];
+            let plugin = this.pluginsByType[type][key];
 
             // Filter by enabled state
-            if(!plugin.enabled && options.disabled != true) {
+            if(!plugin.enabled && options.disabled !== true) {
                 continue;
             }
 
@@ -66,18 +66,18 @@ export class Registry {
             return [];
         }
 
-        var plugins = [];
+        let plugins = [];
 
-        for(var key in this.servicesByType[type]) {
+        for(let key in this.servicesByType[type]) {
             if(!this.servicesByType[type].hasOwnProperty(key)) {
                 continue;
             }
 
             // Retrieve plugin
-            var service = this.servicesByType[type][key];
+            let service = this.servicesByType[type][key];
 
             // Filter by enabled state
-            if(!service.plugin.enabled && options.disabled != true) {
+            if(!service.plugin.enabled && options.disabled !== true) {
                 continue;
             }
 
@@ -146,8 +146,8 @@ export class Registry {
 
     registerConfigurationService(service) {
         // Register options
-        for(var i = 0; i < service.options.length; ++i) {
-            Preferences.register(service.options[i])
+        for(let i = 0; i < service.options.length; ++i) {
+            Preferences.register(service.options[i]);
         }
     }
 }

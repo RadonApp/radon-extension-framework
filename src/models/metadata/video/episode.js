@@ -13,7 +13,8 @@ export default class Episode extends Media {
     }
 
     dump() {
-        var result = super.dump();
+        let result = super.dump();
+
         result.number = this.number;
 
         result.show = this.show ? this.show.dump() : null;
