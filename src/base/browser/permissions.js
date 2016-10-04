@@ -2,7 +2,15 @@ import {NotImplementedException} from '../../core/exceptions';
 
 
 export default class BrowserPermissions {
-    requestOrigins(origins, callback) {
+    request(permissions, origins) {
+        throw new NotImplementedException();
+    }
+
+    remove(permissions, origins) {
+        throw new NotImplementedException();
+    }
+
+    contains(permissions, origins) {
         throw new NotImplementedException();
     }
 }
