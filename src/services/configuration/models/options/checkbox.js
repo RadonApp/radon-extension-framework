@@ -1,4 +1,4 @@
-import {Option} from './base';
+import {Option} from './core/base';
 
 
 export default class CheckboxOption extends Option {

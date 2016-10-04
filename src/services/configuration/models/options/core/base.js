@@ -1,4 +1,5 @@
-import Model from '../base';
+import {getProperty} from './helpers';
+import Model from '../../base';
 
 import merge from 'lodash-es/merge';
 
@@ -14,18 +15,10 @@ export class Option extends Model {
     }
 
     _parseOptions(options) {
-        function getProperty(key, defaultValue) {
-            if(typeof options[key] === 'undefined') {
-                return defaultValue;
-            }
-
-            return options[key];
-        }
-
         return {
-            component: getProperty('component', null),
-            default: getProperty('default', null),
-            summary: getProperty('summary', null),
+            component: getProperty(options, 'component', null),
+            default: getProperty(options, 'default', null),
+            summary: getProperty(options, 'summary', null),
 
             requires: this._parseRequiresOption(options.requires)
         };
