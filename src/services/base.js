@@ -1,6 +1,3 @@
-import Bus from '../core/bus';
-
-
 export default class Service {
     constructor(plugin, key, type) {
         this.plugin = plugin;
@@ -30,11 +27,5 @@ export default class Service {
 
     initialize() {
         this._initialized = true;
-    }
-
-    emit(type, a1, a2, a3, a4, a5) {
-        type = this.key + '.' + type;
-
-        return Bus.emit(type, a1, a2, a3, a4, a5);
     }
 }
