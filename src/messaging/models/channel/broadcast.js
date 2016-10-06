@@ -27,8 +27,8 @@ export default class BroadcastMessage extends RequestMessage {
             throw new Error('Invalid value provided for "data", expected an object');
         }
 
-        if(data.type !== this.message_type) {
-            throw new Error('Message type mismatch (expected "' + this.message_type + '", got "' + data.type + '"');
+        if(data.type !== this.messageType) {
+            throw new Error('Message type mismatch (expected "' + this.messageType + '", got "' + data.type + '"');
         }
 
         if(!isDefined(data.payload)) {
@@ -46,5 +46,5 @@ export default class BroadcastMessage extends RequestMessage {
     }
 }
 
-BroadcastMessage.message_resource = 'channel';
-BroadcastMessage.message_name = 'broadcast';
+BroadcastMessage.messageResource = 'channel';
+BroadcastMessage.messageName = 'broadcast';

@@ -52,8 +52,8 @@ export default class EventMessage extends Message {
             throw new Error('Invalid value provided for "data", expected an object');
         }
 
-        if(data.type !== this.message_type) {
-            throw new Error('Message type mismatch (expected "' + this.message_type + '", got "' + data.type + '"');
+        if(data.type !== this.messageType) {
+            throw new Error('Message type mismatch (expected "' + this.messageType + '", got "' + data.type + '"');
         }
 
         // Construct message
@@ -67,4 +67,4 @@ export default class EventMessage extends Message {
     }
 }
 
-EventMessage.message_type = 'event';
+EventMessage.messageType = 'event';

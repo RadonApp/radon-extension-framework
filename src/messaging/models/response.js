@@ -7,4 +7,4 @@ export default class ResponseMessage extends Message {
     }
 }
 
-ResponseMessage.message_type = 'response';
+ResponseMessage.messageType = 'response';

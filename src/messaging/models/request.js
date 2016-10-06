@@ -7,4 +7,4 @@ export default class RequestMessage extends Message {
     }
 }
 
-RequestMessage.message_type = 'request';
+RequestMessage.messageType = 'request';

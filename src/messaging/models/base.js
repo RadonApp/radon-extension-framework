@@ -1,17 +1,14 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
-
-
 export default class Message {
     get type() {
-        return this.constructor.message_type;
+        return this.constructor.messageType;
     }
 
     get resource() {
-        return this.constructor.message_resource;
+        return this.constructor.messageResource;
     }
 
     get name() {
-        return this.constructor.message_name;
+        return this.constructor.messageName;
     }
 
     get payload() {
@@ -30,6 +27,6 @@ export default class Message {
     }
 }
 
-Message.message_type = null;
-Message.message_resource = null;
-Message.message_name = null;
+Message.messageType = null;
+Message.messageResource = null;
+Message.messageName = null;

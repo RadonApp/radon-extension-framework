@@ -69,7 +69,7 @@ export default class MessagingBus extends EventEmitter {
             port = chrome.runtime.connect(this.options.extensionId, {
                 name: this.channelId
             });
-        } catch (e) {
+        } catch(e) {
             throw new Error('Connection failed: ' + e.stack);
         }
 
@@ -112,12 +112,24 @@ export default class MessagingBus extends EventEmitter {
 
         // Remove port reference
         delete this.connectedChannels[channelId];
+        return true;
     }
 
     disconnectAll() {
+        let result = {
+            success: [],
+            failed: []
+        };
+
         Object.keys(this.connectedChannels).forEach((channelId) => {
-            this.disconnect(channelId);
+            if(this.disconnect(channelId)) {
+                result.success.push(channelId);
+            } else {
+                result.failed.push(channelId);
+            }
         });
+
+        return result;
     }
 
     listen() {
@@ -297,6 +309,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         console.warn('[%s] Unknown message received from %o: %O', this.channelId, channelId, message);
+        return false;
     }
 
     _processBroadcastMessage(channelId, message) {
@@ -306,19 +319,19 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Send event to all connected channels
-        this._sendToAll(message.subject, {
-            exclude: [channelId]
-        });
+        this._sendToAll(message.subject, {exclude: [channelId]});
+        return true;
     }
 
     _processRelayMessage(channelId, message) {
         if(typeof this.connectedChannels[message.targetId] === 'undefined') {
             console.error('Channel %o is not available, unable to relay message', message.targetId);
-            return;
+            return false;
         }
 
         // Relay message to target channel
         this._sendTo(message.targetId, message.subject);
+        return true;
     }
 
     _processEventMessage(channelId, message) {
@@ -329,6 +342,7 @@ export default class MessagingBus extends EventEmitter {
 
         // Emit event identifier
         super.emit.apply(this, [message.id].concat(message.args));
+        return true;
     }
 
     // endregion
