@@ -119,12 +119,10 @@ export class Registry {
 
         // Ensure service hasn't already been registered
         if(typeof this.services[service.id] !== 'undefined') {
-            console.warn('Service "' + service.id + '" has already been registered');
             return false;
         }
 
         if(typeof this.servicesByType[service.type][service.id] !== 'undefined') {
-            console.warn('Service "' + service.id + '" has already been registered');
             return false;
         }
 
@@ -152,4 +150,13 @@ export class Registry {
     }
 }
 
-export default new Registry();
+// Construct registry
+if(typeof window.eon === 'undefined') {
+    window.eon = {};
+}
+
+if(typeof window.eon.registry === 'undefined') {
+    window.eon.registry = new Registry();
+}
+
+export default window.eon.registry;

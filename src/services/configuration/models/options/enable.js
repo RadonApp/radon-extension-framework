@@ -1,8 +1,26 @@
-import {Option} from './base';
+import {Preferences} from 'eon.extension.browser';
+
+import {Option} from './core/base';
+import {getProperty} from './core/helpers';
 
 
 export default class EnableOption extends Option {
     constructor(plugin, key, label, options) {
         super(plugin, 'enable', key, label, options);
+    }
+
+    isEnabled() {
+        return Preferences.getBoolean(this.id);
+    }
+
+    _parseOptions(options) {
+        let result = super._parseOptions(options);
+
+        return {
+            ...result,
+
+            contentScripts: getProperty(options, 'contentScripts', []),
+            permissions: getProperty(options, 'permissions', {})
+        };
     }
 }

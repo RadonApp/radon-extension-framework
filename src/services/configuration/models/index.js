@@ -1,6 +1,6 @@
 import {default as _Model} from './base';
 import {default as _Group} from './group';
-import {Option as _Option, PluginOption as _PluginOption} from './options/base';
+import {Option as _Option, PluginOption as _PluginOption} from './options/core/base';
 import {default as _CheckboxOption} from './options/checkbox';
 import {default as _EnableOption} from './options/enable';
 

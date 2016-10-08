@@ -10,7 +10,9 @@ export default class Service {
         // Generate global identifier
         this.id = plugin.id + ':' + key;
 
+        // Private variables
         this._enabledTodo = false;
+        this._initialized = false;
     }
 
     get enabled() {
@@ -20,6 +22,14 @@ export default class Service {
         }
 
         return true;
+    }
+
+    get initialized() {
+        return this._initialized;
+    }
+
+    initialize() {
+        this._initialized = true;
     }
 
     emit(type, a1, a2, a3, a4, a5) {

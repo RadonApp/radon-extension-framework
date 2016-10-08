@@ -1,4 +1,3 @@
-import {NotImplementedException} from '../../core/exceptions';
 import Service from '../base';
 
 
@@ -8,6 +7,6 @@ export default class ActivityService extends Service {
     }
 
     initialize() {
-        throw new NotImplementedException();
+        super.initialize();
     }
 }
