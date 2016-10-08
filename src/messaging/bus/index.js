@@ -1,3 +1,5 @@
+import Messaging from 'eon.extension.browser/messaging';
+
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import EventEmitter from 'eventemitter3';
@@ -65,8 +67,7 @@ export default class MessagingBus extends EventEmitter {
         let port;
 
         try {
-            // TODO use browser shim
-            port = chrome.runtime.connect(this.options.extensionId, {
+            port = Messaging.connect(this.options.extensionId, {
                 name: this.channelId
             });
         } catch(e) {
@@ -80,12 +81,11 @@ export default class MessagingBus extends EventEmitter {
         port.postMessage(new ChannelConnectMessage(channelId).dump());
 
         // Bind to port events
-        // TODO use browser shim
-        port.onDisconnect.addListener(() => {
-            this.onDisconnect(port.name, port);
+        port.on('disconnect', (error) => {
+            this.onDisconnect(port.name, port, error);
         });
 
-        port.onMessage.addListener((data) => {
+        port.on('message', (data) => {
             this.onMessage(port.name, data);
         });
 
@@ -134,9 +134,8 @@ export default class MessagingBus extends EventEmitter {
 
     listen() {
         // Bind to runtime connection events
-        // TODO use browser shim
-        chrome.runtime.onConnect.addListener(
-            this.onConnection.bind(this)
+        Messaging.on('connect', (port) =>
+            this.onConnection(port)
         );
 
         console.debug('[%s] Waiting for connections...', this.channelId);
@@ -351,9 +350,6 @@ export default class MessagingBus extends EventEmitter {
 
     onConnection(port) {
         let onMessage = (data) => {
-            // Unbind message callback
-            port.onMessage.removeListener(onMessage);
-
             // Parse message
             let message = MessageParser.parse(data);
 
@@ -373,12 +369,11 @@ export default class MessagingBus extends EventEmitter {
             }
 
             // Bind to port events
-            // TODO use browser shim
-            port.onDisconnect.addListener((port) => {
-                this.onDisconnect(port.name, port);
+            port.on('disconnect', (error) => {
+                this.onDisconnect(port.name, port, error);
             });
 
-            port.onMessage.addListener((data) => {
+            port.on('message', (data) => {
                 this.onMessage(port.name, data);
             });
 
@@ -389,11 +384,11 @@ export default class MessagingBus extends EventEmitter {
         };
 
         // Wait for connection request
-        port.onMessage.addListener(onMessage);
+        port.once('message', onMessage);
     }
 
-    onDisconnect(channelId, port) {
-        console.debug('[%s] Channel disconnected: %o', this.channelId, channelId);
+    onDisconnect(channelId, port, error) {
+        console.debug('[%s] Channel disconnected: %o (error: %o)', this.channelId, channelId, error);
 
         this.disconnect(channelId);
     }
