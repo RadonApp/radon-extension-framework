@@ -133,8 +133,13 @@ export class Registry {
         console.debug('Registered service: %o', service.id, service);
 
         // Service registration tasks
-        if(service.type === 'configuration') {
-            this.registerConfigurationService(service);
+        try {
+            if(service.type === 'configuration') {
+                this.registerConfigurationService(service);
+            }
+        } catch(e) {
+            console.error('Unable to register service %o:', service.type, e.stack);
+            return false;
         }
 
         // Ensure plugin has been registered
