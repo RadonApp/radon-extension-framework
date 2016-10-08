@@ -1,4 +1,4 @@
-import {Preferences} from 'eon.extension.browser';
+import Preferences from 'eon.extension.browser/preferences';
 
 
 export const OptionTypes = [
