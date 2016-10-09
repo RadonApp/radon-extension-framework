@@ -82,9 +82,8 @@ export default class Popup extends EventEmitter {
     open(url) {
         console.debug('Opening popup %o (name: %o, features: %o)', url, this.name, this._features);
 
-        // Open empty popup, then navigate to `url` (note: fixes `window.opener` bug in chrome)
-        this.handle = window.open('', this.name, this._features);
-        this.handle.location.href = url;
+        // Open popup window
+        this.handle = window.open(url, this.name, this._features);
 
         // Move popup to specified position
         this.handle.moveTo(this.options.left, this.options.top);
