@@ -1,13 +1,15 @@
-export var SessionState = {
+export const SessionState = {
     null: 0,
     stalled: 1,
     loading: 2,
 
     playing: 3,
-    paused: 4,
-    ended: 5
-};
 
+    pausing: 4,
+    paused: 5,
+
+    ended: 6
+};
 
 export default class Session {
     constructor(source, key, item, state) {
@@ -19,6 +21,9 @@ export default class Session {
         this.state = typeof state !== 'undefined' ? state : SessionState.null;
 
         this.samples = [];
+
+        this.stalledAt = null;
+        this.stalledPreviousState = null;
     }
 
     get time() {
@@ -46,6 +51,7 @@ export default class Session {
 
             time: this.time,
             progress: this.progress,
+            stalledAt: this.stalledAt,
 
             item: this.item ? this.item.dump() : null,
             source: this.source ? this.source.dump() : null
