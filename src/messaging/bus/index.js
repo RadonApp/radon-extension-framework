@@ -334,8 +334,6 @@ export default class MessagingBus extends EventEmitter {
     }
 
     _processEventMessage(channelId, message) {
-        console.debug('[%s] Received event %o from %o: %o', this.channelId, message.id, channelId, message.args);
-
         // Emit "event"
         super.emit('event', message);
 
