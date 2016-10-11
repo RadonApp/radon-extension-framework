@@ -1,3 +1,5 @@
+import {isDefined} from 'eon.extension.framework/core/helpers';
+
 import merge from 'lodash-es/merge';
 
 
@@ -40,9 +42,31 @@ export default class Plugin {
             return [];
         }
 
+        // Retrieve content script origins
+        let origins = [].concat.apply([], this.contentScripts.map((contentScript) => {
+            if(!isDefined(contentScript.conditions)) {
+                console.warn('Content script has no conditions:', contentScript);
+                return [];
+            }
+
+            return contentScript.conditions
+                .map((condition) => {
+                    if(!isDefined(contentScript.conditions)) {
+                        console.warn('Condition has no pattern:', condition);
+                        return null;
+                    }
+
+                    return condition.pattern;
+                })
+                .filter((pattern) => {
+                    return pattern !== null;
+                });
+        }));
+
+        // Build permissions object, and merge manifest permissions
         return merge({
             permissions: [],
-            origins: []
+            origins: origins
         }, this.manifest['permissions']);
     }
 
