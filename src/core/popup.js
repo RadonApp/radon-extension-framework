@@ -94,12 +94,12 @@ export default class Popup extends EventEmitter {
     }
 
     close() {
-        if(this.handle.closed) {
-            return;
+        // Ensure popup has been closed
+        try {
+            this.handle.close();
+        } catch(e) {
+            console.warn('Unable to close popup:', e);
         }
-
-        // Close popup window
-        this.handle.close();
     }
 
     dispose() {
