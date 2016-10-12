@@ -1,5 +1,6 @@
 import Platform, {Platforms} from 'eon.extension.browser/platform';
 
+import {isDefined} from './helpers';
 import MessagingBus from '../messaging/bus';
 
 import EventEmitter from 'eventemitter3';
@@ -65,8 +66,14 @@ export default class Popup extends EventEmitter {
         this._bus.on('popup.resolve', this._onResolved.bind(this));
         this._bus.on('popup.reject', this._onRejected.bind(this));
 
+        // Set supported parameters
+        this._closeSupported = (
+            Platform.name !== Platforms.Edge &&
+            Platform.name !== Platforms.Firefox
+        );
+
         // Start monitoring close state
-        if(Platform.name !== Platforms.Firefox) {
+        if(this._closeSupported) {
             setTimeout(this._checkClosed.bind(this), 5000);
         }
 
@@ -75,6 +82,10 @@ export default class Popup extends EventEmitter {
     }
 
     get closed() {
+        if(!this._closeSupported) {
+            return true;
+        }
+
         return this.handle.closed;
     }
 
@@ -91,7 +102,9 @@ export default class Popup extends EventEmitter {
         this.handle = window.open(this.url, this.name, this._features);
 
         // Move popup to specified position
-        this.handle.moveTo(this.options.left, this.options.top);
+        if(isDefined(this.handle)) {
+            this.handle.moveTo(this.options.left, this.options.top);
+        }
 
         // Create result promise
         return new Promise((resolve, reject) => {
@@ -102,6 +115,10 @@ export default class Popup extends EventEmitter {
     }
 
     close() {
+        if(!this._closeSupported) {
+            return;
+        }
+
         // Ensure popup has been closed
         try {
             this.handle.close();
