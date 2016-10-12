@@ -45,11 +45,11 @@ export default class Popup extends EventEmitter {
             delete this.options['position'];
 
             this.options.left = (
-                window.screenLeft + (window.outerWidth / 2) -
+                window.screenX + (window.outerWidth / 2) -
                 (this.options.width / 2) + this.options.offsetLeft
             );
 
-            this.options.top = window.screenTop + this.options.offsetTop;
+            this.options.top = window.screenY + this.options.offsetTop;
         }
 
         // Build window features string
