@@ -15,10 +15,11 @@ const WINDOW_FEATURES = [
 
 
 export default class Popup extends EventEmitter {
-    constructor(name, options) {
+    constructor(name, url, options) {
         super();
 
         this.name = name;
+        this.url = url;
         this.options = options;
 
         this.handle = null;
@@ -83,14 +84,21 @@ export default class Popup extends EventEmitter {
 
     // region Public methods
 
-    open(url) {
-        console.debug('Opening popup %o (name: %o, features: %o)', url, this.name, this._features);
+    open() {
+        console.debug('Opening popup %o (name: %o, features: %o)', this.url, this.name, this._features);
 
         // Open popup window
-        this.handle = window.open(url, this.name, this._features);
+        this.handle = window.open(this.url, this.name, this._features);
 
         // Move popup to specified position
         this.handle.moveTo(this.options.left, this.options.top);
+
+        // Create result promise
+        return new Promise((resolve, reject) => {
+            // Bind popup events to promise
+            this.on('resolve', resolve);
+            this.on('reject', reject);
+        });
     }
 
     close() {
@@ -103,6 +111,11 @@ export default class Popup extends EventEmitter {
     }
 
     dispose() {
+        this._onRejected('Popup has been disposed');
+
+        // Ensure popup is closed
+        this.close();
+
         // Remove message event listeners
         this._bus.removeAllListeners();
 
@@ -114,25 +127,22 @@ export default class Popup extends EventEmitter {
 
     // region Static methods
 
-    static open(url, options) {
+    static create(url, options) {
         options = merge({
             id: null
         }, options || {});
 
-        // Create popup result promise
-        return new Promise(function(resolve, reject) {
-            let popup = new Popup(
-                'eon.popup/' + (options.id || uuid.v4()),
-                options
-            );
+        // Create popup
+        return new Popup(
+            'eon.popup/' + (options.id || uuid.v4()),
+            url,
+            options
+        );
+    }
 
-            // Open popup window
-            popup.open(url);
-
-            // Bind popup events to promise
-            popup.on('resolve', resolve);
-            popup.on('reject', reject);
-        });
+    static open(url, options) {
+        // Open popup, and await result
+        return Popup.create(url, options).open();
     }
 
     // endregion
@@ -165,6 +175,10 @@ export default class Popup extends EventEmitter {
     }
 
     _onResolved(result) {
+        if(this.complete) {
+            return;
+        }
+
         this.resolved = true;
 
         // Ensure popup is closed
@@ -178,6 +192,10 @@ export default class Popup extends EventEmitter {
     }
 
     _onRejected(message) {
+        if(this.complete) {
+            return;
+        }
+
         this.rejected = true;
 
         // Ensure popup is closed
