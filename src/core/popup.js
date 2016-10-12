@@ -1,3 +1,5 @@
+import Platform, {Platforms} from 'eon.extension.browser/platform';
+
 import MessagingBus from '../messaging/bus';
 
 import EventEmitter from 'eventemitter3';
@@ -13,10 +15,11 @@ const WINDOW_FEATURES = [
 
 
 export default class Popup extends EventEmitter {
-    constructor(name, options) {
+    constructor(name, url, options) {
         super();
 
         this.name = name;
+        this.url = url;
         this.options = options;
 
         this.handle = null;
@@ -43,11 +46,11 @@ export default class Popup extends EventEmitter {
             delete this.options['position'];
 
             this.options.left = (
-                window.screenLeft + (window.outerWidth / 2) -
+                window.screenX + (window.outerWidth / 2) -
                 (this.options.width / 2) + this.options.offsetLeft
             );
 
-            this.options.top = window.screenTop + this.options.offsetTop;
+            this.options.top = window.screenY + this.options.offsetTop;
         }
 
         // Build window features string
@@ -63,7 +66,9 @@ export default class Popup extends EventEmitter {
         this._bus.on('popup.reject', this._onRejected.bind(this));
 
         // Start monitoring close state
-        setTimeout(this._checkClosed.bind(this), 5000);
+        if(Platform.name !== Platforms.Firefox) {
+            setTimeout(this._checkClosed.bind(this), 5000);
+        }
 
         // Start timeout trigger
         setTimeout(this._onTimeout.bind(this), this.options.timeout * 1000);
@@ -79,26 +84,38 @@ export default class Popup extends EventEmitter {
 
     // region Public methods
 
-    open(url) {
-        console.debug('Opening popup %o (name: %o, features: %o)', url, this.name, this._features);
+    open() {
+        console.debug('Opening popup %o (name: %o, features: %o)', this.url, this.name, this._features);
 
         // Open popup window
-        this.handle = window.open(url, this.name, this._features);
+        this.handle = window.open(this.url, this.name, this._features);
 
         // Move popup to specified position
         this.handle.moveTo(this.options.left, this.options.top);
+
+        // Create result promise
+        return new Promise((resolve, reject) => {
+            // Bind popup events to promise
+            this.on('resolve', resolve);
+            this.on('reject', reject);
+        });
     }
 
     close() {
-        if(this.handle.closed) {
-            return;
+        // Ensure popup has been closed
+        try {
+            this.handle.close();
+        } catch(e) {
+            console.warn('Unable to close popup:', e);
         }
-
-        // Close popup window
-        this.handle.close();
     }
 
     dispose() {
+        this._onRejected('Popup has been disposed');
+
+        // Ensure popup is closed
+        this.close();
+
         // Remove message event listeners
         this._bus.removeAllListeners();
 
@@ -110,18 +127,22 @@ export default class Popup extends EventEmitter {
 
     // region Static methods
 
+    static create(url, options) {
+        options = merge({
+            id: null
+        }, options || {});
+
+        // Create popup
+        return new Popup(
+            'eon.popup/' + (options.id || uuid.v4()),
+            url,
+            options
+        );
+    }
+
     static open(url, options) {
-        return new Promise(function(resolve, reject) {
-            let name = 'eon.popup/' + uuid.v4();
-            let popup = new Popup(name, options);
-
-            // Open popup window
-            popup.open(url);
-
-            // Bind popup events to promise
-            popup.on('resolve', resolve);
-            popup.on('reject', reject);
-        });
+        // Open popup, and await result
+        return Popup.create(url, options).open();
     }
 
     // endregion
@@ -154,6 +175,10 @@ export default class Popup extends EventEmitter {
     }
 
     _onResolved(result) {
+        if(this.complete) {
+            return;
+        }
+
         this.resolved = true;
 
         // Ensure popup is closed
@@ -167,6 +192,10 @@ export default class Popup extends EventEmitter {
     }
 
     _onRejected(message) {
+        if(this.complete) {
+            return;
+        }
+
         this.rejected = true;
 
         // Ensure popup is closed

@@ -112,6 +112,8 @@ export default class MessagingBus extends EventEmitter {
 
         // Remove port reference
         delete this.connectedChannels[channelId];
+
+        console.debug('[%s] Disconnected from channel: %o', this.channelId, channelId);
         return true;
     }
 
