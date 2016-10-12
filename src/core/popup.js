@@ -1,3 +1,5 @@
+import Platform, {Platforms} from 'eon.extension.browser/platform';
+
 import MessagingBus from '../messaging/bus';
 
 import EventEmitter from 'eventemitter3';
@@ -63,7 +65,9 @@ export default class Popup extends EventEmitter {
         this._bus.on('popup.reject', this._onRejected.bind(this));
 
         // Start monitoring close state
-        setTimeout(this._checkClosed.bind(this), 5000);
+        if(Platform.name !== Platforms.Firefox) {
+            setTimeout(this._checkClosed.bind(this), 5000);
+        }
 
         // Start timeout trigger
         setTimeout(this._onTimeout.bind(this), this.options.timeout * 1000);
