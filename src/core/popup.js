@@ -115,9 +115,16 @@ export default class Popup extends EventEmitter {
     // region Static methods
 
     static open(url, options) {
+        options = merge({
+            id: null
+        }, options || {});
+
+        // Create popup result promise
         return new Promise(function(resolve, reject) {
-            let name = 'eon.popup/' + uuid.v4();
-            let popup = new Popup(name, options);
+            let popup = new Popup(
+                'eon.popup/' + (options.id || uuid.v4()),
+                options
+            );
 
             // Open popup window
             popup.open(url);
