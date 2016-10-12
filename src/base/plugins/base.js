@@ -34,7 +34,7 @@ export default class Plugin {
             return [];
         }
 
-        return this.manifest['content_scripts'];
+        return this.manifest['content_scripts'] || [];
     }
 
     get permissions() {
