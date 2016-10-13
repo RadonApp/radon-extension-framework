@@ -265,6 +265,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Send message to channel
+        console.log('Sending message to "%s":', channelId, message);
         this.connectedChannels[channelId].postMessage(message.dump());
     }
 
@@ -288,6 +289,7 @@ export default class MessagingBus extends EventEmitter {
             let port = this.connectedChannels[channelId];
 
             // Send message to port
+            console.log('Sending message to "%s":', channelId, message);
             port.postMessage(message.dump());
         });
     }
@@ -349,6 +351,8 @@ export default class MessagingBus extends EventEmitter {
     // region Event handlers
 
     onConnection(port) {
+        console.log('[%s] Port connected:', this.channelId, port);
+
         let onMessage = (data) => {
             // Parse message
             let message = MessageParser.parse(data);
@@ -394,6 +398,8 @@ export default class MessagingBus extends EventEmitter {
     }
 
     onMessage(channelId, data) {
+        console.log('Received message from "%s":', channelId, data);
+
         // Parse message
         let message = MessageParser.parse(data);
 
