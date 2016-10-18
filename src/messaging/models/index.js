@@ -31,6 +31,11 @@ export const ModelsList = [
 export const Models = {};
 
 ModelsList.forEach((model) => {
+    if(!isDefined(model.messageType)) {
+        console.warn('Model %o has an invalid "messageType" property');
+        return;
+    }
+
     if(!isDefined(model.messageResource)) {
         console.warn('Model %o has an invalid "messageResource" property');
         return;
@@ -41,11 +46,16 @@ ModelsList.forEach((model) => {
         return;
     }
 
+    // Ensure type object exists
+    if(!isDefined(Models[model.messageType])) {
+        Models[model.messageType] = {};
+    }
+
     // Ensure resource object exists
-    if(!isDefined(Models[model.messageResource])) {
-        Models[model.messageResource] = {};
+    if(!isDefined(Models[model.messageType][model.messageResource])) {
+        Models[model.messageType][model.messageResource] = {};
     }
 
     // Store model reference
-    Models[model.messageResource][model.messageName] = model;
+    Models[model.messageType][model.messageResource][model.messageName] = model;
 });

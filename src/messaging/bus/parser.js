@@ -1,6 +1,11 @@
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
-import {Models, EventMessage} from '../models';
+import {
+    Models,
+    EventMessage,
+    RequestMessage,
+    ResponseMessage
+} from '../models';
 
 
 export default class MessageParser {
@@ -27,17 +32,27 @@ export default class MessageParser {
         }
 
         // Check if message model exists
-        if(!isDefined(Models[data.resource])) {
-            console.warn('Unsupported message resource: %o', data.resource);
-            return null;
+        if(isDefined(Models[data.type]) && isDefined(Models[data.type][data.resource])) {
+            // Parse message with model (if available)
+            let model = Models[data.type][data.resource][data.name];
+
+            if (isDefined(model)) {
+                return model.parse(data);
+            }
         }
 
-        if(!isDefined(Models[data.resource][data.name])) {
-            console.warn('Unsupported message name: %o', data.name);
-            return null;
+        console.debug('No model available for message: %o', data);
+
+        // Try parse with basic models
+        if(data.type === 'request') {
+            return RequestMessage.parse(data);
         }
 
-        // Parse message with model
-        return Models[data.resource][data.name].parse(data);
+        if(data.type === 'response') {
+            return ResponseMessage.parse(data);
+        }
+
+        console.warn('Unsupported message type: %o', data.type);
+        return null;
     }
 }

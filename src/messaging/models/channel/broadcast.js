@@ -1,7 +1,7 @@
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import MessageParser from '../../bus/parser';
-import RequestMessage from '../base';
+import RequestMessage from '../request';
 
 
 export default class BroadcastMessage extends RequestMessage {

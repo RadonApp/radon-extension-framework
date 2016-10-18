@@ -8,6 +8,8 @@ import merge from 'lodash-es/merge';
 import {
     Models,
     Message,
+    RequestMessage,
+    ResponseMessage,
     EventMessage,
     ChannelBroadcastMessage,
     ChannelConnectMessage,
@@ -32,13 +34,13 @@ export default class MessagingBus extends EventEmitter {
         this.connectedChannels = {};
 
         // Set default options
-        this.options = merge({
+        this._options = merge({
             context: ContextTypes.Content,
             extensionId: null
         }, options);
 
         // Automatically initialize based on current context
-        if(this.options.context === ContextTypes.Background) {
+        if(this._options.context === ContextTypes.Background) {
             this.listen();
         }
     }
@@ -54,12 +56,12 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Ignore `connect()` in background contexts
-        if(this.options.context === ContextTypes.Background) {
+        if(this._options.context === ContextTypes.Background) {
             return this;
         }
 
         // Ensure "extensionId" is defined in website contexts
-        if(this.options.context === ContextTypes.Website && this.options.extensionId === null) {
+        if(this._options.context === ContextTypes.Website && this._options.extensionId === null) {
             throw new Error('"extensionId" is required for website messaging contexts');
         }
 
@@ -67,7 +69,7 @@ export default class MessagingBus extends EventEmitter {
         let port;
 
         try {
-            port = Messaging.connect(this.options.extensionId, {
+            port = Messaging.connect(this._options.extensionId, {
                 name: this.channelId
             });
         } catch(e) {
@@ -150,7 +152,7 @@ export default class MessagingBus extends EventEmitter {
     // region Broadcast
 
     broadcast(payload) {
-        let message = this._constructMessage(payload, Array.from(arguments).slice(1));
+        let message = this._constructEvent(payload, Array.from(arguments).slice(1));
 
         // Emit local events
         if(message instanceof EventMessage) {
@@ -168,7 +170,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Construct message
-        let message = this._constructMessage(payload, Array.from(arguments).slice(2));
+        let message = this._constructEvent(payload, Array.from(arguments).slice(2));
 
         // Emit local events
         if(message instanceof EventMessage) {
@@ -184,7 +186,7 @@ export default class MessagingBus extends EventEmitter {
     // region Emit
 
     emit(payload) {
-        let message = this._constructMessage(payload, Array.from(arguments).slice(1));
+        let message = this._constructEvent(payload, Array.from(arguments).slice(1));
 
         // Emit local events
         if(message instanceof EventMessage) {
@@ -202,7 +204,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Construct message
-        let message = this._constructMessage(payload, Array.from(arguments).slice(2));
+        let message = this._constructEvent(payload, Array.from(arguments).slice(2));
 
         // Emit local events
         if(message instanceof EventMessage) {
@@ -218,7 +220,7 @@ export default class MessagingBus extends EventEmitter {
     // region Relay
 
     relay(targetId, payload) {
-        let message = this._constructMessage(payload, Array.from(arguments).slice(2));
+        let message = this._constructEvent(payload, Array.from(arguments).slice(2));
 
         // Emit local events
         if(message instanceof EventMessage) {
@@ -236,7 +238,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Construct message
-        let message = this._constructMessage(payload, Array.from(arguments).slice(3));
+        let message = this._constructEvent(payload, Array.from(arguments).slice(3));
 
         // Emit local events
         if(message instanceof EventMessage) {
@@ -245,6 +247,68 @@ export default class MessagingBus extends EventEmitter {
 
         // Send relay request to channel
         return this._sendTo(channelId, new ChannelRelayMessage(targetId, message));
+    }
+
+    // endregion
+
+    // region Request
+
+    request(channelId, key, payload, options) {
+        options = merge({
+            timeout: 5000
+        }, options || {});
+
+        // Ensure channel exists
+        if(typeof this.connectedChannels[channelId] === 'undefined') {
+            throw new Error('Channel "' + channelId + '" is not available');
+        }
+
+        // Parse request name
+        let {resource, name} = this._splitName(key);
+
+        if(resource === null || name === null) {
+            throw new Error('Invalid value provided for the "key" parameter');
+        }
+
+        // Construct message
+        let message = new RequestMessage(payload, {
+            resource: resource,
+            name: name
+        });
+
+        // Send request, and await response
+        return new Promise((resolve, reject) => {
+            let timeoutId = null;
+
+            // Send request to channel
+            this._sendTo(channelId, message);
+
+            // Create response callback
+            let onResponse = (response) => {
+                console.debug('Got response for request %o', message.id);
+
+                // Cancel timeout callback
+                if(isDefined(timeoutId)) {
+                    clearTimeout(timeoutId);
+                }
+
+                // Remove listener
+                this.removeListener('response:' + message.id, onResponse);
+
+                // Resolve promise
+                resolve(response.payload);
+            };
+
+            // Bind to message event
+            this.on('response:' + message.id, onResponse);
+
+            // Start timeout callback
+            timeoutId = setTimeout(() => {
+                this.removeListener('response:' + message.id, onResponse);
+
+                reject(new Error('Response timeout, waited ' + options.timeout + 'ms'));
+            }, options.timeout)
+        });
     }
 
     // endregion
@@ -311,6 +375,14 @@ export default class MessagingBus extends EventEmitter {
             return this._processEventMessage(channelId, message);
         }
 
+        if(message instanceof RequestMessage) {
+            return this._processRequestMessage(channelId, message);
+        }
+
+        if(message instanceof ResponseMessage) {
+            return this._processResponseMessage(channelId, message);
+        }
+
         console.warn('[%s] Unknown message received from %o: %O', this.channelId, channelId, message);
         return false;
     }
@@ -338,11 +410,47 @@ export default class MessagingBus extends EventEmitter {
     }
 
     _processEventMessage(channelId, message) {
-        // Emit "event"
+        // Emit events
         super.emit('event', message);
-
-        // Emit event identifier
         super.emit.apply(this, [message.id].concat(message.args));
+
+        return true;
+    }
+
+    _processRequestMessage(channelId, request) {
+        let responded = false;
+
+        let callback = (data) => {
+            if(responded) {
+                throw new Error('Response has already been sent');
+            }
+
+            responded = true;
+
+            // Construct response message
+            let response = new ResponseMessage(request.id, data, {
+                resource: request.resource,
+                name: request.name
+            });
+
+            // Send response back to requesting channel
+            this._sendTo(channelId, response);
+        };
+
+        // Emit events
+        super.emit('request', request.payload, callback);
+        super.emit('request:' + request.resource + '.' + request.name, request.payload, callback);
+
+        return true;
+    }
+
+    _processResponseMessage(channelId, response) {
+        console.debug('Received response from %o, for request %o', channelId, response.requestId);
+
+        // Emit events
+        super.emit('response', response);
+        super.emit('response:' + response.requestId, response);
+
         return true;
     }
 
@@ -416,13 +524,13 @@ export default class MessagingBus extends EventEmitter {
 
     // region Helpers
 
-    _constructMessage(payload, args) {
+    _constructEvent(payload, args) {
         if(payload instanceof Message) {
             return payload;
         }
 
         // Parse event name
-        let {resource, name} = this._parseEventName(payload);
+        let {resource, name} = this._splitName(payload);
 
         if(resource === null || name === null) {
             throw new Error('Invalid value provided for the "payload" parameter');
@@ -432,7 +540,7 @@ export default class MessagingBus extends EventEmitter {
         return new EventMessage(resource, name, args);
     }
 
-    _parseEventName(event) {
+    _splitName(event) {
         if(!isDefined(event)) {
             return {
                 resource: null,

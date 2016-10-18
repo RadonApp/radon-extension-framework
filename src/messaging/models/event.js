@@ -14,6 +14,10 @@ export default class EventMessage extends Message {
         this._options = options || {};
     }
 
+    get type() {
+        return 'event';
+    }
+
     get resource() {
         return this._resource;
     }
@@ -42,7 +46,7 @@ export default class EventMessage extends Message {
         let data = super.dump();
 
         // Include extra options
-        data.options = this._options;
+        data._options = this._options;
 
         return data;
     }
@@ -62,7 +66,7 @@ export default class EventMessage extends Message {
             data.name,
 
             data.payload,
-            data.options
+            data._options
         );
     }
 }

@@ -1,5 +1,5 @@
 import {isDefined} from 'eon.extension.framework/core/helpers';
-import RequestMessage from '../base';
+import RequestMessage from '../request';
 
 
 export default class ConnectMessage extends RequestMessage {
