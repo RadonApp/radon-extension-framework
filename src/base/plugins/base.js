@@ -4,16 +4,17 @@ import merge from 'lodash-es/merge';
 
 
 export default class Plugin {
-    constructor(id, type, title, manifest) {
+    constructor(id, type, manifest) {
         this.id = id;
         this.type = type;
 
-        this.title = title;
         this.manifest = manifest || null;
 
-        // Validate parameters
-        if(this.manifest === null) {
+        // Validate manifest
+        if(!isDefined(this.manifest)) {
             console.warn('Plugin "%s": no manifest defined', this.id);
+        } else if(!isDefined(this.manifest.name)) {
+            console.warn('Plugin "%s": manifest has no "name" attribute', this.id);
         }
 
         // Private variables
@@ -28,6 +29,16 @@ export default class Plugin {
 
         return true;
     }
+
+    get title() {
+        if(this.manifest === null) {
+            return null;
+        }
+
+        return this.manifest.name;
+    }
+
+    // region Manifest properties
 
     get contentScripts() {
         if(this.manifest === null) {
@@ -69,6 +80,8 @@ export default class Plugin {
             origins: origins
         }, this.manifest['permissions']);
     }
+
+    // endregion
 
     dump() {
         return {
