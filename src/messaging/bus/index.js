@@ -443,7 +443,7 @@ export default class MessagingBus extends EventEmitter {
     }
 
     _processResponseMessage(channelId, response) {
-        Log.debug('Received response from %o, for request %o', channelId, response.requestId);
+        Log.trace('Received response from %o, for request %o', channelId, response.requestId);
 
         // Emit events
         super.emit('response', response);

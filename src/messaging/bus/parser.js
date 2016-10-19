@@ -42,7 +42,7 @@ export default class MessageParser {
             }
         }
 
-        Log.debug('No model available for message: %o', data);
+        Log.trace('No model available for message: %o, using basic models instead', data);
 
         // Try parse with basic models
         if(data.type === 'request') {
