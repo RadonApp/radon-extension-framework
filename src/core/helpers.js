@@ -18,6 +18,10 @@ export function isFunction(functionToCheck) {
     return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }
 
+export function round(value, digits) {
+    return +(Math.round(value + 'e+' + digits) + 'e-' + digits);
+}
+
 export function toCssUrl(url) {
     if(!isDefined(url)) {
         return null;

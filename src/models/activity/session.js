@@ -1,3 +1,5 @@
+import {round} from 'eon.extension.framework/core/helpers';
+
 export const SessionState = {
     null: 0,
     stalled: 1,
@@ -10,6 +12,7 @@ export const SessionState = {
 
     ended: 6
 };
+
 
 export default class Session {
     constructor(source, key, item, state) {
@@ -39,7 +42,7 @@ export default class Session {
             return null;
         }
 
-        return this.time / this.item.duration;
+        return round((this.time / this.item.duration) * 100, 2);
     }
 
     dump() {
