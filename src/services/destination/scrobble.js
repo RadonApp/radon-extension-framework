@@ -20,6 +20,10 @@ export default class ScrobbleService extends Service {
                 return this.onStarted(session);
             }
 
+            if(event === 'seeked') {
+                return this.onSeeked(session);
+            }
+
             if(event === 'progress') {
                 return this.onProgress(session);
             }
@@ -41,6 +45,7 @@ export default class ScrobbleService extends Service {
     }
 
     onCreated(session) {}
+    onSeeked(session) {}
     onProgress(session) {}
     onPaused(session) {}
     onEnded(session) {}
