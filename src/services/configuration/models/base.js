@@ -1,3 +1,6 @@
+import {isDefined} from 'eon.extension.framework/core/helpers';
+
+
 export default class Model {
     constructor(plugin, type, key) {
         this.plugin = plugin;
@@ -5,6 +8,10 @@ export default class Model {
         this.key = key;
 
         // Generate global identifier
-        this.id = plugin.id + ':' + key;
+        if(isDefined(key)) {
+            this.id = plugin.id + ':' + key;
+        } else {
+            this.id = plugin.id;
+        }
     }
 }

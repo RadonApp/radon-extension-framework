@@ -1,6 +1,7 @@
 import Preferences from 'eon.extension.browser/preferences';
 
 import Log from 'eon.extension.framework/core/logger';
+import {Page} from 'eon.extension.framework/services/configuration/models';
 
 export const OptionTypes = [
     'checkbox',
@@ -91,6 +92,11 @@ export class Registry {
     }
 
     registerPlugin(plugin) {
+        // Ensure plugin is valid
+        if(!plugin.valid) {
+            return false;
+        }
+
         // Ensure plugin type object has been created
         if(typeof this.pluginsByType[plugin.type] === 'undefined') {
             this.pluginsByType[plugin.type] = {};
@@ -150,9 +156,28 @@ export class Registry {
     }
 
     registerConfigurationService(service) {
-        // Register options
+        if(service.plugin.type !== 'core' && service.options.length > 1) {
+            Log.warn(
+                '[%s] Plugin configuration services can only contain one page',
+                service.plugin.id
+            );
+            return;
+        }
+
+        // Register preference pages
         for(let i = 0; i < service.options.length; ++i) {
-            Preferences.register(service.options[i]);
+            let item = service.options[i];
+
+            if(!(item instanceof Page)) {
+                Log.warn(
+                    '[%s] Configuration services should only contain pages, found: %o',
+                    service.plugin.id, item
+                );
+                continue;
+            }
+
+            // Register page
+            Preferences.register(item);
         }
     }
 }
