@@ -13,11 +13,7 @@ export default class Plugin {
         this.manifest = manifest || null;
 
         // Validate manifest
-        if(!isDefined(this.manifest)) {
-            console.warn('Plugin "%s": no manifest defined', this.id);
-        } else if(!isDefined(this.manifest.name)) {
-            console.warn('Plugin "%s": manifest has no "name" attribute', this.id);
-        }
+        this.valid = this.validate();
 
         // Construct preferences context
         this.preferences = Preferences.context(this.id);
@@ -36,8 +32,8 @@ export default class Plugin {
     }
 
     get title() {
-        if(this.manifest === null) {
-            return null;
+        if(this.manifest === null || !isDefined(this.manifest.name)) {
+            return this.id.replace('eon.extension.', '');
         }
 
         return this.manifest.name;
@@ -87,6 +83,15 @@ export default class Plugin {
     }
 
     // endregion
+
+    validate() {
+        if(!isDefined(this.manifest)) {
+            Log.warn('Plugin "%s": no manifest defined', this.id);
+            return false;
+        }
+
+        return true;
+    }
 
     dump() {
         return {
