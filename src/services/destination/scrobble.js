@@ -1,3 +1,5 @@
+import Log from 'eon.extension.framework/core/logger';
+
 import Service from '../base';
 
 
@@ -30,9 +32,9 @@ export default class ScrobbleService extends Service {
                 return this.onEnded(session);
             }
 
-            console.warn('Invalid activity event received: %o', event);
+            Log.warn('Invalid activity event received: %o', event);
         } catch(e) {
-            console.error('Unable to process session event %o:', event, e);
+            Log.error('Unable to process session event %o:', event, e);
         }
 
         return false;

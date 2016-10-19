@@ -1,3 +1,4 @@
+import Log from 'eon.extension.framework/core/logger';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import {
@@ -12,17 +13,17 @@ export default class MessageParser {
     static parse(data) {
         // Verify message structure
         if(!isDefined(data)) {
-            console.warn('Invalid value provided for the "data" parameter');
+            Log.warn('Invalid value provided for the "data" parameter');
             return null;
         }
 
         if(!isDefined(data.resource)) {
-            console.warn('Invalid value provided for the "data.resource" parameter');
+            Log.warn('Invalid value provided for the "data.resource" parameter');
             return null;
         }
 
         if(!isDefined(data.name)) {
-            console.warn('Invalid value provided for the "data.name" parameter');
+            Log.warn('Invalid value provided for the "data.name" parameter');
             return null;
         }
 
@@ -36,12 +37,12 @@ export default class MessageParser {
             // Parse message with model (if available)
             let model = Models[data.type][data.resource][data.name];
 
-            if (isDefined(model)) {
+            if(isDefined(model)) {
                 return model.parse(data);
             }
         }
 
-        console.debug('No model available for message: %o', data);
+        Log.debug('No model available for message: %o', data);
 
         // Try parse with basic models
         if(data.type === 'request') {
@@ -52,7 +53,7 @@ export default class MessageParser {
             return ResponseMessage.parse(data);
         }
 
-        console.warn('Unsupported message type: %o', data.type);
+        Log.warn('Unsupported message type: %o', data.type);
         return null;
     }
 }

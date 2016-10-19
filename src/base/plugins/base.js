@@ -1,4 +1,5 @@
 import Preferences from 'eon.extension.browser/preferences';
+import Log from 'eon.extension.framework/core/logger';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
@@ -27,7 +28,7 @@ export default class Plugin {
 
     get enabled() {
         if(!this._enabledTodo) {
-            console.warn('Plugin "%s": check if the plugin has been enabled', this.id);
+            Log.warn('Plugin "%s": check if the plugin has been enabled', this.id);
             this._enabledTodo = true;
         }
 
@@ -60,14 +61,14 @@ export default class Plugin {
         // Retrieve content script origins
         let origins = [].concat.apply([], this.contentScripts.map((contentScript) => {
             if(!isDefined(contentScript.conditions)) {
-                console.warn('Content script has no conditions:', contentScript);
+                Log.warn('Content script has no conditions:', contentScript);
                 return [];
             }
 
             return contentScript.conditions
                 .map((condition) => {
                     if(!isDefined(contentScript.conditions)) {
-                        console.warn('Condition has no pattern:', condition);
+                        Log.warn('Condition has no pattern:', condition);
                         return null;
                     }
 

@@ -1,3 +1,6 @@
+import Log from 'eon.extension.framework/core/logger';
+
+
 export default class Service {
     constructor(plugin, key, type) {
         this.plugin = plugin;
@@ -14,7 +17,7 @@ export default class Service {
 
     get enabled() {
         if(!this._enabledTodo) {
-            console.warn('TODO: check if the service has been enabled');
+            Log.warn('TODO: check if the service has been enabled');
             this._enabledTodo = true;
         }
 

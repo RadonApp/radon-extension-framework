@@ -1,5 +1,5 @@
 import Messaging from 'eon.extension.browser/messaging';
-
+import Log from 'eon.extension.framework/core/logger';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import EventEmitter from 'eventemitter3';
@@ -51,7 +51,7 @@ export default class MessagingBus extends EventEmitter {
         force = isDefined(force) ? force : false;
 
         if(!force && typeof this.connectedChannels[channelId] !== 'undefined') {
-            console.log('[%s] Already connected to channel %o', this.channelId, channelId);
+            Log.debug('[%s] Already connected to channel %o', this.channelId, channelId);
             return this;
         }
 
@@ -77,7 +77,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Connected to correct port
-        console.debug('[%s] Connected to channel: %o', this.channelId, channelId);
+        Log.debug('[%s] Connected to channel: %o', this.channelId, channelId);
 
         // Send channel request metadata
         port.postMessage(new ChannelConnectMessage(channelId).dump());
@@ -108,14 +108,14 @@ export default class MessagingBus extends EventEmitter {
         try {
             port.disconnect();
         } catch(e) {
-            console.warn('Unable to disconnect channel %o:', channelId, e.stack);
+            Log.warn('Unable to disconnect channel %o:', channelId, e.stack);
             return false;
         }
 
         // Remove port reference
         delete this.connectedChannels[channelId];
 
-        console.debug('[%s] Disconnected from channel: %o', this.channelId, channelId);
+        Log.debug('[%s] Disconnected from channel: %o', this.channelId, channelId);
         return true;
     }
 
@@ -142,7 +142,7 @@ export default class MessagingBus extends EventEmitter {
             this.onConnection(port)
         );
 
-        console.debug('[%s] Waiting for connections...', this.channelId);
+        Log.debug('[%s] Waiting for connections...', this.channelId);
     }
 
     // endregion
@@ -285,8 +285,6 @@ export default class MessagingBus extends EventEmitter {
 
             // Create response callback
             let onResponse = (response) => {
-                console.debug('Got response for request %o', message.id);
-
                 // Cancel timeout callback
                 if(isDefined(timeoutId)) {
                     clearTimeout(timeoutId);
@@ -307,7 +305,7 @@ export default class MessagingBus extends EventEmitter {
                 this.removeListener('response:' + message.id, onResponse);
 
                 reject(new Error('Response timeout, waited ' + options.timeout + 'ms'));
-            }, options.timeout)
+            }, options.timeout);
         });
     }
 
@@ -329,7 +327,7 @@ export default class MessagingBus extends EventEmitter {
         }
 
         // Send message to channel
-        console.log('Sending message to "%s":', channelId, message);
+        Log.trace('Sending message to "%s":', channelId, message);
         this.connectedChannels[channelId].postMessage(message.dump());
     }
 
@@ -353,7 +351,7 @@ export default class MessagingBus extends EventEmitter {
             let port = this.connectedChannels[channelId];
 
             // Send message to port
-            console.log('Sending message to "%s":', channelId, message);
+            Log.trace('Sending message to "%s":', channelId, message);
             port.postMessage(message.dump());
         });
     }
@@ -383,7 +381,7 @@ export default class MessagingBus extends EventEmitter {
             return this._processResponseMessage(channelId, message);
         }
 
-        console.warn('[%s] Unknown message received from %o: %O', this.channelId, channelId, message);
+        Log.warn('[%s] Unknown message received from %o: %O', this.channelId, channelId, message);
         return false;
     }
 
@@ -400,7 +398,7 @@ export default class MessagingBus extends EventEmitter {
 
     _processRelayMessage(channelId, message) {
         if(typeof this.connectedChannels[message.targetId] === 'undefined') {
-            console.error('Channel %o is not available, unable to relay message', message.targetId);
+            Log.error('Channel %o is not available, unable to relay message', message.targetId);
             return false;
         }
 
@@ -445,7 +443,7 @@ export default class MessagingBus extends EventEmitter {
     }
 
     _processResponseMessage(channelId, response) {
-        console.debug('Received response from %o, for request %o', channelId, response.requestId);
+        Log.debug('Received response from %o, for request %o', channelId, response.requestId);
 
         // Emit events
         super.emit('response', response);
@@ -459,19 +457,19 @@ export default class MessagingBus extends EventEmitter {
     // region Event handlers
 
     onConnection(port) {
-        console.log('[%s] Port connected:', this.channelId, port);
+        Log.debug('[%s] Port connected:', this.channelId, port);
 
         let onMessage = (data) => {
             // Parse message
             let message = MessageParser.parse(data);
 
             if(!isDefined(message)) {
-                console.warn('[%s] Unable to parse message: %O', this.channelId, data);
+                Log.warn('[%s] Unable to parse message: %O', this.channelId, data);
                 return;
             }
 
             if(!(message instanceof ChannelConnectMessage)) {
-                console.warn('[%s] Received an unexpected message: %O', this.channelId, message);
+                Log.warn('[%s] Received an unexpected message: %O', this.channelId, message);
                 return;
             }
 
@@ -492,7 +490,7 @@ export default class MessagingBus extends EventEmitter {
             // Store `port` reference
             this.connectedChannels[port.name] = port;
 
-            console.debug('[%s] Channel connected: %o', this.channelId, port.name);
+            Log.debug('[%s] Channel connected: %o', this.channelId, port.name);
         };
 
         // Wait for connection request
@@ -500,19 +498,19 @@ export default class MessagingBus extends EventEmitter {
     }
 
     onDisconnect(channelId, port, error) {
-        console.debug('[%s] Channel disconnected: %o (error: %o)', this.channelId, channelId, error);
+        Log.debug('[%s] Channel disconnected: %o (error: %o)', this.channelId, channelId, error);
 
         this.disconnect(channelId);
     }
 
     onMessage(channelId, data) {
-        console.log('Received message from "%s":', channelId, data);
+        Log.trace('Received message from "%s":', channelId, data);
 
         // Parse message
         let message = MessageParser.parse(data);
 
         if(!isDefined(message)) {
-            console.warn('[%s] Unable to parse message: %O', this.channelId, data);
+            Log.warn('[%s] Unable to parse message: %O', this.channelId, data);
             return;
         }
 

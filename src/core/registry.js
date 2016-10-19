@@ -1,11 +1,13 @@
 import Preferences from 'eon.extension.browser/preferences';
 
+import Log from 'eon.extension.framework/core/logger';
 
 export const OptionTypes = [
     'checkbox',
     'enable',
     'slider'
 ];
+
 
 export class Registry {
     constructor() {
@@ -107,7 +109,7 @@ export class Registry {
         this.plugins[plugin.id] = plugin;
         this.pluginsByType[plugin.type][plugin.id] = plugin;
 
-        console.debug('Registered plugin: %o', plugin.id, plugin);
+        Log.debug('Registered plugin: %o', plugin.id, plugin);
         return true;
     }
 
@@ -130,7 +132,7 @@ export class Registry {
         this.services[service.id] = service;
         this.servicesByType[service.type][service.id] = service;
 
-        console.debug('Registered service: %o', service.id, service);
+        Log.debug('Registered service: %o', service.id, service);
 
         // Service registration tasks
         try {
@@ -138,7 +140,7 @@ export class Registry {
                 this.registerConfigurationService(service);
             }
         } catch(e) {
-            console.error('Unable to register service %o:', service.type, e.stack);
+            Log.error('Unable to register service %o:', service.type, e.stack);
             return false;
         }
 

@@ -1,3 +1,4 @@
+import Log from 'eon.extension.framework/core/logger';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import {default as _ChannelBroadcastMessage} from './channel/broadcast';
@@ -32,17 +33,17 @@ export const Models = {};
 
 ModelsList.forEach((model) => {
     if(!isDefined(model.messageType)) {
-        console.warn('Model %o has an invalid "messageType" property');
+        Log.warn('Model %o has an invalid "messageType" property');
         return;
     }
 
     if(!isDefined(model.messageResource)) {
-        console.warn('Model %o has an invalid "messageResource" property');
+        Log.warn('Model %o has an invalid "messageResource" property');
         return;
     }
 
     if(!isDefined(model.messageName)) {
-        console.warn('Model %o has an invalid "messageName" property');
+        Log.warn('Model %o has an invalid "messageName" property');
         return;
     }
 

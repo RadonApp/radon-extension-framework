@@ -1,4 +1,5 @@
 import Platform, {Platforms} from 'eon.extension.browser/platform';
+import Log from 'eon.extension.framework/core/logger';
 
 import {isDefined} from './helpers';
 import MessagingBus from '../messaging/bus';
@@ -96,7 +97,7 @@ export default class Popup extends EventEmitter {
     // region Public methods
 
     open() {
-        console.debug('Opening popup %o (name: %o, features: %o)', this.url, this.name, this._features);
+        Log.debug('Opening popup %o (name: %o, features: %o)', this.url, this.name, this._features);
 
         // Open popup window
         this.handle = window.open(this.url, this.name, this._features);
@@ -123,7 +124,7 @@ export default class Popup extends EventEmitter {
         try {
             this.handle.close();
         } catch(e) {
-            console.warn('Unable to close popup:', e);
+            Log.warn('Unable to close popup:', e);
         }
     }
 
@@ -171,7 +172,7 @@ export default class Popup extends EventEmitter {
             return;
         }
 
-        console.debug('Checking if popup has been closed...');
+        Log.trace('Checking if popup has been closed...');
 
         if(this.closed) {
             // Popup rejected
