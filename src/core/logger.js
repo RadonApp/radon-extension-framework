@@ -28,12 +28,19 @@ export class Logger {
         this._resolver = resolver;
 
         this._level = null;
+        this._queue = [];
 
-        // Bind logger methods (with default level)
-        this._bind(defaultLevel || Levels.Trace);
+        // Setup queued logger methods
+        this.error =   this._queueMessage.bind(this, Levels.Error);
+        this.warning = this._queueMessage.bind(this, Levels.Warning);
+        this.warn =    this._queueMessage.bind(this, Levels.Warning);
+        this.notice =  this._queueMessage.bind(this, Levels.Notice);
+        this.info =    this._queueMessage.bind(this, Levels.Info);
+        this.debug =   this._queueMessage.bind(this, Levels.Debug);
+        this.trace =   this._queueMessage.bind(this, Levels.Trace);
 
         // Refresh logger level with resolver
-        this.refresh();
+        setTimeout(this.refresh.bind(this), 0);
     }
 
     get level() {
@@ -45,31 +52,36 @@ export class Logger {
     }
 
     refresh() {
-        return this._getLevel().then((level) => {
-            return this._bind(level);
+        return this._resolveLevel().then((level) => {
+            return this._enable(level);
         });
     }
 
     // region Private methods
 
-    _bind(level) {
+    _enable(level) {
         // Update current logger level
         this._level = level;
 
+        // Write queued messages to console
+        this._writeQueue();
+
         // Bind logger methods
-        this.error =   this._getFunction(Levels.Error, window.console.error);
-        this.warning = this._getFunction(Levels.Warning, window.console.warn);
-        this.warn =    this._getFunction(Levels.Warning, window.console.warn);
-        this.notice =  this._getFunction(Levels.Notice, window.console.info);
-        this.info =    this._getFunction(Levels.Info, window.console.log);
-        this.debug =   this._getFunction(Levels.Debug, window.console.debug);
-        this.trace =   this._getFunction(Levels.Trace, window.console.debug);
+        this.error =   this._bindFunction(Levels.Error);
+        this.warning = this._bindFunction(Levels.Warning);
+        this.warn =    this._bindFunction(Levels.Warning);
+        this.notice =  this._bindFunction(Levels.Notice);
+        this.info =    this._bindFunction(Levels.Info);
+        this.debug =   this._bindFunction(Levels.Debug);
+        this.trace =   this._bindFunction(Levels.Trace);
     }
 
-    _getFunction(level, func) {
+    _bindFunction(level) {
         if(level < this._level) {
             return function() {};
         }
+
+        let func = this._getFunction(level);
 
         if(!isDefined(func)) {
             return console.log.bind(console);
@@ -78,26 +90,126 @@ export class Logger {
         return func.bind(console);
     }
 
-    _getLevel() {
-        // Resolve level
-        let resolver;
+    _resolveLevel() {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
 
-        if(isFunction(this._resolver)) {
-            resolver = Promise.resolve(this._resolver());
-        } else {
-            resolver = Promise.resolve(this._resolver);
+            let get = () => {
+                // Get current resolver
+                let resolver;
+
+                if(isFunction(this._resolver)) {
+                    resolver = Promise.resolve(this._resolver());
+                } else {
+                    resolver = Promise.resolve(this._resolver);
+                }
+
+                // Try resolve log level
+                resolver.then((key) => {
+                    if(key === null) {
+                        // Retry log level resolution
+                        if(attempts < 50) {
+                            attempts += 1;
+                            setTimeout(get, 20);
+                            return;
+                        }
+
+                        // Unable to resolve log level
+                        console.warn('Unable to resolve current log level, will use "trace" instead');
+                        resolve(Levels.Trace);
+                        return;
+                    }
+
+                    // Ensure log level exists
+                    if(!isDefined(Levels[key])) {
+                        console.warn('Unknown log level: %o', key);
+                        resolve(Levels.Trace);
+                        return;
+                    }
+
+                    // Valid log level found
+                    resolve(Levels[key]);
+                }, (err) => {
+                    reject(err);
+                });
+            };
+
+            // Attempt level resolution
+            get();
+        })
+    }
+
+    _getFunction(level) {
+        if(level === Levels.Error) {
+            return window.console.error;
         }
 
-        // Map level to integer
-        return resolver.then((key) => {
-            if(!isDefined(Levels[key])) {
-                console.warn('Unknown log level: %o', key);
-                return Levels.Trace;
+        if(level === Levels.Warning) {
+            return window.console.warn;
+        }
+
+        if(level === Levels.Notice) {
+            return window.console.info;
+        }
+
+        if(level === Levels.Info) {
+            return window.console.log;
+        }
+
+        if(level === Levels.Debug || level === Levels.Trace) {
+            return window.console.debug;
+        }
+
+        throw new Error('Unknown level: ' + level);
+    }
+
+    _queueMessage(level, message) {
+        this._queue.push({
+            level: level,
+            message: message,
+            arguments: Array.from(arguments).slice(2)
+        })
+    }
+
+    _writeQueue() {
+        while(this._queue.length > 0) {
+            let item = this._queue.shift();
+
+            // Ensure message level has been enabled
+            if(item.level < this._level) {
+                continue;
             }
 
-            return Levels[key];
-        })
+            // Retrieve console logger method
+            let func = this._getFunction(item.level);
+
+            if(!isDefined(func)) {
+                func = console.log;
+            }
+
+            // Write message
+            func.apply(console, [item.message].concat(item.arguments));
+        }
     }
 
     // endregion
 }
+
+export default new Logger(() => new Promise((resolve) => {
+    // Import preferences shim
+    let preferences = require('eon.extension.browser/preferences').default;
+
+    if(!isDefined(preferences)) {
+        console.debug('Preferences not available yet');
+        resolve(null);
+        return;
+    }
+
+    // Try retrieve current log level
+    preferences.context('eon.extension')
+        .getString('general.developer.log_level')
+        .then(resolve, (err) => {
+            console.debug('Unable to retrieve preference value:', err);
+            resolve(null);
+        });
+}));
