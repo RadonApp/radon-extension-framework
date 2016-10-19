@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-spaces, key-spacing */
 import {isDefined, isFunction} from 'eon.extension.framework/core/helpers';
 
 const Levels = {
@@ -136,7 +137,7 @@ export class Logger {
 
             // Attempt level resolution
             get();
-        })
+        });
     }
 
     _getFunction(level) {
@@ -168,7 +169,7 @@ export class Logger {
             level: level,
             message: message,
             arguments: Array.from(arguments).slice(2)
-        })
+        });
     }
 
     _writeQueue() {
