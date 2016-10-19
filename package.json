@@ -1,6 +1,6 @@
 {
   "name": "eon.extension.framework",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "devDependencies": {
     "babel-core": "^6.11.4",
     "babel-plugin-add-module-exports": "^0.2.1",
