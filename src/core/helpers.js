@@ -10,6 +10,14 @@ export function generateRandomString(length, chars) {
     return result;
 }
 
+export function isDefined(value) {
+    return typeof value !== 'undefined' && value !== null;
+}
+
+export function isFunction(functionToCheck) {
+    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+}
+
 export function hasClass(node, className) {
     return node.classList.contains(className);
 }
@@ -42,14 +50,6 @@ export function hasClassTree(node) {
     }
 
     return true;
-}
-
-export function isDefined(value) {
-    return typeof value !== 'undefined' && value !== null;
-}
-
-export function isFunction(functionToCheck) {
-    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }
 
 export function round(value, digits) {
