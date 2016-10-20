@@ -19,6 +19,10 @@ export function isFunction(functionToCheck) {
 }
 
 export function hasClass(node, className) {
+    if(!isDefined(node.classList)) {
+        return false;
+    }
+
     return node.classList.contains(className);
 }
 
