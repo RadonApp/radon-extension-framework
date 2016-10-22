@@ -1,5 +1,8 @@
-import Service from '../base';
+import Service from '../../base';
+import _ActivityEngine from './engine';
 
+
+export {_ActivityEngine as ActivityEngine};
 
 export default class ActivityService extends Service {
     constructor(plugin) {
