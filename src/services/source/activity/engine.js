@@ -276,7 +276,8 @@ export default class ActivityEngine {
         }
 
         // Started
-        if((previous === SessionState.created || previous === SessionState.paused) && current === SessionState.playing) {
+        if((previous === SessionState.created || previous === SessionState.paused) &&
+            current === SessionState.playing) {
             return this.start();
         }
 
