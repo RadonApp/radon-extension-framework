@@ -1,5 +1,5 @@
-import {ContentTypes, MediaTypes} from '../../../core/enums';
-import {Media} from '../core/base';
+import {ContentTypes, MediaTypes} from 'eon.extension.framework/core/enums';
+import {Media} from 'eon.extension.framework/models/metadata';
 
 
 export default class Movie extends Media {

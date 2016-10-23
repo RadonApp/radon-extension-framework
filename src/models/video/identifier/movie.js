@@ -1,7 +1,7 @@
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
 
-import Identifier from './base';
+import Identifier from 'eon.extension.framework/models/identifier';
 
 
 export default class MovieIdentifier extends Identifier {

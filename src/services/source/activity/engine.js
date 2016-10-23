@@ -1,5 +1,5 @@
 import Log from 'eon.extension.framework/core/logger';
-import Session, {SessionState} from 'eon.extension.framework/models/activity/session';
+import Session, {SessionState} from 'eon.extension.framework/models/session';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
