@@ -209,7 +209,7 @@ export default class ActivityEngine {
 
         // Ensure session is playing
         if(this._currentSession.state !== SessionState.playing) {
-            return false;
+            return true;
         }
 
         // Cancel pause timer
@@ -282,7 +282,8 @@ export default class ActivityEngine {
         }
 
         // Paused
-        if(previous === SessionState.playing && current === SessionState.paused) {
+        if((previous === SessionState.playing || previous === SessionState.stalled) &&
+            current === SessionState.paused) {
             return this.pause();
         }
 
@@ -416,7 +417,13 @@ export default class ActivityEngine {
             return SessionState.playing;
         }
 
-        // Progress hasn't changed
+        // Ignore the paused and pausing states
+        if(this._currentSession.state === SessionState.paused ||
+           this._currentSession.state === SessionState.pausing) {
+            return null;
+        }
+
+        // Switch to paused if the session has been stalled for over 5 seconds
         if(this._currentSession.state === SessionState.stalled && Date.now() - this._currentSession.stalledAt > 5000) {
             // Stalled for over 5 seconds, assume paused
             return SessionState.paused;
