@@ -1,5 +1,5 @@
-import {ContentTypes, MediaTypes} from '../../../core/enums';
-import {Metadata} from '../core/base';
+import {ContentTypes, MediaTypes} from 'eon.extension.framework/core/enums';
+import {Metadata} from 'eon.extension.framework/models/metadata';
 
 
 export default class Show extends Metadata {

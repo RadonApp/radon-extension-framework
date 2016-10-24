@@ -32,8 +32,8 @@ export default class ScrobbleService extends Service {
                 return this.onPaused(session);
             }
 
-            if(event === 'ended') {
-                return this.onEnded(session);
+            if(event === 'stopped') {
+                return this.onStopped(session);
             }
 
             Log.warn('Invalid activity event received: %o', event);
@@ -48,7 +48,7 @@ export default class ScrobbleService extends Service {
     onSeeked(session) {}
     onProgress(session) {}
     onPaused(session) {}
-    onEnded(session) {}
+    onStopped(session) {}
 
     onStarted(session) {
         throw new Error('Not Implemented');
