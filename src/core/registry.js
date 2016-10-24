@@ -1,7 +1,8 @@
 import Preferences from 'eon.extension.browser/preferences';
-
 import Log from 'eon.extension.framework/core/logger';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 import {Page} from 'eon.extension.framework/services/configuration/models';
+
 
 export const OptionTypes = [
     'checkbox',
@@ -9,9 +10,10 @@ export const OptionTypes = [
     'slider'
 ];
 
-
 export class Registry {
     constructor() {
+        this.components = {};
+
         this.plugins = {};
         this.pluginsByType = {};
 
@@ -89,6 +91,19 @@ export class Registry {
         }
 
         return plugins;
+    }
+
+    registerComponent(component) {
+        // Ensure component hasn't already been defined
+        if(isDefined(this.components[component.componentId])) {
+            return false;
+        }
+
+        // Register component
+        this.components[component.componentId] = component;
+
+        Log.debug('Registered component: %o', component.componentId, component);
+        return true;
     }
 
     registerPlugin(plugin) {

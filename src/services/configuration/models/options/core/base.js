@@ -1,7 +1,6 @@
+import {isDefined} from 'eon.extension.framework/core/helpers';
 import {getProperty} from './helpers';
 import Model from '../../base';
-
-import merge from 'lodash-es/merge';
 
 
 export class Option extends Model {
@@ -16,16 +15,28 @@ export class Option extends Model {
 
     _parseOptions(options) {
         return {
-            component: getProperty(options, 'component', null),
             default: getProperty(options, 'default', null),
             summary: getProperty(options, 'summary', null),
 
+            componentId: this._parseComponentId(options.componentId),
             requires: this._parseRequiresOption(options.requires)
         };
     }
 
+    _parseComponentId(componentId) {
+        if(!isDefined(componentId)) {
+            return null;
+        }
+
+        if(componentId.indexOf('eon.') === 0) {
+            return componentId;
+        }
+
+        return this.plugin.id + ':' + componentId;
+    }
+
     _parseRequiresOption(requires) {
-        if(!requires) {
+        if(!isDefined(requires)) {
             return [];
         }
 
@@ -40,9 +51,7 @@ export class Option extends Model {
 }
 
 export class PluginOption extends Option {
-    constructor(plugin, type, key, label, component, options) {
-        super(plugin, plugin.id + ':' + type, key, label, merge({
-            component: component
-        }, options));
+    constructor(plugin, type, key, label, options) {
+        super(plugin, plugin.id + ':' + type, key, label, options);
     }
 }
