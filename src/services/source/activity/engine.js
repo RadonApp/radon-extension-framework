@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-spaces, key-spacing */
 import Log from 'eon.extension.framework/core/logger';
 import Session, {SessionState} from 'eon.extension.framework/models/session';
 import {isDefined} from 'eon.extension.framework/core/helpers';
@@ -35,18 +36,18 @@ export default class ActivityEngine {
     }
 
     bind(emitter) {
-        emitter.on('created', this.create.bind(this));
+        emitter.on('created',   this.create.bind(this));
 
         // Player
-        emitter.on('opened', this.open.bind(this));
-        emitter.on('closed', this.close.bind(this));
+        emitter.on('opened',    this.open.bind(this));
+        emitter.on('closed',    this.close.bind(this));
 
         // Video
-        emitter.on('started', this.start.bind(this));
-        emitter.on('progress', this.progress.bind(this));
-        emitter.on('seeked', this.seek.bind(this));
-        emitter.on('paused', this.pause.bind(this));
-        emitter.on('stopped', this.stop.bind(this));
+        emitter.on('started',   this.start.bind(this));
+        emitter.on('progress',  this.progress.bind(this));
+        emitter.on('seeked',    this.seek.bind(this));
+        emitter.on('paused',    this.pause.bind(this));
+        emitter.on('stopped',   this.stop.bind(this));
     }
 
     create(identifier) {
