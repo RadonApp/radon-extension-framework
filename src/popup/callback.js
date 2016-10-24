@@ -1,4 +1,4 @@
-import Messaging from 'eon.extension.browser/messaging'
+import Messaging from 'eon.extension.browser/messaging';
 import Storage from 'eon.extension.browser/storage';
 import MessagingBus from 'eon.extension.framework/messaging/bus';
 import {isDefined} from 'eon.extension.framework/core/helpers';
