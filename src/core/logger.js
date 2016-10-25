@@ -21,7 +21,7 @@ const LevelKeys = {
 
 
 export class Logger {
-    constructor(resolver, defaultLevel) {
+    constructor(resolver) {
         if(!isDefined(resolver)) {
             throw new Error('Missing required "resolver" parameter');
         }
@@ -57,6 +57,28 @@ export class Logger {
             return this._enable(level);
         });
     }
+
+    // region Static methods
+
+    static create(key, resolver) {
+        // Ensure `window.eon.loggers` object exists
+        if(!isDefined(window.eon)) {
+            window.eon = {};
+        }
+
+        if(!isDefined(window.eon.loggers)) {
+            window.eon.loggers = {};
+        }
+
+        // Construct logger (if not already defined)
+        if(!isDefined(window.eon.loggers[key])) {
+            window.eon.loggers[key] = new Logger(resolver);
+        }
+
+        return window.eon.loggers[key];
+    }
+
+    // endregion
 
     // region Private methods
 
@@ -196,7 +218,8 @@ export class Logger {
     // endregion
 }
 
-export default new Logger(() => new Promise((resolve) => {
+// Construct core/framework logger
+export default Logger.create('eon.extension', () => new Promise((resolve) => {
     // Import preferences shim
     let preferences = require('eon.extension.browser/preferences').default;
 
