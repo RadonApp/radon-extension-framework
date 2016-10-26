@@ -17,18 +17,10 @@ export default class Plugin {
 
         // Construct preferences context
         this.preferences = Preferences.context(this.id);
-
-        // Private variables
-        this._enabledTodo = false;
     }
 
     get enabled() {
-        if(!this._enabledTodo) {
-            Log.warn('Plugin "%s": check if the plugin has been enabled', this.id);
-            this._enabledTodo = true;
-        }
-
-        return true;
+        throw new Error('Use the Plugin.isEnabled() method instead');
     }
 
     get title() {
@@ -83,6 +75,17 @@ export default class Plugin {
     }
 
     // endregion
+
+    // region Public methods
+
+    isEnabled() {
+        if(!this.preferences.exists('enabled')) {
+            Log.warn('Unable to find an "enabled" option for %o', this.id);
+            return Promise.resolve(true);
+        }
+
+        return this.preferences.getBoolean('enabled');
+    }
 
     validate() {
         if(!isDefined(this.manifest)) {
