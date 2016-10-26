@@ -1,7 +1,9 @@
 import Preferences from 'eon.extension.browser/preferences';
 
-import {Option} from './core/base';
+import merge from 'lodash-es/merge';
+
 import {getProperty} from './core/helpers';
+import {Option} from './core/base';
 
 
 export default class EnableOption extends Option {
@@ -16,11 +18,11 @@ export default class EnableOption extends Option {
     _parseOptions(options) {
         let result = super._parseOptions(options);
 
-        return {
-            ...result,
+        return merge(result, {
+            type: getProperty(options, 'type', 'option'),
 
-            contentScripts: getProperty(options, 'contentScripts', []),
-            permissions: getProperty(options, 'permissions', {})
-        };
+            permissions: getProperty(options, 'permissions', false),
+            contentScripts: getProperty(options, 'contentScripts', false)
+        });
     }
 }
