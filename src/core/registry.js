@@ -1,6 +1,6 @@
 import Preferences from 'eon.extension.browser/preferences';
 import Log from 'eon.extension.framework/core/logger';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, isString} from 'eon.extension.framework/core/helpers';
 import {Page} from 'eon.extension.framework/services/configuration/models';
 
 
@@ -34,63 +34,98 @@ export class Registry {
     }
 
     listPlugins(type, options) {
+        if(isDefined(type) && !isString(type)) {
+            options = type;
+            type = null;
+        }
+
+        // Set default options
         options = options || {};
-        options.disabled = typeof options.disabled !== 'undefined' ? options.disabled : false;
+        options.disabled = isDefined(options.disabled) ? options.disabled : false;
 
-        if(typeof this.pluginsByType[type] === 'undefined') {
-            return [];
+        // Retrieve collection
+        let plugins;
+
+        if(isDefined(type)) {
+            plugins = this.pluginsByType[type];
+        } else {
+            plugins = this.plugins;
         }
 
-        let plugins = [];
-
-        for(let key in this.pluginsByType[type]) {
-            if(!this.pluginsByType[type].hasOwnProperty(key)) {
-                continue;
-            }
-
-            // Retrieve plugin
-            let plugin = this.pluginsByType[type][key];
-
-            // Filter by enabled state
-            if(!plugin.enabled && options.disabled !== true) {
-                continue;
-            }
-
-            // Append to result list
-            plugins.push(plugin);
+        if(!isDefined(plugins)) {
+            return Promise.resolve([]);
         }
 
-        return plugins;
+        // Find matching plugins, and check enabled states
+        return Promise
+            .all(Object.keys(plugins).map((key) => {
+                let plugin = plugins[key];
+
+                if(options.disabled === true) {
+                    return plugin;
+                }
+
+                // Retrieve service enabled state
+                return plugin.isEnabled().then((enabled) => {
+                    if(!enabled) {
+                        return null;
+                    }
+
+                    return plugin;
+                });
+            }))
+            .then((services) => {
+                return services.filter((service) => {
+                    return service !== null;
+                });
+            });
     }
 
     listServices(type, options) {
+        if(isDefined(type) && !isString(type)) {
+            options = type;
+            type = null;
+        }
+
         options = options || {};
-        options.disabled = typeof options.disabled !== 'undefined' ? options.disabled : false;
+        options.disabled = isDefined(options.disabled) ? options.disabled : false;
 
-        if(typeof this.servicesByType[type] === 'undefined') {
-            return [];
+        // Retrieve collection
+        let services;
+
+        if(isDefined(type)) {
+            services = this.servicesByType[type];
+        } else {
+            services = this.services;
         }
 
-        let plugins = [];
-
-        for(let key in this.servicesByType[type]) {
-            if(!this.servicesByType[type].hasOwnProperty(key)) {
-                continue;
-            }
-
-            // Retrieve plugin
-            let service = this.servicesByType[type][key];
-
-            // Filter by enabled state
-            if(!service.plugin.enabled && options.disabled !== true) {
-                continue;
-            }
-
-            // Append to result list
-            plugins.push(service);
+        if(!isDefined(services)) {
+            return Promise.resolve([]);
         }
 
-        return plugins;
+        // Find matching plugins, and check enabled states
+        return Promise
+            .all(Object.keys(services).map((key) => {
+                let service = services[key];
+
+                if(options.disabled === true) {
+                    return service;
+                }
+
+                // Retrieve service enabled state
+                return service.isEnabled().then((enabled) => {
+                    if(!enabled) {
+                        return null;
+                    }
+
+                    return service;
+                });
+            }))
+            .then((services) => {
+                return services.filter((service) => {
+                    return service !== null;
+                });
+            });
     }
 
     registerComponent(component) {
