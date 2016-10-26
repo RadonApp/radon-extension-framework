@@ -10,22 +10,36 @@ export default class Service {
         // Generate global identifier
         this.id = plugin.id + ':' + key;
 
+        // Construct preferences context
+        this.preferences = this.plugin.preferences.context(this.key);
+
         // Private variables
-        this._enabledTodo = false;
         this._initialized = false;
     }
 
     get enabled() {
-        if(!this._enabledTodo) {
-            Log.warn('TODO: check if the service has been enabled');
-            this._enabledTodo = true;
-        }
-
-        return true;
+        throw new Error('Use the Service.isEnabled() method instead');
     }
 
     get initialized() {
         return this._initialized;
+    }
+
+    isEnabled() {
+        // Retrieve plugin enabled state
+        return this.plugin.isEnabled().then((enabled) => {
+            if(!enabled) {
+                return false;
+            }
+
+            // Retrieve service enabled state
+            if(!this.preferences.exists('enabled')) {
+                Log.warn('Unable to find an "enabled" option for %o', this.id);
+                return Promise.resolve(true);
+            }
+
+            return this.preferences.getBoolean('enabled');
+        });
     }
 
     initialize() {

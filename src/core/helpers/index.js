@@ -18,6 +18,10 @@ export function isFunction(functionToCheck) {
     return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }
 
+export function isString(value) {
+    return isDefined(value) && typeof value === 'string';
+}
+
 export function hasClass(node, className) {
     if(!isDefined(node.classList)) {
         return false;
