@@ -23,6 +23,7 @@ import EpisodeMetadata from './video/metadata/episode';
 
 // Core
 import Identifier from './identifier';
+import Plugin from './plugin';
 import Session from './session';
 
 
@@ -53,5 +54,7 @@ export const ModelTypes = {
 
     // Core
     'identifier': Identifier,
+    'plugin/destination': Plugin,
+    'plugin/source': Plugin,
     'session': Session
 };
