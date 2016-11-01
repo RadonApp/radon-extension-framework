@@ -1,9 +1,9 @@
+import Identifier from 'eon.extension.framework/models/identifier';
+import {dumpModel} from 'eon.extension.framework/models/core/helpers';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
-
-import Identifier from 'eon.extension.framework/models/identifier';
 
 
 export default class TrackIdentifier extends Identifier {
@@ -16,17 +16,32 @@ export default class TrackIdentifier extends Identifier {
         this.title = title || null;
     }
 
+    static parse(data) {
+        if(!isDefined(data)) {
+            return null;
+        }
+
+        // Construct artist identifier
+        return new TrackIdentifier(
+            data.keyType,
+            data.key,
+
+            data.artist,
+            data.album,
+
+            data.title
+        );
+    }
+
     dump() {
         return merge(super.dump(), {
-            artist: isDefined(this.artist) ?
-                this.artist.dump() :
-                null,
+            '#type': 'music/identifier/track',
 
-            album: isDefined(this.album) ?
-                this.album.dump() :
-                null,
+            'title': this.title,
 
-            title: this.title
+            // Children
+            '~artist': dumpModel(this.artist),
+            '~album': dumpModel(this.album)
         });
     }
 

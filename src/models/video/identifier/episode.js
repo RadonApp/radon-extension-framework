@@ -1,9 +1,9 @@
+import Identifier from 'eon.extension.framework/models/identifier';
+import {dumpModel} from 'eon.extension.framework/models/core/helpers';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
-
-import Identifier from 'eon.extension.framework/models/identifier';
 
 
 export default class EpisodeIdentifier extends Identifier {
@@ -17,18 +17,34 @@ export default class EpisodeIdentifier extends Identifier {
         this.title = title || null;
     }
 
+    static parse(data) {
+        if(!isDefined(data)) {
+            return null;
+        }
+
+        // Construct episode identifier
+        return new EpisodeIdentifier(
+            data.keyType,
+            data.key,
+
+            data.show,
+            data.season,
+
+            data.number,
+            data.title
+        );
+    }
+
     dump() {
         return merge(super.dump(), {
-            show: isDefined(this.show) ?
-                this.show.dump() :
-                null,
+            '#type': 'video/identifier/episode',
 
-            season: isDefined(this.season) ?
-                this.season.dump() :
-                null,
+            'number': this.number,
+            'title': this.title,
 
-            number: this.number,
-            title: this.title
+            // Children
+            '~show': dumpModel(this.show),
+            '~season': dumpModel(this.season)
         });
     }
 

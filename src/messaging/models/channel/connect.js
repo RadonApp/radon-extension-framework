@@ -3,15 +3,15 @@ import RequestMessage from '../request';
 
 
 export default class ConnectMessage extends RequestMessage {
-    constructor(channelId) {
+    constructor(id) {
         super();
 
-        this.channelId = channelId;
+        this.id = id;
     }
 
     get payload() {
         return {
-            channelId: this.channelId
+            id: this.id
         };
     }
 
@@ -28,13 +28,13 @@ export default class ConnectMessage extends RequestMessage {
             throw new Error('Invalid value provided for "data.payload"');
         }
 
-        if(!isDefined(data.payload.channelId)) {
+        if(!isDefined(data.payload.id)) {
             throw new Error('Invalid value provided for "data.payload.channelId"');
         }
 
         // Construct message
         return new ConnectMessage(
-            data.payload.channelId
+            data.payload.id
         );
     }
 }

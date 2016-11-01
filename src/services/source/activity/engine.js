@@ -4,7 +4,6 @@ import Session, {SessionState} from 'eon.extension.framework/models/session';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
-import uuid from 'uuid';
 
 
 export default class ActivityEngine {
@@ -75,10 +74,15 @@ export default class ActivityEngine {
         // Create session
         return Promise.resolve(this.options.getMetadata(identifier)).then((metadata) => {
             // Construct session
-            this._currentSession = new Session(this.plugin, uuid.v4(), {
+            this._currentSession = Session.create(this.plugin, {
+                // Channel identifier
+                channelId: this.bus.id,
+
+                // Children
                 identifier: identifier,
                 metadata: metadata,
 
+                // Current state
                 state: SessionState.created
             });
 

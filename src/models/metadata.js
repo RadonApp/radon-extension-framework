@@ -1,9 +1,22 @@
+import {dumpModel} from 'eon.extension.framework/models/core/helpers';
+
+import merge from 'lodash-es/merge';
+
+
 export class Metadata {
-    constructor(source, id, title, content, media) {
+    constructor(source, id, content, media, options) {
         this.source = source || null;
         this.id = id || null;
-        this.title = title || null;
 
+        // Set default options
+        options = merge({
+            title: null
+        }, options || {});
+
+        // Metadata
+        this.title = options.title;
+
+        // Content type
         this.type = {
             content: content || null,
             media: media || null
@@ -12,28 +25,33 @@ export class Metadata {
 
     dump() {
         return {
-            source: this.source ? this.source.dump() : null,
+            '_id': this.id,
 
-            id: this.id,
-            title: this.title,
+            'title': this.title,
+            'type': this.type,
 
-            type: this.type
+            // Children
+            '~source': dumpModel(this.source)
         };
     }
 }
 
 export class Media extends Metadata {
-    constructor(source, id, title, content, media, duration) {
-        super(source, id, title, content, media);
+    constructor(source, id, content, media, options) {
+        super(source, id, content, media, options);
 
-        this.duration = duration || null;
+        // Set default options
+        options = merge({
+            duration: null
+        }, options || {});
+
+        // Metadata
+        this.duration = options.duration;
     }
 
     dump() {
-        let result = super.dump();
-
-        result.duration = this.duration;
-
-        return result;
+        return merge(super.dump(), {
+            duration: this.duration
+        });
     }
 }

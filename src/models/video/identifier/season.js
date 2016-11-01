@@ -1,7 +1,8 @@
+import Identifier from 'eon.extension.framework/models/identifier';
+import {isDefined} from 'eon.extension.framework/core/helpers';
+
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
-
-import Identifier from 'eon.extension.framework/models/identifier';
 
 
 export default class SeasonIdentifier extends Identifier {
@@ -11,9 +12,25 @@ export default class SeasonIdentifier extends Identifier {
         this.number = number || null;
     }
 
+    static parse(data) {
+        if(!isDefined(data)) {
+            return null;
+        }
+
+        // Construct season identifier
+        return new SeasonIdentifier(
+            data.keyType,
+            data.key,
+
+            data.number
+        );
+    }
+
     dump() {
         return merge(super.dump(), {
-            number: this.number
+            '#type': 'video/identifier/season',
+
+            'number': this.number
         });
     }
 
