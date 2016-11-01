@@ -1,7 +1,8 @@
+import Identifier from 'eon.extension.framework/models/identifier';
+import {isDefined} from 'eon.extension.framework/core/helpers';
+
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
-
-import Identifier from 'eon.extension.framework/models/identifier';
 
 
 export default class MovieIdentifier extends Identifier {
@@ -12,10 +13,27 @@ export default class MovieIdentifier extends Identifier {
         this.year = year || null;
     }
 
+    static parse(data) {
+        if(!isDefined(data)) {
+            return null;
+        }
+
+        // Construct movie identifier
+        return new MovieIdentifier(
+            data.keyType,
+            data.key,
+
+            data.title,
+            data.year
+        );
+    }
+
     dump() {
         return merge(super.dump(), {
-            title: this.title,
-            year: this.year
+            '#type': 'video/identifier/movie',
+
+            'title': this.title,
+            'year': this.year
         });
     }
 

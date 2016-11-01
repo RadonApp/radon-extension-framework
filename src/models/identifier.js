@@ -18,10 +18,24 @@ export default class Identifier {
         this.key = key;
     }
 
+    static parse(data) {
+        if(!isDefined(data)) {
+            return null;
+        }
+
+        // Construct identifier
+        return new Identifier(
+            data.keyType,
+            data.key
+        );
+    }
+
     dump() {
         return {
-            keyType: this.keyType,
-            key: this.key
+            '#type': 'identifier',
+
+            'keyType': this.keyType,
+            'key': this.key
         };
     }
 
