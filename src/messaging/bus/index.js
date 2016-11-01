@@ -93,6 +93,9 @@ export default class MessagingBus extends EventEmitter {
 
         // Store `port` reference
         this.connectedChannels[channelId] = port;
+
+        // Emit "connected" event
+        super.emit('channel.connected', channelId);
         return this;
     }
 
@@ -114,6 +117,9 @@ export default class MessagingBus extends EventEmitter {
 
         // Remove port reference
         delete this.connectedChannels[channelId];
+
+        // Emit "disconnected" event
+        super.emit('channel.disconnected', channelId);
 
         Log.debug('[%s] Disconnected from channel: %o', this.id, channelId);
         return true;
@@ -487,6 +493,9 @@ export default class MessagingBus extends EventEmitter {
 
             // Store `port` reference
             this.connectedChannels[port.name] = port;
+
+            // Emit "connected" event
+            super.emit('channel.connected', port.name);
 
             Log.debug('[%s] Channel connected: %o', this.id, port.name);
         };
