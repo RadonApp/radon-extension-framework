@@ -1,5 +1,5 @@
 import Identifier from 'eon.extension.framework/models/identifier';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, setDefault} from 'eon.extension.framework/core/helpers';
 
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
@@ -9,8 +9,8 @@ export default class MovieIdentifier extends Identifier {
     constructor(keyType, key, title, year) {
         super(keyType, key);
 
-        this.title = title || null;
-        this.year = year || null;
+        this.title = setDefault(title);
+        this.year = setDefault(year);
     }
 
     static parse(data) {

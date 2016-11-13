@@ -1,12 +1,13 @@
 import {dumpModel} from 'eon.extension.framework/models/core/helpers';
+import {setDefault} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
 
 
 export class Metadata {
     constructor(source, id, content, media, options) {
-        this.source = source || null;
-        this.id = id || null;
+        this.source = setDefault(source);
+        this.id = setDefault(id);
 
         // Set default options
         options = merge({
@@ -18,8 +19,8 @@ export class Metadata {
 
         // Content type
         this.type = {
-            content: content || null,
-            media: media || null
+            content: setDefault(content),
+            media: setDefault(media)
         };
     }
 

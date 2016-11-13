@@ -64,6 +64,18 @@ export function round(value, digits) {
     return +(Math.round(value + 'e+' + digits) + 'e-' + digits);
 }
 
+export function setDefault(value, defaultValue) {
+    if(!isDefined(value)) {
+        if(!isDefined(defaultValue)) {
+            return null;
+        }
+
+        return defaultValue;
+    }
+
+    return value;
+}
+
 export function toCssUrl(url) {
     if(!isDefined(url)) {
         return null;

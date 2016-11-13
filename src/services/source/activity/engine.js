@@ -1,6 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Log from 'eon.extension.framework/core/logger';
 import Session, {SessionState} from 'eon.extension.framework/models/session';
+import EpisodeIdentifier from 'eon.extension.framework/models/video/identifier/episode';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
@@ -69,6 +70,14 @@ export default class ActivityEngine {
         if(isDefined(this._currentSession)) {
             Log.debug('Stopping existing session: %o', this._currentSession);
             this.stop();
+        }
+
+        // Ignore special episodes (and bonus content)
+        if(identifier instanceof EpisodeIdentifier && (identifier.number === 0 || identifier.season.number === 0)) {
+            Log.info('Ignoring special episode: %o', identifier);
+            this._currentSession = null;
+
+            return Promise.resolve();
         }
 
         // Create session

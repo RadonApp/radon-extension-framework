@@ -1,5 +1,5 @@
 import Identifier from 'eon.extension.framework/models/identifier';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, setDefault} from 'eon.extension.framework/core/helpers';
 
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
@@ -9,7 +9,7 @@ export default class SeasonIdentifier extends Identifier {
     constructor(keyType, key, number) {
         super(keyType, key);
 
-        this.number = number || null;
+        this.number = setDefault(number);
     }
 
     static parse(data) {

@@ -1,6 +1,6 @@
 import Identifier from 'eon.extension.framework/models/identifier';
 import {dumpModel} from 'eon.extension.framework/models/core/helpers';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, setDefault} from 'eon.extension.framework/core/helpers';
 
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
@@ -10,10 +10,10 @@ export default class TrackIdentifier extends Identifier {
     constructor(keyType, key, artist, album, title) {
         super(keyType, key);
 
-        this.artist = artist || null;
-        this.album = album || null;
+        this.artist = setDefault(artist);
+        this.album = setDefault(album);
 
-        this.title = title || null;
+        this.title = setDefault(title);
     }
 
     static parse(data) {

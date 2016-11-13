@@ -1,6 +1,6 @@
 import Identifier from 'eon.extension.framework/models/identifier';
 import {dumpModel} from 'eon.extension.framework/models/core/helpers';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, setDefault} from 'eon.extension.framework/core/helpers';
 
 import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
@@ -10,11 +10,11 @@ export default class EpisodeIdentifier extends Identifier {
     constructor(keyType, key, show, season, number, title) {
         super(keyType, key);
 
-        this.show = show || null;
-        this.season = season || null;
+        this.show = setDefault(show);
+        this.season = setDefault(season);
 
-        this.number = number || null;
-        this.title = title || null;
+        this.number = setDefault(number);
+        this.title = setDefault(title);
     }
 
     static parse(data) {
