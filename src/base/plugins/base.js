@@ -76,6 +76,21 @@ export default class Plugin {
         }, this.manifest['permissions']);
     }
 
+    get release() {
+        // Retrieve release details from manifest
+        let release = {};
+
+        if(isDefined(this.manifest) && isDefined(this.manifest.release)) {
+            release = this.manifest.release;
+        }
+
+        // Set release defaults
+        return merge({
+            date: null,
+            version: null
+        }, release);
+    }
+
     // endregion
 
     // region Public methods
