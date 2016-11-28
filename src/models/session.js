@@ -132,11 +132,22 @@ export default class Session {
             return this._progress;
         }
 
-        if(this.time === null || this.metadata === null || this.metadata.duration === null) {
+        // Ensure session time has been defined
+        if(!isDefined(this.time)) {
             return null;
         }
 
-        return round((this.time / this.metadata.duration) * 100, 2);
+        // Retrieve session duration
+        let duration = this.duration;
+
+        if(!isDefined(duration)) {
+            return null;
+        }
+
+        // Calculate session progress
+        return round((this.time / duration) * 100, 2);
+    }
+
     }
 
     dump() {
