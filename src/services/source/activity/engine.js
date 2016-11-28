@@ -16,7 +16,9 @@ export default class ActivityEngine {
         this.options = merge({
             progressInterval: 5000,
 
+            getDuration: null,
             getMetadata: null,
+
             isEnabled: null
         }, options);
 
@@ -80,12 +82,24 @@ export default class ActivityEngine {
             return Promise.resolve();
         }
 
+        // Retrieve actual player duration
+        let duration = null;
+
+        if(isDefined(this.options.getDuration)) {
+            duration = this.options.getDuration();
+        } else {
+            Log.warn('No "getDuration" method has been defined');
+        }
+
         // Create session
         return Promise.resolve(this.options.getMetadata(identifier)).then((metadata) => {
             // Construct session
             this._currentSession = Session.create(this.plugin, {
                 // Channel identifier
                 channelId: this.bus.id,
+
+                // Video properties
+                duration: duration,
 
                 // Children
                 identifier: identifier,

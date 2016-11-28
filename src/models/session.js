@@ -43,7 +43,9 @@ export default class Session {
             // Session status
             state: SessionState.created,
 
+            duration: null,
             time: null,
+
             progress: null,
 
             // Timing samples
@@ -64,7 +66,9 @@ export default class Session {
         // Session status
         this.state = options.state;
 
+        this._duration = options.duration;
         this._time = options.time;
+
         this._progress = options.progress;
 
         // Timing samples
@@ -97,6 +101,18 @@ export default class Session {
 
         // Construct session
         return new Session(data.source, id, data);
+    }
+
+    get duration() {
+        if(isDefined(this._duration)) {
+            return this._duration;
+        }
+
+        if(isDefined(this.metadata) && isDefined(this.metadata.duration)) {
+            return this.metadata.duration;
+        }
+
+        return null;
     }
 
     get time() {
@@ -134,7 +150,9 @@ export default class Session {
             // Session status
             'state': this.state,
 
+            'duration': this.duration,
             'time': this.time,
+
             'progress': this.progress,
 
             // Stalled status
