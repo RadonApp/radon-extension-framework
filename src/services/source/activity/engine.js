@@ -156,7 +156,7 @@ export default class ActivityEngine {
         Log.trace('Player closed (identifier: %o)', identifier);
 
         if(!isDefined(this._currentSession) || !isDefined(this._currentSession.identifier)) {
-            Log.debug('No active session, ignoring close action');
+            Log.trace('No active session, ignoring close action');
             return false;
         }
 
@@ -182,7 +182,7 @@ export default class ActivityEngine {
         }
 
         if(this._currentSession === null) {
-            Log.debug('No active session, ignoring start action');
+            Log.trace('No active session, ignoring start action');
             return false;
         }
 
@@ -248,7 +248,7 @@ export default class ActivityEngine {
         }
 
         if(this._currentSession === null) {
-            Log.debug('No active session, ignoring progress action');
+            Log.trace('No active session, ignoring progress action');
             return false;
         }
 
@@ -310,7 +310,7 @@ export default class ActivityEngine {
         }
 
         if(this._currentSession === null) {
-            Log.debug('No active session, ignoring seek action');
+            Log.trace('No active session, ignoring seek action');
             return false;
         }
 
@@ -336,7 +336,7 @@ export default class ActivityEngine {
         Log.trace('Video state changed: %o -> %o', previous, current);
 
         if(this._currentSession === null) {
-            Log.debug('No active session, ignoring state change action');
+            Log.trace('No active session, ignoring state change action');
             return false;
         }
 
@@ -368,7 +368,7 @@ export default class ActivityEngine {
         }
 
         if(this._currentSession === null) {
-            Log.debug('No active session, ignoring pause action');
+            Log.trace('No active session, ignoring pause action');
             return false;
         }
 
@@ -413,7 +413,7 @@ export default class ActivityEngine {
 
         // Ensure session exists
         if(this._currentSession === null) {
-            Log.debug('No active session, ignoring stop action');
+            Log.trace('No active session, ignoring stop action');
             return false;
         }
 
