@@ -109,8 +109,10 @@ export default class ActivityEngine {
                 state: SessionState.created
             });
 
-            // Emit "created" event
-            this.bus.emit('activity.created', this._currentSession.dump());
+            // Emit "created" event (if session is valid)
+            if(this._currentSession.valid) {
+                this.bus.emit('activity.created', this._currentSession.dump());
+            }
         });
     }
 
@@ -119,8 +121,20 @@ export default class ActivityEngine {
     open(identifier) {
         Log.trace('Player opened (identifier: %o)', identifier);
 
-        // Create session
-        return this.create(identifier);
+        // Ignore stop action if there is currently no active session
+        if(!isDefined(this._currentSession) || !isDefined(this._currentSession.identifier)) {
+            Log.trace('No active session, ignoring open action');
+            return false;
+        }
+
+        // Ignore stop action if the identifier matches the current session
+        if(this._currentSession.valid && this._currentSession.identifier.matches(identifier)) {
+            Log.debug('Session identifier matches, ignoring close action');
+            return false;
+        }
+
+        // Trigger stop action
+        return this.stop();
     }
 
     close(identifier) {
@@ -197,8 +211,11 @@ export default class ActivityEngine {
         // Update state
         this._currentSession.state = SessionState.playing;
 
-        // Emit "started" event
-        this.bus.emit('activity.started', this._currentSession.dump());
+        // Emit "started" event (if session is valid)
+        if(this._currentSession.valid) {
+            this.bus.emit('activity.started', this._currentSession.dump());
+        }
+
         return true;
     }
 
@@ -254,8 +271,10 @@ export default class ActivityEngine {
             return this.stop();
         }
 
-        // Emit "progress" event
-        this.bus.emit('activity.progress', this._currentSession.dump());
+        // Emit "progress" event (if session is valid)
+        if(this._currentSession.valid) {
+            this.bus.emit('activity.progress', this._currentSession.dump());
+        }
 
         // Update progress emitted timestamp
         this._progressEmittedAt = Date.now();
@@ -290,8 +309,11 @@ export default class ActivityEngine {
             return this.start();
         }
 
-        // Emit "seeked" event
-        this.bus.emit('activity.seeked', this._currentSession.dump());
+        // Emit "seeked" event (if session is valid)
+        if(this._currentSession.valid) {
+            this.bus.emit('activity.seeked', this._currentSession.dump());
+        }
+
         return true;
     }
 
@@ -362,8 +384,10 @@ export default class ActivityEngine {
             // Update state
             this._currentSession.state = SessionState.paused;
 
-            // Emit event
-            this.bus.emit('activity.paused', this._currentSession.dump());
+            // Emit event (if session is valid)
+            if(this._currentSession.valid) {
+                this.bus.emit('activity.paused', this._currentSession.dump());
+            }
         }, 8000);
 
         return true;
@@ -400,8 +424,11 @@ export default class ActivityEngine {
         // Update state
         this._currentSession.state = SessionState.ended;
 
-        // Emit event
-        this.bus.emit('activity.stopped', this._currentSession.dump());
+        // Emit event (if session is valid)
+        if(this._currentSession.valid) {
+            this.bus.emit('activity.stopped', this._currentSession.dump());
+        }
+
         return true;
     }
 
