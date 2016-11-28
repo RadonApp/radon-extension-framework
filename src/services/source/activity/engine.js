@@ -39,6 +39,7 @@ export default class ActivityEngine {
 
     bind(emitter) {
         emitter.on('created',   this.create.bind(this));
+        emitter.on('loaded',    this.load.bind(this));
 
         // Player
         emitter.on('opened',    this.open.bind(this));
@@ -114,6 +115,20 @@ export default class ActivityEngine {
                 this.bus.emit('activity.created', this._currentSession.dump());
             }
         });
+    }
+
+    load(identifier) {
+        // Reset state if the current session isn't valid
+        if(!this._currentSession.valid) {
+            this._currentSession = null;
+        }
+
+        // Ensure session has been created
+        if(!isDefined(this._currentSession)) {
+            return this.create(identifier);
+        }
+
+        return false;
     }
 
     // region Player
