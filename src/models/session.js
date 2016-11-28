@@ -1,4 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import Log from 'eon.extension.framework/core/logger';
 import Plugin from 'eon.extension.framework/models/plugin';
 import {dumpModel} from 'eon.extension.framework/models/core/helpers';
 import {isDefined, round} from 'eon.extension.framework/core/helpers';
@@ -17,6 +18,8 @@ export const SessionState = {
 
     ended:      'ended'
 };
+
+export const DurationTolerance = 5000;
 
 export default class Session {
     constructor(source, id, options) {
@@ -70,6 +73,7 @@ export default class Session {
         this._time = options.time;
 
         this._progress = options.progress;
+        this._valid = true;
 
         // Timing samples
         this.samples = options.samples;
@@ -148,6 +152,51 @@ export default class Session {
         return round((this.time / duration) * 100, 2);
     }
 
+    get valid() {
+        // Check if session has already been ignored
+        if(!this._valid) {
+            return false;
+        }
+
+        // Validate session
+        if(!this.validate()) {
+            this._valid = false;
+            return false;
+        }
+
+        return true;
+    }
+
+    validate() {
+        // Ensure metadata has been found
+        if(!isDefined(this.metadata)) {
+            return false;
+        }
+
+        // Validate session duration
+        let duration = this.duration;
+
+        if(!isDefined(duration)) {
+            return false;
+        }
+
+        if(isDefined(this.metadata.duration)) {
+            // Check duration delta is within the tolerance
+            let delta = Math.abs(this.metadata.duration - this.duration);
+
+            if(delta > DurationTolerance) {
+                Log.info(
+                    'Ignoring session %o, duration delta (%o) exceeds tolerance (%o)',
+                    this.id,
+                    delta,
+                    DurationTolerance
+                );
+                return false;
+            }
+        }
+
+        // Session is valid
+        return true;
     }
 
     dump() {
