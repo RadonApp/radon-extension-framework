@@ -19,7 +19,7 @@ export const SessionState = {
     ended:      'ended'
 };
 
-export const DurationTolerance = 30 * 1000;
+export const DurationTolerance = 120 * 1000;
 
 export default class Session {
     constructor(source, id, options) {
