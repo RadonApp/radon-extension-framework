@@ -119,7 +119,7 @@ export default class ActivityEngine {
 
     load(identifier) {
         // Reset state if the current session isn't valid
-        if(!this._currentSession.valid) {
+        if(this._currentSession && !this._currentSession.valid) {
             this._currentSession = null;
         }
 
