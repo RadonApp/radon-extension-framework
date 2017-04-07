@@ -20,7 +20,7 @@ export default class PopupCallbackHandler {
     // region Private methods
 
     _getCallbackId() {
-        if(window.name !== '') {
+        if(window.name.indexOf('eon.popup/') === 0) {
             return Promise.resolve(window.name);
         }
 
