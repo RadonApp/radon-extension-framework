@@ -45,7 +45,7 @@ export default class ActivityEngine {
         emitter.on('opened',    this.open.bind(this));
         emitter.on('closed',    this.close.bind(this));
 
-        // Video
+        // Media
         emitter.on('started',   this.start.bind(this));
         emitter.on('progress',  this.progress.bind(this));
         emitter.on('seeked',    this.seek.bind(this));
@@ -99,7 +99,7 @@ export default class ActivityEngine {
                 // Channel identifier
                 channelId: this.bus.id,
 
-                // Video properties
+                // Media properties
                 duration: duration,
 
                 // Children
@@ -171,10 +171,10 @@ export default class ActivityEngine {
 
     // endregion
 
-    // region Video
+    // region Media
 
     start() {
-        Log.trace('Video started');
+        Log.trace('Media started');
 
         if(!this.enabled) {
             Log.trace('Activity engine is not enabled, ignoring start action');
@@ -235,7 +235,7 @@ export default class ActivityEngine {
     }
 
     progress(time, duration) {
-        Log.trace('Video progress (time: %o, duration: %o)', time, duration);
+        Log.trace('Media progress (time: %o, duration: %o)', time, duration);
 
         if(!this.enabled) {
             Log.trace('Activity engine is not enabled, ignoring progress action');
@@ -262,6 +262,9 @@ export default class ActivityEngine {
         // Add new time sample
         this._currentSession.samples.push(time);
 
+        // Update duration
+        this._currentSession.updateDuration(duration);
+
         // Trigger state change
         if(state !== null && this._currentSession.state !== state) {
             return this.stateChange(this._currentSession.state, state);
@@ -282,7 +285,7 @@ export default class ActivityEngine {
 
         // Stop session if we have reached 100% progress
         if(this._currentSession.progress >= 100) {
-            Log.info('Video has reached 100% progress, stopping the session');
+            Log.info('Media has reached 100% progress, stopping the session');
             return this.stop();
         }
 
@@ -297,7 +300,7 @@ export default class ActivityEngine {
     }
 
     seek(time, duration) {
-        Log.trace('Video seeked (time: %o, duration: %o)', time, duration);
+        Log.trace('Media seeked (time: %o, duration: %o)', time, duration);
 
         if(!this.enabled) {
             Log.trace('Activity engine is not enabled, ignoring seek action');
@@ -333,7 +336,7 @@ export default class ActivityEngine {
     }
 
     stateChange(previous, current) {
-        Log.trace('Video state changed: %o -> %o', previous, current);
+        Log.trace('Media state changed: %o -> %o', previous, current);
 
         if(this._currentSession === null) {
             Log.trace('No active session, ignoring state change action');
@@ -360,7 +363,7 @@ export default class ActivityEngine {
     }
 
     pause() {
-        Log.trace('Video paused');
+        Log.trace('Media paused');
 
         if(!this.enabled) {
             Log.trace('Activity engine is not enabled, ignoring pause action');
@@ -377,12 +380,12 @@ export default class ActivityEngine {
             return false;
         }
 
-        // Ensure video isn't pausing
+        // Ensure media isn't pausing
         if(this._currentSession.state === SessionState.pausing) {
             return false;
         }
 
-        // Ensure video isn't already paused
+        // Ensure media isn't already paused
         if(this._currentSession.state === SessionState.paused) {
             return false;
         }
@@ -409,7 +412,7 @@ export default class ActivityEngine {
     }
 
     stop() {
-        Log.trace('Video stopped');
+        Log.trace('Media stopped');
 
         // Ensure session exists
         if(this._currentSession === null) {

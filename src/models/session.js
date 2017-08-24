@@ -69,7 +69,7 @@ export default class Session {
         // Session status
         this.state = options.state;
 
-        this._duration = options.duration;
+        this._duration = options.duration || null;
         this._time = options.time;
 
         this._progress = options.progress;
@@ -167,9 +167,38 @@ export default class Session {
         return true;
     }
 
+    updateDuration(duration) {
+        if(!isDefined(duration) || duration <= 0) {
+            return;
+        }
+
+        // Update session + metadata duration
+        let updated = false;
+
+        if(!isDefined(this.metadata.duration)) {
+            this.metadata.duration = duration;
+
+            Log.debug('Updated metadata duration to %o', duration);
+            updated = true;
+        }
+
+        if(!isDefined(this.duration)) {
+            this._duration = duration;
+
+            Log.debug('Updated session duration to %o', duration);
+            updated = true;
+        }
+
+        // Reset session validation
+        if(updated) {
+            this._valid = true;
+        }
+    }
+
     validate() {
         // Ensure metadata has been found
         if(!isDefined(this.metadata)) {
+            Log.debug('Session has no metadata');
             return false;
         }
 
@@ -177,6 +206,7 @@ export default class Session {
         let duration = this.duration;
 
         if(!isDefined(duration)) {
+            Log.debug('Session has no duration defined');
             return false;
         }
 
@@ -186,10 +216,12 @@ export default class Session {
 
             if(delta > DurationTolerance) {
                 Log.info(
-                    'Ignoring session %o, duration delta (%o) exceeds tolerance (%o)',
+                    'Ignoring session %o, duration delta (%o) exceeds tolerance (%o) [s: %o, m: %o]',
                     this.id,
                     delta,
-                    DurationTolerance
+                    DurationTolerance,
+                    this.duration,
+                    this.metadata.duration
                 );
                 return false;
             }

@@ -47,7 +47,7 @@ export class Media extends Metadata {
         }, options || {});
 
         // Metadata
-        this.duration = options.duration;
+        this.duration = options.duration || null;
     }
 
     dump() {
