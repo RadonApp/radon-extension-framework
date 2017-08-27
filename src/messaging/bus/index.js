@@ -39,6 +39,9 @@ export default class MessagingBus extends EventEmitter {
             extensionId: null
         }, options);
 
+        // Create event handler proxies
+        this._onConnectHandler = (port) => this.onConnection(port);
+
         // Automatically initialize based on current context
         if(this._options.context === ContextTypes.Background) {
             this.listen();
@@ -107,6 +110,9 @@ export default class MessagingBus extends EventEmitter {
             return true;
         }
 
+        // Remove event listeners
+        port.removeAllListeners();
+
         // Disconnect channel
         try {
             port.disconnect();
@@ -144,11 +150,22 @@ export default class MessagingBus extends EventEmitter {
 
     listen() {
         // Bind to runtime connection events
-        Messaging.on('connect', (port) =>
-            this.onConnection(port)
-        );
+        Messaging.on('connect', this._onConnectHandler);
 
         Log.debug('[%s] Waiting for connections...', this.id);
+    }
+
+    close() {
+        // Remove event listeners
+        this.removeAllListeners();
+
+        // Remove connection event listener
+        Messaging.removeListener('connect', this._onConnectHandler);
+
+        // Disconnect channels
+        this.disconnectAll();
+
+        Log.debug('[%s] Closed', this.id);
     }
 
     // endregion
