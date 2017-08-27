@@ -231,7 +231,7 @@ export default Logger.create('eon.extension', () => new Promise((resolve) => {
 
     // Try retrieve current log level
     preferences.context('eon.extension')
-        .getString('general.developer.log_level')
+        .getString('general.debugging.log_level')
         .then(resolve, (err) => {
             console.debug('Unable to retrieve preference value:', err);
             resolve(null);
