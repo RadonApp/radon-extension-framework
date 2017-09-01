@@ -38,7 +38,7 @@ export default class ScrobbleService extends Service {
 
             Log.warn('Invalid activity event received: %o', event);
         } catch(e) {
-            Log.error('Unable to process session event %o:', event, e);
+            Log.error('Unable to process session event %o: %s', event, e.message, e);
         }
 
         return false;
