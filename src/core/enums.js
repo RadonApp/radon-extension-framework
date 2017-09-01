@@ -1,18 +1,23 @@
-export var ContentTypes = {
-    Video: 'video',
-    Music: 'music'
-};
-
 export var MediaTypes = {
-    Video: {
-        Movie: ContentTypes.Video + ':movie',
-        Show: ContentTypes.Video + ':show',
-        Season: ContentTypes.Video + ':season',
-        Episode: ContentTypes.Video + ':episode'
-    },
+    //
+    // Audio
+    //
+
     Music: {
-        Artist: ContentTypes.Music + ':artist',
-        Album: ContentTypes.Music + ':album',
-        Track: ContentTypes.Music + ':track'
+        Artist: 'music/artist',
+        Album: 'music/album',
+        Track: 'music/track'
+    },
+
+    //
+    // Video
+    //
+
+    Movie: 'movie',
+
+    Television: {
+        Show: 'television/show',
+        Season: 'television/season',
+        Episode: 'television/episode'
     }
 };

@@ -1,10 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import Log from 'eon.extension.framework/core/logger';
-import Plugin from 'eon.extension.framework/models/plugin';
-import {dumpModel} from 'eon.extension.framework/models/core/helpers';
+import Item from 'eon.extension.framework/models/item';
 import {isDefined, round} from 'eon.extension.framework/core/helpers';
 
-import merge from 'lodash-es/merge';
 import uuid from 'uuid';
 
 
@@ -19,242 +16,160 @@ export const SessionState = {
     ended:      'ended'
 };
 
-export const DurationTolerance = 120 * 1000;
-
 export default class Session {
-    constructor(source, id, options) {
-        // Validate parameters
-        if(!isDefined(source)) {
-            throw new Error('Invalid value provided for the "source" parameter');
-        }
-
-        if(!isDefined(id)) {
-            throw new Error('Invalid value provided for the "key" parameter');
-        }
-
-        this.source = source;
+    constructor(id, item, options) {
         this.id = id;
+        this.item = item || null;
 
-        // Set default options
-        options = merge({
-            channelId: null,
+        // Define optional properties
+        options = options || {};
 
-            // Children
-            identifier: null,
-            metadata: null,
+        this.channelId = options.channelId || null;
 
-            // Session status
-            state: SessionState.created,
+        this.state = options.state || SessionState.created;
+        this.time = options.time || null;
 
-            duration: null,
-            time: null,
+        this.createdAt = options.createdAt || null;
+        this.updatedAt = options.updatedAt || null;
+        this.endedAt = options.endedAt || null;
 
-            progress: null,
-
-            // Timing samples
-            samples: [],
-
-            // Stalled status
-            stalledAt: null,
-            stalledPreviousState: null
-        }, options || {});
-
-        // Channel identifier
-        this.channelId = options.channelId;
-
-        // Children
-        this.identifier = options.identifier;
-        this.metadata = options.metadata;
-
-        // Session status
-        this.state = options.state;
-
-        this._duration = options.duration || null;
-        this._time = options.time;
-
-        this._progress = options.progress;
-        this._valid = true;
-
-        // Timing samples
-        this.samples = options.samples;
-
-        // Stalled status
-        this.stalledAt = options.stalledAt;
-        this.stalledPreviousState = options.stalledPreviousState;
-    }
-
-    static create(plugin, options) {
-        return new Session(
-            Plugin.fromPlugin(plugin),
-            uuid.v4(),
-            options
-        );
-    }
-
-    static parse(data) {
-        if(!isDefined(data)) {
-            return null;
-        }
-
-        // Retrieve identifier
-        let id = data.id || data._id;
-
-        if(!isDefined(id)) {
-            return null;
-        }
-
-        // Construct session
-        return new Session(data.source, id, data);
-    }
-
-    get duration() {
-        if(isDefined(this._duration)) {
-            return this._duration;
-        }
-
-        if(isDefined(this.metadata) && isDefined(this.metadata.duration)) {
-            return this.metadata.duration;
-        }
-
-        return null;
-    }
-
-    get time() {
-        if(isDefined(this._time)) {
-            return this._time;
-        }
-
-        if(this.samples.length < 1) {
-            return null;
-        }
-
-        return this.samples[this.samples.length - 1];
+        this.stalledAt = options.stalledAt || null;
+        this.stalledPreviousState = options.stalledPreviousState || null;
     }
 
     get progress() {
-        if(isDefined(this._progress)) {
-            return this._progress;
-        }
-
-        // Ensure session time has been defined
         if(!isDefined(this.time)) {
             return null;
         }
 
-        // Retrieve session duration
-        let duration = this.duration;
-
-        if(!isDefined(duration)) {
+        if(!isDefined(this.item) || !isDefined(this.item.duration)) {
             return null;
         }
 
         // Calculate session progress
-        return round((this.time / duration) * 100, 2);
+        return round((this.time / this.item.duration) * 100, 2);
     }
 
     get valid() {
-        // Check if session has already been ignored
-        if(!this._valid) {
-            return false;
-        }
-
-        // Validate session
-        if(!this.validate()) {
-            this._valid = false;
+        if(!isDefined(this.item) || !isDefined(this.item.duration)) {
             return false;
         }
 
         return true;
     }
 
-    updateDuration(duration) {
-        if(!isDefined(duration) || duration <= 0) {
-            return;
+    toDocument() {
+        let document = {
+            '_id': this.id
+        };
+
+        if(isDefined(this.item)) {
+            document['item'] = this.item.toDocument({
+                keys: ['_id', 'type']
+            });
         }
 
-        // Update session + metadata duration
-        let updated = false;
-
-        if(!isDefined(this.metadata.duration)) {
-            this.metadata.duration = duration;
-
-            Log.debug('Updated metadata duration to %o', duration);
-            updated = true;
+        if(isDefined(this.channelId)) {
+            document['channelId'] = this.channelId;
         }
 
-        if(!isDefined(this.duration)) {
-            this._duration = duration;
-
-            Log.debug('Updated session duration to %o', duration);
-            updated = true;
+        if(isDefined(this.state)) {
+            document['state'] = this.state;
         }
 
-        // Reset session validation
-        if(updated) {
-            this._valid = true;
+        if(isDefined(this.time)) {
+            document['time'] = this.time;
         }
+
+        if(isDefined(this.createdAt)) {
+            document['createdAt'] = this.createdAt;
+        }
+
+        if(isDefined(this.updatedAt)) {
+            document['updatedAt'] = this.updatedAt;
+        }
+
+        if(isDefined(this.endedAt)) {
+            document['endedAt'] = this.endedAt;
+        }
+
+        if(isDefined(this.stalledAt)) {
+            document['stalledAt'] = this.stalledAt;
+        }
+
+        if(isDefined(this.stalledPreviousState)) {
+            document['stalledPreviousState'] = this.stalledPreviousState;
+        }
+
+        return document;
     }
 
-    validate() {
-        // Ensure metadata has been found
-        if(!isDefined(this.metadata)) {
-            Log.debug('Session has no metadata');
-            return false;
-        }
-
-        // Validate session duration
-        let duration = this.duration;
-
-        if(!isDefined(duration)) {
-            Log.debug('Session has no duration defined');
-            return false;
-        }
-
-        if(isDefined(this.metadata.duration)) {
-            // Check duration delta is within the tolerance
-            let delta = Math.abs(this.metadata.duration - this.duration);
-
-            if(delta > DurationTolerance) {
-                Log.info(
-                    'Ignoring session %o, duration delta (%o) exceeds tolerance (%o) [s: %o, m: %o]',
-                    this.id,
-                    delta,
-                    DurationTolerance,
-                    this.duration,
-                    this.metadata.duration
-                );
-                return false;
-            }
-        }
-
-        // Session is valid
-        return true;
-    }
-
-    dump() {
-        return {
-            '_id': this.id,
-            '#type': 'session',
-
-            // Channel identifier
+    toPlainObject(options) {
+        let document = {
+            'id': this.id,
             'channelId': this.channelId,
 
-            // Session status
             'state': this.state,
-
-            'duration': this.duration,
             'time': this.time,
 
-            'progress': this.progress,
+            'createdAt': this.createdAt,
+            'updatedAt': this.updatedAt,
+            'endedAt': this.endedAt,
 
-            // Stalled status
             'stalledAt': this.stalledAt,
             'stalledPreviousState': this.stalledPreviousState,
 
-            // Children
-            '~source': dumpModel(this.source),
-            '~identifier': dumpModel(this.identifier),
-            '~metadata': dumpModel(this.metadata)
+            'item': null
         };
+
+        if(isDefined(this.item)) {
+            document['item'] = this.item.toPlainObject();
+        }
+
+        return document;
+    }
+
+    static create(item, options) {
+        return new Session(uuid.v4(), item, options);
+    }
+
+    static fromDocument(document) {
+        if(!isDefined(document)) {
+            return null;
+        }
+
+        return new Session(document['_id'], Item.fromDocument(document['item']), {
+            'channelId': document['channelId'],
+
+            'state': document['state'],
+            'time': document['time'],
+
+            'createdAt': document['createdAt'],
+            'updatedAt': document['updatedAt'],
+            'endedAt': document['endedAt'],
+
+            'stalledAt': document['stalledAt'],
+            'stalledPreviousState': document['stalledPreviousState']
+        });
+    }
+
+    static fromPlainObject(item) {
+        if(!isDefined(item)) {
+            return null;
+        }
+
+        return new Session(item['id'], Item.fromPlainObject(item['item']), {
+            'channelId': item['channelId'],
+
+            'state': item['state'],
+            'time': item['time'],
+
+            'createdAt': item['createdAt'],
+            'updatedAt': item['updatedAt'],
+            'endedAt': item['endedAt'],
+
+            'stalledAt': item['stalledAt'],
+            'stalledPreviousState': item['stalledPreviousState']
+        });
     }
 }
