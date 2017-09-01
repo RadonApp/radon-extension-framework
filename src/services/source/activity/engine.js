@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Log from 'eon.extension.framework/core/logger';
 import Session, {SessionState} from 'eon.extension.framework/models/session';
-import {Episode} from 'eon.extension.framework/models/item/television';
+// import {Episode} from 'eon.extension.framework/models/item/television';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
@@ -77,12 +77,12 @@ export default class ActivityEngine {
         }
 
         // Ignore special episodes (and bonus content)
-        if(item instanceof Episode && (item.number === 0 || item.season.number === 0)) {
-            Log.info('Ignoring special episode: %o', item);
-            this._currentSession = null;
-
-            return Promise.resolve();
-        }
+        // if(item instanceof Episode && (item.number === 0 || item.season.number === 0)) {
+        //     Log.info('Ignoring special episode: %o', item);
+        //     this._currentSession = null;
+        //
+        //     return Promise.resolve();
+        // }
 
         // Retrieve metadata, and create session
         return Promise.resolve(() => {
