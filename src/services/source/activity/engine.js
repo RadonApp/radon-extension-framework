@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Log from 'eon.extension.framework/core/logger';
 import Session, {SessionState} from 'eon.extension.framework/models/session';
-import EpisodeIdentifier from 'eon.extension.framework/models/video/identifier/episode';
+import {Episode} from 'eon.extension.framework/models/item/television';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import merge from 'lodash-es/merge';
@@ -12,12 +12,20 @@ export default class ActivityEngine {
         this.plugin = plugin;
         this.bus = bus;
 
+        // Bind events
+        this.createdHandler = (session) => this.created(session);
+        this.updatedHandler = (session) => this.updated(session);
+
+        this.bus.on('session.created', this.createdHandler);
+        this.bus.on('session.updated', this.updatedHandler);
+
         // Parse options, and set defaults
         this.options = merge({
+            metadataRefreshInterval: 7 * 24 * 60 * 60 * 1000,  // 7 days
             progressInterval: 5000,
 
-            getDuration: null,
             getMetadata: null,
+            fetchMetadata: null,
 
             isEnabled: null
         }, options);
@@ -53,20 +61,13 @@ export default class ActivityEngine {
         emitter.on('stopped',   this.stop.bind(this));
     }
 
-    create(identifier) {
-        Log.trace('Creating session (identifier: %o)', identifier);
+    create(item) {
+        Log.trace('Creating session (item: %o)', item);
 
         // Check if session has already been created
-        if(isDefined(this._currentSession) && this._currentSession.identifier.matches(identifier)) {
-            Log.debug('Session already exists for %o, triggering start action instead', identifier);
+        if(isDefined(this._currentSession) && this._currentSession.item.matches(item)) {
+            Log.debug('Session already exists for %o, triggering start action instead', item);
             return this.start();
-        }
-
-        // Ensure callback has been defined
-        if(!isDefined(this.options.getMetadata)) {
-            return Promise.reject(new Error(
-                'Unable to create session, "getMetadata" callback hasn\'t been defined'
-            ));
         }
 
         // Stop existing session
@@ -76,48 +77,67 @@ export default class ActivityEngine {
         }
 
         // Ignore special episodes (and bonus content)
-        if(identifier instanceof EpisodeIdentifier && (identifier.number === 0 || identifier.season.number === 0)) {
-            Log.info('Ignoring special episode: %o', identifier);
+        if(item instanceof Episode && (item.number === 0 || item.season.number === 0)) {
+            Log.info('Ignoring special episode: %o', item);
             this._currentSession = null;
 
             return Promise.resolve();
         }
 
-        // Retrieve actual player duration
-        let duration = null;
+        // Retrieve metadata, and create session
+        return Promise.resolve(() => {
+            if(!isDefined(this.options.getMetadata)) {
+                return true;
+            }
 
-        if(isDefined(this.options.getDuration)) {
-            duration = this.options.getDuration();
-        } else {
-            Log.warn('No "getDuration" method has been defined');
-        }
-
-        // Create session
-        return Promise.resolve(this.options.getMetadata(identifier)).then((metadata) => {
-            // Construct session
-            this._currentSession = Session.create(this.plugin, {
-                // Channel identifier
-                channelId: this.bus.id,
-
-                // Media properties
-                duration: duration,
-
-                // Children
-                identifier: identifier,
-                metadata: metadata,
-
-                // Current state
-                state: SessionState.created
+            return Promise.resolve(this.options.getMetadata(item)).catch((err) => {
+                Log.error('Unable to get metadata: %s', item, err.message, err);
+            });
+        }).then(() => {
+            // Create session
+            this._currentSession = Session.create(item, {
+                channelId: this.bus.id
             });
 
-            // Emit "created" event (if session is valid)
-            if(this._currentSession.valid) {
-                this.bus.emit('activity.created', this._currentSession.dump());
-            }
+            // Emit "created" event
+            this.bus.emit('activity.created', this._currentSession.toPlainObject());
         });
     }
 
-    load(identifier) {
+    created(data) {
+        let session = Session.fromPlainObject(data);
+
+        // Ensure session is valid
+        if(!isDefined(session)) {
+            Log.warn('Unable to parse session: %o', data);
+            return;
+        }
+
+        // Refresh metadata (if expired), and set current session
+        this._refreshItem(session.item).then(() => {
+            Log.debug('Created session: %o', session);
+
+            // Update current session
+            this._currentSession = session;
+        });
+    }
+
+    updated(data) {
+        let session = Session.fromPlainObject(data);
+
+        // Ensure session is valid
+        if(!isDefined(session)) {
+            Log.warn('Unable to parse session: %o', data);
+            return;
+        }
+
+        Log.debug('Updated session: %o', session);
+
+        // Update current session
+        this._currentSession = session;
+    }
+
+    load(item) {
         // Reset state if the current session isn't valid
         if(this._currentSession && !this._currentSession.valid) {
             this._currentSession = null;
@@ -125,7 +145,7 @@ export default class ActivityEngine {
 
         // Ensure session has been created
         if(!isDefined(this._currentSession)) {
-            return this.create(identifier);
+            return this.create(item);
         }
 
         return false;
@@ -133,18 +153,18 @@ export default class ActivityEngine {
 
     // region Player
 
-    open(identifier) {
-        Log.trace('Player opened (identifier: %o)', identifier);
+    open(item) {
+        Log.trace('Player opened (item: %o)', item);
 
         // Ignore stop action if there is currently no active session
-        if(!isDefined(this._currentSession) || !isDefined(this._currentSession.identifier)) {
+        if(!isDefined(this._currentSession) || !isDefined(this._currentSession.item)) {
             Log.trace('No active session, ignoring open action');
             return false;
         }
 
-        // Ignore stop action if the identifier matches the current session
-        if(this._currentSession.valid && this._currentSession.identifier.matches(identifier)) {
-            Log.debug('Session identifier matches, ignoring close action');
+        // Ignore stop action if the item matches the current session
+        if(this._currentSession.valid && this._currentSession.item.matches(item)) {
+            Log.debug('Session item matches, ignoring close action');
             return false;
         }
 
@@ -152,16 +172,16 @@ export default class ActivityEngine {
         return this.stop();
     }
 
-    close(identifier) {
-        Log.trace('Player closed (identifier: %o)', identifier);
+    close(item) {
+        Log.trace('Player closed (item: %o)', item);
 
-        if(!isDefined(this._currentSession) || !isDefined(this._currentSession.identifier)) {
+        if(!isDefined(this._currentSession) || !isDefined(this._currentSession.item)) {
             Log.trace('No active session, ignoring close action');
             return false;
         }
 
-        if(!this._currentSession.identifier.matches(identifier)) {
-            Log.debug('Session identifier doesn\'t match, ignoring close action');
+        if(!this._currentSession.item.matches(item)) {
+            Log.debug('Session item doesn\'t match, ignoring close action');
             return false;
         }
 
@@ -181,7 +201,7 @@ export default class ActivityEngine {
             return false;
         }
 
-        if(this._currentSession === null) {
+        if(!isDefined(this._currentSession)) {
             Log.trace('No active session, ignoring start action');
             return false;
         }
@@ -218,7 +238,7 @@ export default class ActivityEngine {
         }
 
         // Ensure progress is available
-        if(this._currentSession.progress === null) {
+        if(!isDefined(this._currentSession.progress)) {
             Log.trace('No progress available');
             return false;
         }
@@ -228,26 +248,26 @@ export default class ActivityEngine {
 
         // Emit "started" event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.started', this._currentSession.dump());
+            this.bus.emit('activity.started', this._currentSession.toPlainObject());
         }
 
         return true;
     }
 
-    progress(time, duration) {
-        Log.trace('Media progress (time: %o, duration: %o)', time, duration);
+    progress(time) {
+        Log.trace('Media progress (time: %o)', time);
 
         if(!this.enabled) {
             Log.trace('Activity engine is not enabled, ignoring progress action');
             return false;
         }
 
-        if(isNaN(time) || isNaN(duration)) {
+        if(isNaN(time)) {
             Log.info('Ignoring invalid progress action');
             return false;
         }
 
-        if(this._currentSession === null) {
+        if(!isDefined(this._currentSession)) {
             Log.trace('No active session, ignoring progress action');
             return false;
         }
@@ -259,11 +279,8 @@ export default class ActivityEngine {
         // Detect current activity state (based on changes in watched time)
         let state = this._detectState(time);
 
-        // Add new time sample
-        this._currentSession.samples.push(time);
-
-        // Update duration
-        this._currentSession.updateDuration(duration);
+        // Update session
+        this._currentSession.time = time;
 
         // Trigger state change
         if(state !== null && this._currentSession.state !== state) {
@@ -285,13 +302,13 @@ export default class ActivityEngine {
 
         // Stop session if we have reached 100% progress
         if(this._currentSession.progress >= 100) {
-            Log.info('Media has reached 100% progress, stopping the session');
+            Log.debug('Media has reached 100% progress, stopping the session');
             return this.stop();
         }
 
         // Emit "progress" event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.progress', this._currentSession.dump());
+            this.bus.emit('activity.progress', this._currentSession.toPlainObject());
         }
 
         // Update progress emitted timestamp
@@ -299,20 +316,20 @@ export default class ActivityEngine {
         return true;
     }
 
-    seek(time, duration) {
-        Log.trace('Media seeked (time: %o, duration: %o)', time, duration);
+    seek(time) {
+        Log.trace('Media seeked (time: %o)', time);
 
         if(!this.enabled) {
             Log.trace('Activity engine is not enabled, ignoring seek action');
             return false;
         }
 
-        if(isNaN(time) || isNaN(duration)) {
+        if(isNaN(time)) {
             Log.info('Ignoring invalid seek action');
             return false;
         }
 
-        if(this._currentSession === null) {
+        if(!isDefined(this._currentSession)) {
             Log.trace('No active session, ignoring seek action');
             return false;
         }
@@ -329,7 +346,7 @@ export default class ActivityEngine {
 
         // Emit "seeked" event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.seeked', this._currentSession.dump());
+            this.bus.emit('activity.seeked', this._currentSession.toPlainObject());
         }
 
         return true;
@@ -338,7 +355,7 @@ export default class ActivityEngine {
     stateChange(previous, current) {
         Log.trace('Media state changed: %o -> %o', previous, current);
 
-        if(this._currentSession === null) {
+        if(!isDefined(this._currentSession)) {
             Log.trace('No active session, ignoring state change action');
             return false;
         }
@@ -353,6 +370,12 @@ export default class ActivityEngine {
         if((previous === SessionState.playing || previous === SessionState.stalled) &&
             current === SessionState.paused) {
             return this.pause();
+        }
+
+        // Ended
+        if((previous === SessionState.playing || previous === SessionState.paused) &&
+            current === SessionState.ended) {
+            return this.stop();
         }
 
         Log.debug('Unknown state transition: %o -> %o', previous, current);
@@ -370,7 +393,7 @@ export default class ActivityEngine {
             return false;
         }
 
-        if(this._currentSession === null) {
+        if(!isDefined(this._currentSession)) {
             Log.trace('No active session, ignoring pause action');
             return false;
         }
@@ -395,7 +418,7 @@ export default class ActivityEngine {
 
         // Emit "paused" event in 8000ms
         this._pauseTimeout = setTimeout(() => {
-            if(this._currentSession === null || this._currentSession.state !== SessionState.pausing) {
+            if(!isDefined(this._currentSession) || this._currentSession.state !== SessionState.pausing) {
                 return;
             }
 
@@ -404,7 +427,7 @@ export default class ActivityEngine {
 
             // Emit event (if session is valid)
             if(this._currentSession.valid) {
-                this.bus.emit('activity.paused', this._currentSession.dump());
+                this.bus.emit('activity.paused', this._currentSession.toPlainObject());
             }
         }, 8000);
 
@@ -414,37 +437,37 @@ export default class ActivityEngine {
     stop() {
         Log.trace('Media stopped');
 
-        // Ensure session exists
-        if(this._currentSession === null) {
+        if(!isDefined(this._currentSession)) {
             Log.trace('No active session, ignoring stop action');
             return false;
         }
 
+        let state = this._currentSession.state;
+
         // Ensure session hasn't already ended
-        if(this._currentSession.state === SessionState.ended) {
+        if(state === SessionState.ended) {
             Log.debug('Session has already been stopped');
             return false;
         }
 
-        // Retrieve latest state
-        let state = this._currentSession.state;
-
+        // Store previous state when the session has stalled
         if(state === SessionState.stalled) {
             state = this._currentSession.stalledPreviousState;
         }
 
-        // Ensure session was actually started
-        if(state === SessionState.ended || state === SessionState.created) {
+        // Ensure session has been started
+        if(state === SessionState.created) {
             Log.debug('Session hasn\'t been started yet, ignoring stop action');
             return false;
         }
 
         // Update state
         this._currentSession.state = SessionState.ended;
+        this._currentSession.endedAt = Date.now();
 
         // Emit event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.stopped', this._currentSession.dump());
+            this.bus.emit('activity.stopped', this._currentSession.toPlainObject());
         }
 
         return true;
@@ -455,7 +478,7 @@ export default class ActivityEngine {
     // region Private methods
 
     _cancelPause() {
-        if(this._pauseTimeout === null) {
+        if(!isDefined(this._pauseTimeout)) {
             return false;
         }
 
@@ -468,20 +491,22 @@ export default class ActivityEngine {
     }
 
     _clearStalledState() {
-        if(this._currentSession == null) {
+        if(!isDefined(this._currentSession)) {
             return false;
         }
 
         this._currentSession.stalledAt = null;
         this._currentSession.stalledPreviousState = null;
+
         return true;
     }
 
     _detectState(time) {
-        if(this._currentSession.time === null) {
+        if(!isDefined(this._currentSession.time)) {
             return null;
         }
 
+        // Media progress
         if(time > this._currentSession.time) {
             // Clear stalled state
             this._clearStalledState();
@@ -490,8 +515,9 @@ export default class ActivityEngine {
             return SessionState.playing;
         }
 
-        // Ignore the paused and pausing states
-        if(this._currentSession.state === SessionState.paused ||
+        // Ignore created, paused and pausing states
+        if(this._currentSession.state === SessionState.created ||
+           this._currentSession.state === SessionState.paused ||
            this._currentSession.state === SessionState.pausing) {
             return null;
         }
@@ -512,9 +538,31 @@ export default class ActivityEngine {
         return SessionState.stalled;
     }
 
+    _refreshItem(item) {
+        if(!isDefined(this.options.fetchMetadata)) {
+            return Promise.resolve();
+        }
+
+        if(isDefined(item.updatedAt)) {
+            Log.trace('Item updated %d second(s) ago', (Date.now() - item.updatedAt) / 1000);
+        }
+
+        if(!isDefined(item.duration) || item.hasExpired(this.options.metadataRefreshInterval)) {
+            Log.debug('Refreshing item: %o', item);
+
+            // Fetch metadata
+            return Promise.resolve(this.options.fetchMetadata(item))
+                .catch((err) => {
+                    Log.error('Unable to fetch metadata: %s', item, err.message, err);
+                });
+        }
+
+        return Promise.resolve();
+    }
+
     _shouldEmitProgress() {
         return (
-            this._progressEmittedAt === null ||
+            !isDefined(this._progressEmittedAt) ||
             Date.now() - this._progressEmittedAt > this.options.progressInterval
         );
     }
