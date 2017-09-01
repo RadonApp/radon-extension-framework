@@ -48,32 +48,10 @@ export default class Plugin {
             return [];
         }
 
-        // Retrieve content script origins
-        let origins = [].concat.apply([], this.contentScripts.map((contentScript) => {
-            if(!isDefined(contentScript.conditions)) {
-                Log.warn('Content script has no conditions:', contentScript);
-                return [];
-            }
-
-            return contentScript.conditions
-                .map((condition) => {
-                    if(!isDefined(contentScript.conditions)) {
-                        Log.warn('Condition has no pattern:', condition);
-                        return null;
-                    }
-
-                    return condition.pattern;
-                })
-                .filter((pattern) => {
-                    return pattern !== null;
-                });
-        }));
-
-        // Build permissions object, and merge manifest permissions
-        return merge({
-            permissions: [],
-            origins: origins
-        }, this.manifest['permissions']);
+        return {
+            origins: this.manifest.origins,
+            permissions: this.manifest.permissions
+        };
     }
 
     get release() {
