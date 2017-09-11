@@ -10,8 +10,12 @@ export function generateRandomString(length, chars) {
     return result;
 }
 
+export function isUndefined(value) {
+    return typeof value === 'undefined';
+}
+
 export function isDefined(value) {
-    return typeof value !== 'undefined' && value !== null;
+    return !isUndefined(value) && value !== null;
 }
 
 export function isFunction(functionToCheck) {
