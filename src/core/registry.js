@@ -137,7 +137,7 @@ export class Registry {
         // Register component
         this.components[component.componentId] = component;
 
-        Log.debug('Registered component: %o', component.componentId, component);
+        Log.trace('Registered component: %o', component.componentId, component);
         return true;
     }
 
@@ -165,7 +165,7 @@ export class Registry {
         this.plugins[plugin.id] = plugin;
         this.pluginsByType[plugin.type][plugin.id] = plugin;
 
-        Log.debug('Registered plugin: %o', plugin.id, plugin);
+        Log.trace('Registered plugin: %o', plugin.id, plugin);
         return true;
     }
 
@@ -188,7 +188,7 @@ export class Registry {
         this.services[service.id] = service;
         this.servicesByType[service.type][service.id] = service;
 
-        Log.debug('Registered service: %o', service.id, service);
+        Log.trace('Registered service: %o', service.id, service);
 
         // Service registration tasks
         try {
