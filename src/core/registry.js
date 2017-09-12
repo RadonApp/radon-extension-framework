@@ -1,7 +1,7 @@
-import Preferences from 'eon.extension.browser/preferences';
 import Log from 'eon.extension.framework/core/logger';
-import {isDefined, isString} from 'eon.extension.framework/core/helpers';
+import Preferences from 'eon.extension.framework/preferences';
 import {Page} from 'eon.extension.framework/services/configuration/models';
+import {isDefined, isString} from 'eon.extension.framework/core/helpers';
 
 
 export const OptionTypes = [

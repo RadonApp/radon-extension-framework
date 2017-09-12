@@ -220,8 +220,8 @@ export class Logger {
 
 // Construct core/framework logger
 export default Logger.create('eon.extension', () => new Promise((resolve) => {
-    // Import preferences shim
-    let preferences = require('eon.extension.browser/preferences').default;
+    // Retrieve preferences module
+    let preferences = require('eon.extension.framework/preferences').default;
 
     if(!isDefined(preferences)) {
         console.debug('Preferences not available yet');
@@ -233,7 +233,7 @@ export default Logger.create('eon.extension', () => new Promise((resolve) => {
     preferences.context('eon.extension')
         .getString('general.debugging.log_level')
         .then(resolve, (err) => {
-            console.debug('Unable to retrieve preference value:', err);
+            console.debug('Unable to retrieve preference value: %s', err.message);
             resolve(null);
         });
 }));

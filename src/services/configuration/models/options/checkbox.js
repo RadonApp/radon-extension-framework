@@ -1,5 +1,4 @@
-import Preferences from 'eon.extension.browser/preferences';
-
+import Preferences from 'eon.extension.framework/preferences';
 import {Option} from './core/base';
 
 

@@ -1,7 +1,6 @@
-import Preferences from 'eon.extension.browser/preferences';
+import Merge from 'lodash-es/merge';
 
-import merge from 'lodash-es/merge';
-
+import Preferences from 'eon.extension.framework/preferences';
 import {getProperty} from './core/helpers';
 import {Option} from './core/base';
 
@@ -18,7 +17,7 @@ export default class EnableOption extends Option {
     _parseOptions(options) {
         let result = super._parseOptions(options);
 
-        return merge(result, {
+        return Merge(result, {
             type: getProperty(options, 'type', 'option'),
 
             permissions: getProperty(options, 'permissions', false),

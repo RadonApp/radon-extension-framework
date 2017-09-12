@@ -1,13 +1,13 @@
 import DeclarativeContent, {RequestContentScript, PageStateMatcher} from 'eon.extension.browser/declarative/content';
 import Permissions from 'eon.extension.browser/permissions';
-import Preferences from 'eon.extension.browser/preferences';
+
+import Merge from 'lodash-es/merge';
 
 import Log from 'eon.extension.framework/core/logger';
 import Messaging from 'eon.extension.framework/messaging';
+import Preferences from 'eon.extension.framework/preferences';
 import Storage from 'eon.extension.framework/storage';
 import {isDefined} from 'eon.extension.framework/core/helpers';
-
-import merge from 'lodash-es/merge';
 
 
 export default class Plugin {
@@ -72,7 +72,7 @@ export default class Plugin {
         }
 
         // Set release defaults
-        return merge({
+        return Merge({
             date: null,
             version: null
         }, release);
@@ -276,7 +276,7 @@ export default class Plugin {
 
         // Create declarative rules from content scripts
         contentScripts.forEach((script) => {
-            script = merge({
+            script = Merge({
                 id: null,
                 conditions: [],
                 css: [],
