@@ -1,26 +1,26 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Log from 'eon.extension.framework/core/logger';
+import Plugin from 'eon.extension.framework/core/plugin';
 import Session, {SessionState} from 'eon.extension.framework/models/session';
 // import {Episode} from 'eon.extension.framework/models/item/television';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
-import merge from 'lodash-es/merge';
+import Merge from 'lodash-es/merge';
 
 
 export default class ActivityEngine {
-    constructor(plugin, bus, options) {
+    constructor(plugin, options) {
         this.plugin = plugin;
-        this.bus = bus;
+
+        // Create activity messaging service
+        this.messaging = Plugin.messaging.service('scrobble');
 
         // Bind events
-        this.createdHandler = (session) => this.created(session);
-        this.updatedHandler = (session) => this.updated(session);
-
-        this.bus.on('session.created', this.createdHandler);
-        this.bus.on('session.updated', this.updatedHandler);
+        this.messaging.on('session.created', (session) => this.created(session));
+        this.messaging.on('session.updated', (session) => this.updated(session));
 
         // Parse options, and set defaults
-        this.options = merge({
+        this.options = Merge({
             metadataRefreshInterval: 7 * 24 * 60 * 60 * 1000,  // 7 days
             progressInterval: 5000,
 
@@ -96,20 +96,20 @@ export default class ActivityEngine {
         }).then(() => {
             // Create session
             this._currentSession = Session.create(item, {
-                channelId: this.bus.id
+                clientId: this.messaging.client.id
             });
 
             // Emit "created" event
-            this.bus.emit('activity.created', this._currentSession.toPlainObject());
+            this.messaging.emit('activity.created', this._currentSession.toPlainObject());
         });
     }
 
-    created(data) {
-        let session = Session.fromPlainObject(data);
+    created(payload) {
+        let session = Session.fromPlainObject(payload);
 
         // Ensure session is valid
         if(!isDefined(session)) {
-            Log.warn('Unable to parse session: %o', data);
+            Log.warn('Unable to parse session: %o', payload);
             return;
         }
 
@@ -122,12 +122,12 @@ export default class ActivityEngine {
         });
     }
 
-    updated(data) {
-        let session = Session.fromPlainObject(data);
+    updated(payload) {
+        let session = Session.fromPlainObject(payload);
 
         // Ensure session is valid
         if(!isDefined(session)) {
-            Log.warn('Unable to parse session: %o', data);
+            Log.warn('Unable to parse session: %o', payload);
             return;
         }
 
@@ -248,7 +248,7 @@ export default class ActivityEngine {
 
         // Emit "started" event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.started', this._currentSession.toPlainObject());
+            this.messaging.emit('activity.started', this._currentSession.toPlainObject());
         }
 
         return true;
@@ -308,7 +308,7 @@ export default class ActivityEngine {
 
         // Emit "progress" event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.progress', this._currentSession.toPlainObject());
+            this.messaging.emit('activity.progress', this._currentSession.toPlainObject());
         }
 
         // Update progress emitted timestamp
@@ -346,7 +346,7 @@ export default class ActivityEngine {
 
         // Emit "seeked" event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.seeked', this._currentSession.toPlainObject());
+            this.messaging.emit('activity.seeked', this._currentSession.toPlainObject());
         }
 
         return true;
@@ -427,7 +427,7 @@ export default class ActivityEngine {
 
             // Emit event (if session is valid)
             if(this._currentSession.valid) {
-                this.bus.emit('activity.paused', this._currentSession.toPlainObject());
+                this.messaging.emit('activity.paused', this._currentSession.toPlainObject());
             }
         }, 8000);
 
@@ -467,7 +467,7 @@ export default class ActivityEngine {
 
         // Emit event (if session is valid)
         if(this._currentSession.valid) {
-            this.bus.emit('activity.stopped', this._currentSession.toPlainObject());
+            this.messaging.emit('activity.stopped', this._currentSession.toPlainObject());
         }
 
         return true;
