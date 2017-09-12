@@ -1,5 +1,6 @@
 import Merge from 'lodash-es/merge';
 
+import Log from 'eon.extension.framework/core/logger';
 import Storage from 'eon.extension.framework/storage';
 import {PreferencesContext} from './context';
 import {isDefined} from 'eon.extension.framework/core/helpers';
@@ -31,6 +32,10 @@ export class Preferences {
         return isDefined(this._definitions[key]);
     }
 
+    onChanged(key, callback) {
+        return this.bucket.onChanged(key, callback);
+    }
+
     remove(key) {
         return this.bucket.remove(key);
     }
@@ -48,19 +53,19 @@ export class Preferences {
 
         // Ensure option hasn't already been registered
         if(isDefined(this._definitions[item.id])) {
-            console.warn('Preference option %o has already been registered', item.id);
+            Log.warn('Preference option %o has already been registered', item.id);
             return false;
         }
 
         // Store option reference
         this._definitions[item.id] = item;
 
-        console.trace('Registered preference option: %o', item.id, item);
+        Log.trace('Registered preference option: %o', item.id, item);
         return true;
     }
 
     registerGroup(group) {
-        console.trace('Registered preference group: %o', group.id, group);
+        Log.trace('Registered preference group: %o', group.id, group);
 
         // Register children
         for(let i = 0; i < group.children.length; ++i) {
@@ -78,14 +83,14 @@ export class Preferences {
 
         // Ensure page hasn't already been registered
         if(isDefined(this._pages[page.plugin.type][page.id])) {
-            console.warn('Preference page %o has already been registered', page.id);
+            Log.warn('Preference page %o has already been registered', page.id);
             return false;
         }
 
         // Store page reference
         this._pages[page.plugin.type][page.id] = page;
 
-        console.trace('Registered preference page: %o', page.id, page);
+        Log.trace('Registered preference page: %o', page.id, page);
 
         // Register children
         for(let i = 0; i < page.children.length; ++i) {
