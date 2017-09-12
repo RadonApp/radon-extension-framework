@@ -24,7 +24,7 @@ export default class Session {
         // Define optional properties
         options = options || {};
 
-        this.channelId = options.channelId || null;
+        this.clientId = options.clientId || null;
 
         this.state = options.state || SessionState.created;
         this.time = options.time || null;
@@ -69,8 +69,8 @@ export default class Session {
             });
         }
 
-        if(isDefined(this.channelId)) {
-            document['channelId'] = this.channelId;
+        if(isDefined(this.clientId)) {
+            document['clientId'] = this.clientId;
         }
 
         if(isDefined(this.state)) {
@@ -107,7 +107,7 @@ export default class Session {
     toPlainObject(options) {
         let document = {
             'id': this.id,
-            'channelId': this.channelId,
+            'clientId': this.clientId,
 
             'state': this.state,
             'time': this.time,
@@ -139,7 +139,7 @@ export default class Session {
         }
 
         return new Session(document['_id'], Item.fromDocument(document['item']), {
-            'channelId': document['channelId'],
+            'clientId': document['clientId'],
 
             'state': document['state'],
             'time': document['time'],
@@ -159,7 +159,7 @@ export default class Session {
         }
 
         return new Session(item['id'], Item.fromPlainObject(item['item']), {
-            'channelId': item['channelId'],
+            'clientId': item['clientId'],
 
             'state': item['state'],
             'time': item['time'],
