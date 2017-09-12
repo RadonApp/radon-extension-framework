@@ -79,14 +79,23 @@ export class Storage {
     // region Private Methods
 
     _get(name, key) {
+        // Return value from cache (if one is available)
         if(!isUndefined(this._values[key])) {
             return Promise.resolve(this._values[key]);
         }
 
-        return this.messaging.request(name, { key });
+        // Request current value
+        return this.messaging.request(name, { key }).then((value) => {
+            // Store value in cache (changes will be received via events)
+            this._values[key] = value;
+
+            // Return current value
+            return value;
+        });
     }
 
     _onChanged({key, value}) {
+        // Store value in cache
         this._values[key] = value;
     }
 
