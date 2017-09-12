@@ -1,5 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {isDefined, isFunction} from 'eon.extension.framework/core/helpers';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
 const Levels = {
     Error:   60,   error: 60,
@@ -21,12 +21,12 @@ const LevelKeys = {
 
 
 export class Logger {
-    constructor(resolver) {
-        if(!isDefined(resolver)) {
+    constructor(getOptionKey) {
+        if(!isDefined(getOptionKey)) {
             throw new Error('Missing required "resolver" parameter');
         }
 
-        this._resolver = resolver;
+        this._getOptionKey = getOptionKey;
 
         this._level = null;
         this._queue = [];
@@ -40,8 +40,8 @@ export class Logger {
         this.debug =   this._queueMessage.bind(this, Levels.Debug);
         this.trace =   this._queueMessage.bind(this, Levels.Trace);
 
-        // Refresh logger level with resolver
-        setTimeout(this.refresh.bind(this), 0);
+        // Configure logger (in separate context)
+        setTimeout(this._configure.bind(this), 0);
     }
 
     get level() {
@@ -52,10 +52,14 @@ export class Logger {
         return LevelKeys[this._level];
     }
 
-    refresh() {
-        return this._resolveLevel().then((level) => {
-            return this._enable(level);
-        });
+    get preferences() {
+        let preferences = require('eon.extension.framework/preferences').default;
+
+        if(!isDefined(preferences)) {
+            return null;
+        }
+
+        return preferences;
     }
 
     // region Static methods
@@ -82,9 +86,47 @@ export class Logger {
 
     // region Private methods
 
-    _enable(level) {
+    _configure(attempt = 0) {
+        function retry() {
+            if(attempt > 50) {
+                this._setLevel(Levels.Trace);
+                return;
+            }
+
+            // Retry in 50ms
+            setTimeout(this._configure.bind(this, attempt + 1), 50);
+        }
+
+        if(!isDefined(this.preferences)) {
+            retry();
+            return;
+        }
+
+        // Retrieve option key
+        let optionKey = this._getOptionKey(this.preferences);
+
+        if(!isDefined(optionKey)) {
+            this._setLevel(Levels.Trace);
+            return;
+        }
+
+        // Subscribe to log level changes
+        this.preferences.onChanged(optionKey, ({value}) => {
+            this._setLevel(value);
+        });
+
+        // Retrieve current log level
+        this.preferences.getString(optionKey)
+            .then((level) => this._setLevel(level))
+            .catch((err) => {
+                console.warn('Unable to retrieve current log level: %s', err.message, err);
+                retry();
+            });
+    }
+
+    _setLevel(key) {
         // Update current logger level
-        this._level = level;
+        this._level = Levels[key];
 
         // Write queued messages to console
         this._writeQueue();
@@ -111,55 +153,6 @@ export class Logger {
         }
 
         return func.bind(console);
-    }
-
-    _resolveLevel() {
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
-
-            let get = () => {
-                // Get current resolver
-                let resolver;
-
-                if(isFunction(this._resolver)) {
-                    resolver = Promise.resolve(this._resolver());
-                } else {
-                    resolver = Promise.resolve(this._resolver);
-                }
-
-                // Try resolve log level
-                resolver.then((key) => {
-                    if(key === null) {
-                        // Retry log level resolution
-                        if(attempts < 50) {
-                            attempts += 1;
-                            setTimeout(get, 20);
-                            return;
-                        }
-
-                        // Unable to resolve log level
-                        console.warn('Unable to resolve current log level, will use "trace" instead');
-                        resolve(Levels.Trace);
-                        return;
-                    }
-
-                    // Ensure log level exists
-                    if(!isDefined(Levels[key])) {
-                        console.warn('Unknown log level: %o', key);
-                        resolve(Levels.Trace);
-                        return;
-                    }
-
-                    // Valid log level found
-                    resolve(Levels[key]);
-                }, (err) => {
-                    reject(err);
-                });
-            };
-
-            // Attempt level resolution
-            get();
-        });
     }
 
     _getFunction(level) {
@@ -219,21 +212,6 @@ export class Logger {
 }
 
 // Construct core/framework logger
-export default Logger.create('eon.extension', () => new Promise((resolve) => {
-    // Retrieve preferences module
-    let preferences = require('eon.extension.framework/preferences').default;
-
-    if(!isDefined(preferences)) {
-        console.debug('Preferences not available yet');
-        resolve(null);
-        return;
-    }
-
-    // Try retrieve current log level
-    preferences.context('eon.extension')
-        .getString('general.debugging.log_level')
-        .then(resolve, (err) => {
-            console.debug('Unable to retrieve preference value: %s', err.message);
-            resolve(null);
-        });
-}));
+export default Logger.create('eon.extension', (preferences) =>
+    preferences.context('eon.extension').key('general.debugging.log_level')
+);
