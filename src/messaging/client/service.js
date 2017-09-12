@@ -26,24 +26,28 @@ export default class MessageClientService extends EventEmitter {
             local: true
         }, options || {});
 
-        // Ensure we are subscribed to the service
-        return this.subscribe().then(() => {
-            // Emit event locally
-            if(options.local) {
-                super.emit(name, payload);
-            }
+        // Ensure we have joined the channel
+        return this.channel.join()
+            // Ensure we have subscribed to the service
+            .then(() => this.subscribe())
+            // Emit event
+            .then(() => {
+                // Emit event locally
+                if(options.local) {
+                    super.emit(name, payload);
+                }
 
-            // Broadcast event to other clients (via the message broker)
-            if(options.broadcast) {
-                return this.client.send({
-                    type: 'event',
-                    name: this.channel.name + '/' + this.name + '/' + name,
-                    payload
-                });
-            }
+                // Broadcast event to other clients (via the message broker)
+                if(options.broadcast) {
+                    return this.client.send({
+                        type: 'event',
+                        name: this.channel.name + '/' + this.name + '/' + name,
+                        payload
+                    });
+                }
 
-            return Promise.resolve();
-        });
+                return Promise.resolve();
+            });
     }
 
     request(name, payload) {
