@@ -83,7 +83,10 @@ export default class Track extends Item {
     }
 
     static create(options) {
-        return new Track(null, options);
+        return new Track(null, {
+            ...options,
+            complete: true
+        });
     }
 
     static fromDocument(document) {
@@ -92,14 +95,21 @@ export default class Track extends Item {
         }
 
         if(document.type !== 'music/track') {
-            throw new Error();
+            throw new Error('Expected "music/track", found "' + document.type + '"');
         }
 
         return new Track(document['_id'], {
             ...document,
 
-            artist: Artist.fromDocument(document['artist']),
-            album: Album.fromDocument(document['album'])
+            artist: Artist.fromDocument({
+                type: 'music/artist',
+                ...document['artist']
+            }),
+
+            album: Album.fromDocument({
+                type: 'music/album',
+                ...document['album']
+            })
         });
     }
 
@@ -109,14 +119,21 @@ export default class Track extends Item {
         }
 
         if(item.type !== 'music/track') {
-            throw new Error();
+            throw new Error('Expected "music/track", found "' + item.type + '"');
         }
 
         return new Track(item['id'], {
             ...item,
 
-            artist: Artist.fromPlainObject(item['artist']),
-            album: Album.fromPlainObject(item['album'])
+            artist: Artist.fromPlainObject({
+                type: 'music/artist',
+                ...item['artist']
+            }),
+
+            album: Album.fromPlainObject({
+                type: 'music/album',
+                ...item['album']
+            })
         });
     }
 }

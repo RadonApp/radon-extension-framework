@@ -57,7 +57,10 @@ export default class Album extends Item {
     }
 
     static create(options) {
-        return new Album(null, options);
+        return new Album(null, {
+            ...options,
+            complete: true
+        });
     }
 
     static fromDocument(document) {
@@ -66,13 +69,16 @@ export default class Album extends Item {
         }
 
         if(document.type !== 'music/album') {
-            throw new Error();
+            throw new Error('Expected "music/album", found "' + document.type + '"');
         }
 
         return new Album(document['_id'], {
             ...document,
 
-            artist: Artist.fromDocument(document['artist'])
+            artist: Artist.fromDocument({
+                type: 'music/artist',
+                ...document['artist']
+            })
         });
     }
 
@@ -82,13 +88,16 @@ export default class Album extends Item {
         }
 
         if(item.type !== 'music/album') {
-            throw new Error();
+            throw new Error('Expected "music/album", found "' + item.type + '"');
         }
 
         return new Album(item['id'], {
             ...item,
 
-            artist: Artist.fromPlainObject(item['artist'])
+            artist: Artist.fromPlainObject({
+                type: 'music/artist',
+                ...item['artist']
+            })
         });
     }
 }

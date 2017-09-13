@@ -19,6 +19,7 @@ export default class Item {
         this.seenAt = options.seenAt || null;
 
         this.changed = options.changed || false;
+        this.complete = options.complete || false;
     }
 
     hasExpired(expires) {
@@ -108,7 +109,8 @@ export default class Item {
             updatedAt: this.updatedAt,
             seenAt: this.seenAt,
 
-            changed: this.changed
+            changed: this.changed,
+            complete: this.complete
         };
     }
 }

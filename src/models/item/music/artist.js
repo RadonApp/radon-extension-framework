@@ -41,7 +41,10 @@ export default class Artist extends Item {
     }
 
     static create(options) {
-        return new Artist(null, options);
+        return new Artist(null, {
+            ...options,
+            complete: true
+        });
     }
 
     static fromDocument(document) {
@@ -50,7 +53,7 @@ export default class Artist extends Item {
         }
 
         if(document.type !== 'music/artist') {
-            throw new Error();
+            throw new Error('Expected "music/artist", found "' + document.type + '"');
         }
 
         return new Artist(document['_id'], document);
@@ -62,7 +65,7 @@ export default class Artist extends Item {
         }
 
         if(item.type !== 'music/artist') {
-            throw new Error();
+            throw new Error('Expected "music/artist", found "' + item.type + '"');
         }
 
         return new Artist(item['id'], item);
