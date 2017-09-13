@@ -398,6 +398,7 @@ export default class ActivityEngine {
             return false;
         }
 
+        // Ensure media isn't paused
         if(this._currentSession.state === SessionState.paused) {
             Log.debug('Session has already been paused');
             return false;
@@ -408,17 +409,18 @@ export default class ActivityEngine {
             return false;
         }
 
-        // Ensure media isn't already paused
-        if(this._currentSession.state === SessionState.paused) {
-            return false;
-        }
-
         // Update state
         this._currentSession.state = SessionState.pausing;
 
         // Emit "paused" event in 8000ms
         this._pauseTimeout = setTimeout(() => {
             if(!isDefined(this._currentSession) || this._currentSession.state !== SessionState.pausing) {
+                return;
+            }
+
+            // Stop session at 80% progress
+            if(this._currentSession.progress >= 80) {
+                this.stop();
                 return;
             }
 
