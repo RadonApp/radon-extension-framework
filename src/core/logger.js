@@ -87,6 +87,8 @@ export class Logger {
     // region Private methods
 
     _configure(attempt = 0) {
+        let self = this;
+
         function retry() {
             if(attempt > 50) {
                 this._setLevel(Levels.Trace);
@@ -94,7 +96,7 @@ export class Logger {
             }
 
             // Retry in 50ms
-            setTimeout(this._configure.bind(this, attempt + 1), 50);
+            setTimeout(self._configure.bind(self, attempt + 1), 50);
         }
 
         if(!isDefined(this.preferences)) {
