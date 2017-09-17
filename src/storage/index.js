@@ -99,8 +99,6 @@ export class Storage extends EventEmitter {
     }
 
     refresh() {
-        console.debug('Refreshing %d entries in cache...', Object.keys(this._entries).length);
-
         for(let key in this._entries) {
             if(!this._entries.hasOwnProperty(key)) {
                 continue;
@@ -115,8 +113,6 @@ export class Storage extends EventEmitter {
 
             // Refresh storage entry
             this.get(key, { type: entry.type, refresh: true }).then((value) => {
-                console.debug('Entry: %o, Value: %o', entry, value);
-
                 // Ensure value has changed
                 if(IsEqual(entry.value, value)) {
                     return;
