@@ -1,14 +1,21 @@
+import EventEmitter from 'eventemitter3';
+import IsEqual from 'lodash-es/isEqual';
+import Merge from 'lodash-es/merge';
+
 import MessageClient from 'eon.extension.framework/messaging/client';
 import StorageContext from './context';
-import {isUndefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, isUndefined} from 'eon.extension.framework/core/helpers';
 
 
-export class Storage {
+export class Storage extends EventEmitter {
     constructor() {
-        this._values = {};
+        super();
+
+        this._entries = {};
 
         // Retrieve service, and bind to events
         this.messaging = MessageClient.channel('eon.extension').service('storage');
+        this.messaging.on('%subscribe', this._onSubscribed.bind(this));
         this.messaging.on('change', this._onChanged.bind(this));
     }
 
@@ -16,28 +23,51 @@ export class Storage {
         return new StorageContext(this, name);
     }
 
-    get(key) {
-        return this._get('get', key);
+    // region Public Methods
+
+    get(key, options) {
+        options = Merge({
+            refresh: false,
+            type: null
+        }, options || {});
+
+        // Return value from cache (if one is available)
+        if(!isUndefined(this._entries[key]) && !options.refresh) {
+            return Promise.resolve(this._entries[key].value);
+        }
+
+        // Request value from broker
+        return this.messaging.request(this._getMethodName('get', options.type), { key })
+            .then((value) => {
+                // Store value in cache (changes will be received via events)
+                this._entries[key] = {
+                    type: options.type,
+                    value
+                };
+
+                // Return current value
+                return value;
+            });
     }
 
     getBoolean(key) {
-        return this._get('getBoolean', key);
+        return this.get(key, { type: 'boolean' });
     }
 
     getFloat(key) {
-        return this._get('getFloat', key);
+        return this.get(key, { type: 'float' });
     }
 
     getInteger(key) {
-        return this._get('getInteger', key);
+        return this.get(key, { type: 'integer' });
     }
 
     getObject(key) {
-        return this._get('getObject', key);
+        return this.get(key, { type: 'object' });
     }
 
     getString(key) {
-        return this._get('getString', key);
+        return this.get(key, { type: 'string' });
     }
 
     put(key, value) {
@@ -68,35 +98,94 @@ export class Storage {
         return this.messaging.request('remove', { key });
     }
 
+    refresh() {
+        console.debug('Refreshing %d entries in cache...', Object.keys(this._entries).length);
+
+        for(let key in this._entries) {
+            if(!this._entries.hasOwnProperty(key)) {
+                continue;
+            }
+
+            let entry = this._entries[key];
+
+            // Ensure type is available
+            if(!isDefined(entry.type)) {
+                continue;
+            }
+
+            // Refresh storage entry
+            this.get(key, { type: entry.type, refresh: true }).then((value) => {
+                console.debug('Entry: %o, Value: %o', entry, value);
+
+                // Ensure value has changed
+                if(IsEqual(entry.value, value)) {
+                    return;
+                }
+
+                // Emit event
+                this.emit('change#' + key, { key, value });
+            });
+        }
+    }
+
+    // endregion
+
     // region Event Listeners
 
     onChanged(key, callback) {
-        return this.messaging.on('change#' + key, callback);
+        return this.on('change#' + key, callback);
+    }
+
+    // endregion
+
+    // region Event Handlers
+
+    _onSubscribed() {
+        // Refresh cache
+        this.refresh();
+    }
+
+    _onChanged({key, value}) {
+        // Store value in cache
+        this._entries[key] = {
+            ...(this._entries[key] || {}),
+            value
+        };
+
+        // Emit event
+        this.emit('change#' + key, { key, value });
     }
 
     // endregion
 
     // region Private Methods
 
-    _get(name, key) {
-        // Return value from cache (if one is available)
-        if(!isUndefined(this._values[key])) {
-            return Promise.resolve(this._values[key]);
+    _getMethodName(prefix, type) {
+        if(!isDefined(type)) {
+            return prefix;
         }
 
-        // Request current value
-        return this.messaging.request(name, { key }).then((value) => {
-            // Store value in cache (changes will be received via events)
-            this._values[key] = value;
+        if(type === 'boolean') {
+            return prefix + 'Boolean';
+        }
 
-            // Return current value
-            return value;
-        });
-    }
+        if(type === 'float') {
+            return prefix + 'Float';
+        }
 
-    _onChanged({key, value}) {
-        // Store value in cache
-        this._values[key] = value;
+        if(type === 'integer') {
+            return prefix + 'Integer';
+        }
+
+        if(type === 'object') {
+            return prefix + 'Object';
+        }
+
+        if(type === 'string') {
+            return prefix + 'String';
+        }
+
+        throw new Error('Unknown type: ' + type);
     }
 
     // endregion
