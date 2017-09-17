@@ -18,6 +18,9 @@ export default class MessageClientChannel extends EventEmitter {
         this.joining = null;
 
         this.services = {};
+
+        // Bind to events
+        this.client.on('reconnect', this._onClientReconnected.bind(this));
     }
 
     service(name) {
@@ -29,6 +32,8 @@ export default class MessageClientChannel extends EventEmitter {
         // Return channel instance
         return this.services[name];
     }
+
+    // region Public Methods
 
     emit(name, payload, options) {
         options = Merge({
@@ -56,8 +61,13 @@ export default class MessageClientChannel extends EventEmitter {
         });
     }
 
-    join(force = false) {
-        if(this.joined && !force) {
+    join(options) {
+        options = Merge({
+            force: false
+        }, options || options);
+
+        // Ensure we haven't already joined the channel
+        if(this.joined && !options.force) {
             return Promise.resolve();
         }
 
@@ -69,8 +79,13 @@ export default class MessageClientChannel extends EventEmitter {
         return this.joining;
     }
 
-    leave(force = false) {
-        if(!this.joined && !force) {
+    leave(options) {
+        options = Merge({
+            force: false
+        }, options || options);
+
+        // Ensure we have joined the channel
+        if(!this.joined && !options.force) {
             return Promise.resolve();
         }
 
@@ -88,11 +103,18 @@ export default class MessageClientChannel extends EventEmitter {
         return this.leave();
     }
 
+    // endregion
+
+    // region Private Methods
+
     _join() {
         return this.client.request('join', {
             channel: this.name
         }).then(() => {
             Log.trace('[%s] Joined the "%s" channel', this.client.id, this.name);
+
+            // Emit event
+            super.emit('%join');
 
             // Update state
             this.joined = true;
@@ -114,6 +136,9 @@ export default class MessageClientChannel extends EventEmitter {
         }).then(() => {
             Log.trace('[%s] Left the "%s" channel', this.client.id, this.name);
 
+            // Emit event
+            super.emit('%leave');
+
             // Update state
             this.joined = false;
         }, (err) => {
@@ -123,4 +148,19 @@ export default class MessageClientChannel extends EventEmitter {
             return Promise.reject(new Error('Unable to leave the "' + this.name + '" channel: ' + err.message));
         });
     }
+
+    // endregion
+
+    // region Event Handlers
+
+    _onClientReconnected() {
+        // Re-join channel on reconnection
+        if(this.joined) {
+            this.join({
+                force: true
+            });
+        }
+    }
+
+    // endregion
 }

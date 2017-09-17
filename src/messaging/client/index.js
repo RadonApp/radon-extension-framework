@@ -2,6 +2,7 @@ import Messaging from 'eon.extension.browser/messaging';
 
 import EventEmitter from 'eventemitter3';
 import IsString from 'lodash-es/isString';
+import Merge from 'lodash-es/merge';
 import Uuid from 'uuid';
 
 import Log from 'eon.extension.framework/core/logger';
@@ -21,16 +22,26 @@ export class MessageClient extends EventEmitter {
         this._broker = null;
         this._port = null;
 
+        this._connecting = null;
+
+        this._reconnecting = null;
+        this._reconnectAttempts = 0;
+
         // Create response handler
         this.responses = new EventEmitter();
 
         // Bind event handlers
         this.on('receive', this._onMessage.bind(this));
 
-        // Parse options
-        options = options || {};
+        // Parse options (and set defaults)
+        this.options = Merge({
+            reconnect: {
+                attempts: 10,
+                interval: 2500
+            },
 
-        this.requestTimeout = options.requestTimeout || 9000;
+            requestTimeout: 9000
+        }, options || {});
     }
 
     channel(name) {
@@ -62,27 +73,59 @@ export class MessageClient extends EventEmitter {
 
     connect() {
         if(isDefined(this._broker) || isDefined(this._port)) {
-            return;
+            return Promise.resolve();
         }
 
+        // Return reconnecting promise (if already reconnecting)
+        if(isDefined(this._reconnecting)) {
+            return this._reconnecting;
+        }
+
+        // Return connecting promise (if already connecting)
+        if(isDefined(this._connecting)) {
+            return this._connecting;
+        }
+
+        // Connect to broker
         Log.trace('[%s] Connecting...', this.id);
 
-        try {
-            this._port = Messaging.connect({
-                name: this.id
-            });
-        } catch(e) {
-            Log.error('[%s] Unable to connect to the message broker: %s', this.id, e.message, e);
+        let promise = this._connecting = this._connect().then(() => {
+            Log.debug('[%s] Connected', this.id);
 
-            this._port = null;
-            return;
+            // Reset state
+            this._connecting = null;
+        }, (err) => {
+            Log.debug('[%s] Connection failed: %s', this.id, err.message, err);
+        });
+
+        // Return promise
+        return promise;
+    }
+
+    reconnect() {
+        if(isDefined(this._broker) || isDefined(this._port)) {
+            return Promise.resolve();
         }
 
-        Log.debug('[%s] Connected', this.id);
+        // Return reconnecting promise (if already reconnecting)
+        if(isDefined(this._reconnecting)) {
+            return this._reconnecting;
+        }
 
-        // Bind to events
-        this._port.on('message', this._onMessage.bind(this));
-        this._port.on('disconnect', this._onDisconnected.bind(this));
+        // Connect to broker
+        Log.trace('[%s] Reconnecting...', this.id);
+
+        let promise = this._reconnecting = this._reconnect().then(() => {
+            Log.debug('[%s] Reconnected', this.id);
+
+            // Reset state
+            this._reconnecting = null;
+        }, (err) => {
+            Log.debug('[%s] Reconnection failed: %s', this.id, err.message, err);
+        });
+
+        // Return promise
+        return promise;
     }
 
     request(name, payload) {
@@ -129,7 +172,7 @@ export class MessageClient extends EventEmitter {
                     // Reject promise with error
                     reject(new Error('Request timeout'));
                 },
-                self.requestTimeout
+                self.options.requestTimeout
             );
 
             // Send request
@@ -146,15 +189,97 @@ export class MessageClient extends EventEmitter {
             return Promise.resolve();
         }
 
-        // Ensure port is connected
-        this.connect();
-
-        // Send message over port
-        this._port.postMessage(message);
-
-        // Return promise
-        return Promise.resolve();
+        // Ensure client is connected, and send message
+        return this.connect().then(() =>
+            this._port.postMessage(message)
+        );
     }
+
+    // region Private Methods
+
+    _reconnect() {
+        if(!isDefined(this.options.reconnect) || isDefined(this._broker)) {
+            return Promise.reject();
+        }
+
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+            // Reset state
+            self._reconnectAttempts = 0;
+
+            // Reconnect function
+            function reconnect() {
+                if(self._reconnectAttempts > self.options.reconnect.attempts) {
+                    // Reject promise with error
+                    reject(new Error('Unable to connect (after ' + self._reconnectAttempts + ' attempts)'));
+                    return;
+                }
+
+                // Increment attempts
+                self._reconnectAttempts += 1;
+
+                // Connect to broker
+                self._connect().then(function() {
+                    // Emit event
+                    self.emit('reconnect', self);
+
+                    // Resolve promise
+                    resolve();
+                }, () => {
+                    Log.trace(
+                        '[%s] Connection failed, will retry in %dms',
+                        self.id, self.options.reconnect.interval
+                    );
+
+                    // Schedule next reconnection attempt
+                    setTimeout(reconnect, self.options.reconnect.interval);
+                });
+            }
+
+            // Reconnect to broker
+            reconnect();
+        });
+    }
+
+    _connect() {
+        let self = this;
+        let port;
+
+        // Connect to broker
+        try {
+            port = Messaging.connect({
+                name: this.id
+            });
+        } catch(e) {
+            return Promise.reject();
+        }
+
+        // Wait 250ms to ensure connection was successful
+        return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+                if(!port.connected) {
+                    reject();
+                    return;
+                }
+
+                // Bind to events
+                port.on('message', self._onMessage.bind(self));
+                port.on('disconnect', self._onDisconnected.bind(self));
+
+                // Update state
+                self._port = port;
+
+                // Emit event
+                self.emit('connect', self);
+
+                // Resolve promise with port
+                resolve(port);
+            }, 250);
+        });
+    }
+
+    // endregion
 
     // region Event Handlers
 
@@ -199,6 +324,12 @@ export class MessageClient extends EventEmitter {
 
     _onDisconnected(err) {
         Log.debug('[%s] Disconnected', this.id, err);
+
+        // Reset state
+        this._port = null;
+
+        // Try reconnect to broker (if enabled)
+        this.reconnect();
     }
 
     // endregion

@@ -14,11 +14,16 @@ export default class MessageClientService extends EventEmitter {
 
         this.subscribed = false;
         this.subscribing = null;
+
+        // Bind to events
+        this.client.on('reconnect', this._onClientReconnected.bind(this));
     }
 
     get client() {
         return this.channel.client;
     }
+
+    // region Public Methods
 
     emit(name, payload, options) {
         options = Merge({
@@ -56,8 +61,13 @@ export default class MessageClientService extends EventEmitter {
         );
     }
 
-    subscribe(force = false) {
-        if(this.subscribed && !force) {
+    subscribe(options) {
+        options = Merge({
+            force: false
+        }, options || options);
+
+        // Ensure we aren't already subscribed
+        if(this.subscribed && !options.force) {
             return Promise.resolve();
         }
 
@@ -69,8 +79,13 @@ export default class MessageClientService extends EventEmitter {
         return this.subscribing;
     }
 
-    unsubscribe(force = false) {
-        if(!this.subscribed && !force) {
+    unsubscribe(options) {
+        options = Merge({
+            force: false
+        }, options || options);
+
+        // Ensure we are subscribed
+        if(!this.subscribed && !options.force) {
             return Promise.resolve();
         }
 
@@ -82,12 +97,19 @@ export default class MessageClientService extends EventEmitter {
         return this.unsubscribe();
     }
 
+    // endregion
+
+    // region Private Methods
+
     _subscribe() {
         return this.client.request('subscribe', {
             channel: this.channel.name,
             service: this.name
         }).then(() => {
             Log.trace('[%s] Subscribed to the "%s/%s" service', this.client.id, this.channel.name, this.name);
+
+            // Emit event
+            super.emit('%subscribe');
 
             // Update state
             this.subscribed = true;
@@ -115,6 +137,9 @@ export default class MessageClientService extends EventEmitter {
         }).then(() => {
             Log.trace('[%s] Un-subscribed from the "%s/%s" service', this.client.id, this.channel.name, this.name);
 
+            // Emit event
+            super.emit('%unsubscribe');
+
             // Update state
             this.subscribed = false;
         }, (err) => {
@@ -129,4 +154,19 @@ export default class MessageClientService extends EventEmitter {
             ));
         });
     }
+
+    // endregion
+
+    // region Event Handlers
+
+    _onClientReconnected() {
+        // Re-subscribe to service on reconnection
+        if(this.subscribed) {
+            this.subscribe({
+                force: true
+            });
+        }
+    }
+
+    // endregion
 }
