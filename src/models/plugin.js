@@ -1,6 +1,6 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Merge from 'lodash-es/merge';
 
-import merge from 'lodash-es/merge';
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
 
 export default class Plugin {
@@ -9,7 +9,7 @@ export default class Plugin {
         this.type = type;
 
         // Set default options
-        options = merge({
+        options = Merge({
             title: null
         }, options || {});
 

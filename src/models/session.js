@@ -1,8 +1,8 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import Uuid from 'uuid';
+
 import Item from 'eon.extension.framework/models/item';
 import {isDefined, round} from 'eon.extension.framework/core/helpers';
-
-import uuid from 'uuid';
 
 
 export const SessionState = {
@@ -130,7 +130,7 @@ export default class Session {
     }
 
     static create(item, options) {
-        return new Session(uuid.v4(), item, options);
+        return new Session(Uuid.v4(), item, options);
     }
 
     static fromDocument(document) {

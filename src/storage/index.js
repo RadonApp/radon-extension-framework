@@ -3,8 +3,9 @@ import IsEqual from 'lodash-es/isEqual';
 import Merge from 'lodash-es/merge';
 
 import MessageClient from 'eon.extension.framework/messaging/client';
-import StorageContext from './context';
 import {isDefined, isUndefined} from 'eon.extension.framework/core/helpers';
+
+import StorageContext from './context';
 
 
 export class Storage extends EventEmitter {

@@ -1,6 +1,6 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
-
 import Pick from 'lodash-es/pick';
+
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
 
 export default class HistoryEvent {

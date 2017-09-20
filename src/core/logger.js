@@ -1,5 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined} from './helpers';
+
 
 const Levels = {
     Error:   60,   error: 60,

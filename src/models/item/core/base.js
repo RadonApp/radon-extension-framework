@@ -1,7 +1,7 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
-
 import IsPlainObject from 'lodash-es/isPlainObject';
 import Pick from 'lodash-es/pick';
+
+import {isDefined} from 'eon.extension.framework/core/helpers';
 
 
 export default class Item {

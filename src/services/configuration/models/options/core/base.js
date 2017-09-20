@@ -1,6 +1,7 @@
 import {isDefined} from 'eon.extension.framework/core/helpers';
-import {getProperty} from './helpers';
+
 import Model from '../../base';
+import {getProperty} from './helpers';
 
 
 export class Option extends Model {

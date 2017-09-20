@@ -1,12 +1,13 @@
-import DeclarativeContent, {RequestContentScript, PageStateMatcher} from 'eon.extension.browser/declarative/content';
-import Permissions from 'eon.extension.browser/permissions';
-
 import Merge from 'lodash-es/merge';
 
+import DeclarativeContent from 'eon.extension.browser/declarative/content';
 import Log from 'eon.extension.framework/core/logger';
 import Messaging from 'eon.extension.framework/messaging';
+import Permissions from 'eon.extension.browser/permissions';
 import Preferences from 'eon.extension.framework/preferences';
 import Storage from 'eon.extension.framework/storage';
+import {PageStateMatcher} from 'eon.extension.browser/declarative/conditions';
+import {RequestContentScript} from 'eon.extension.browser/declarative/actions';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 

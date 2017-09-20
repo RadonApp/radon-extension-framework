@@ -1,8 +1,9 @@
 import Merge from 'lodash-es/merge';
 
 import Preferences from 'eon.extension.framework/preferences';
-import {getProperty} from './core/helpers';
+
 import {Option} from './core/base';
+import {getProperty} from './core/helpers';
 
 
 export default class EnableOption extends Option {

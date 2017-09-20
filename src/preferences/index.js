@@ -2,8 +2,9 @@ import Merge from 'lodash-es/merge';
 
 import Log from 'eon.extension.framework/core/logger';
 import Storage from 'eon.extension.framework/storage';
-import {PreferencesContext} from './context';
 import {isDefined} from 'eon.extension.framework/core/helpers';
+
+import {PreferencesContext} from './context';
 
 
 export class Preferences {

@@ -1,14 +1,14 @@
-import Messaging from 'eon.extension.browser/messaging';
-
 import EventEmitter from 'eventemitter3';
 import IsString from 'lodash-es/isString';
 import Merge from 'lodash-es/merge';
 import Uuid from 'uuid';
 
 import Log from 'eon.extension.framework/core/logger';
-import MessageClientChannel from './channel';
+import Messaging from 'eon.extension.browser/messaging';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 import {parseMessageName} from 'eon.extension.framework/messaging/core/helpers';
+
+import MessageClientChannel from './channel';
 
 
 export class MessageClient extends EventEmitter {

@@ -1,7 +1,7 @@
+import Pick from 'lodash-es/pick';
+
 import Item from 'eon.extension.framework/models/item/core/base';
 import {isDefined} from 'eon.extension.framework/core/helpers';
-
-import Pick from 'lodash-es/pick';
 
 
 export default class Artist extends Item {

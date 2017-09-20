@@ -1,9 +1,9 @@
+import Pick from 'lodash-es/pick';
+
 import Album from 'eon.extension.framework/models/item/music/album';
 import Artist from 'eon.extension.framework/models/item/music/artist';
 import Item from 'eon.extension.framework/models/item/core/base';
 import {isDefined} from 'eon.extension.framework/core/helpers';
-
-import Pick from 'lodash-es/pick';
 
 
 export default class Track extends Item {
