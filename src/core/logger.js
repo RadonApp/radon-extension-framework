@@ -92,7 +92,8 @@ export class Logger {
 
         function retry() {
             if(attempt > 50) {
-                this._setLevel(Levels.Trace);
+                console.warn('Unable to retrieve the current log level, defaulting to trace');
+                self._setLevel(Levels.Trace);
                 return;
             }
 
@@ -119,12 +120,10 @@ export class Logger {
         });
 
         // Retrieve current log level
-        this.preferences.getString(optionKey)
-            .then((level) => this._setLevel(level))
-            .catch((err) => {
-                console.warn('Unable to retrieve current log level: %s', err.message, err);
-                retry();
-            });
+        this.preferences.getString(optionKey).then(
+            (level) => this._setLevel(level),
+            () => retry()
+        );
     }
 
     _setLevel(key) {
