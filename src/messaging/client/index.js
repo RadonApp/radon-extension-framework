@@ -95,7 +95,8 @@ export class MessageClient extends EventEmitter {
             // Reset state
             this._connecting = null;
         }, (err) => {
-            Log.debug('[%s] Connection failed: %s', this.id, err.message, err);
+            Log.debug('[%s] Connection failed: %s', this.id, err ? err.message : null, err);
+            return Promise.reject(err);
         });
 
         // Return promise
@@ -176,7 +177,9 @@ export class MessageClient extends EventEmitter {
             );
 
             // Send request
-            self.send(request);
+            self.send(request).catch((err) =>
+                reject(err)
+            );
         });
     }
 

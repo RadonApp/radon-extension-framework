@@ -117,7 +117,8 @@ export default class MessageClientService extends EventEmitter {
         }, (err) => {
             Log.warn(
                 '[%s] Unable to subscribe to the "%s/%s" service: %s',
-                this.client.id, this.channel.name, this.name, err.message
+                this.client.id, this.channel.name, this.name,
+                err ? err.message : null
             );
 
             // Update state
@@ -125,7 +126,8 @@ export default class MessageClientService extends EventEmitter {
 
             // Reject promise with error
             return Promise.reject(new Error(
-                'Unable to subscribe to the "' + this.channel.name + '/' + this.name + '" service: ' + err.message
+                'Unable to subscribe to the "' + this.channel.name + '/' + this.name + '" service: ' +
+                (err ? err.message : null)
             ));
         });
     }
