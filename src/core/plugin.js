@@ -1,11 +1,11 @@
-import Plugin from 'eon.extension.framework/base/plugins/base';
+import Plugin from 'neon-extension-framework/base/plugins/base';
 
 import Manifest from '../../manifest.json';
 
 
 export class MainPlugin extends Plugin {
     constructor() {
-        super('eon.extension', 'eon', Manifest);
+        super('neon-extension', 'neon', Manifest);
     }
 }
 

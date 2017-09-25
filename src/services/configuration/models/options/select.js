@@ -1,4 +1,4 @@
-import Preferences from 'eon.extension.framework/preferences';
+import Preferences from 'neon-extension-framework/preferences';
 
 import {Option} from './core/base';
 

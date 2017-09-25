@@ -1,4 +1,4 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Model from '../../base';
 import {getProperty} from './helpers';
@@ -29,7 +29,7 @@ export class Option extends Model {
             return null;
         }
 
-        if(componentId.indexOf('eon.') === 0) {
+        if(componentId.indexOf('neon-') === 0) {
             return componentId;
         }
 

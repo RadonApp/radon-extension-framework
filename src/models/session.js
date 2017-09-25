@@ -1,8 +1,8 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Uuid from 'uuid';
 
-import Item from 'eon.extension.framework/models/item';
-import {isDefined, round} from 'eon.extension.framework/core/helpers';
+import Item from 'neon-extension-framework/models/item';
+import {isDefined, round} from 'neon-extension-framework/core/helpers';
 
 
 export const SessionState = {

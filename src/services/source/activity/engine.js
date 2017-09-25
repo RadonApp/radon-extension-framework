@@ -1,11 +1,11 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Merge from 'lodash-es/merge';
 
-import Log from 'eon.extension.framework/core/logger';
-import Plugin from 'eon.extension.framework/core/plugin';
-import Session, {SessionState} from 'eon.extension.framework/models/session';
-// import {Episode} from 'eon.extension.framework/models/item/television';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-framework/core/logger';
+import Plugin from 'neon-extension-framework/core/plugin';
+import Session, {SessionState} from 'neon-extension-framework/models/session';
+// import {Episode} from 'neon-extension-framework/models/item/television';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class ActivityEngine {

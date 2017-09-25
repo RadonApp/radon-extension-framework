@@ -1,8 +1,8 @@
-import Artist from 'eon.extension.framework/models/item/music/artist';
-import Album from 'eon.extension.framework/models/item/music/album';
-import Track from 'eon.extension.framework/models/item/music/track';
-import Movie from 'eon.extension.framework/models/item/movie';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Artist from 'neon-extension-framework/models/item/music/artist';
+import Album from 'neon-extension-framework/models/item/music/album';
+import Track from 'neon-extension-framework/models/item/music/track';
+import Movie from 'neon-extension-framework/models/item/movie';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export const ItemsByType = {

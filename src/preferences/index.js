@@ -1,8 +1,8 @@
 import Merge from 'lodash-es/merge';
 
-import Log from 'eon.extension.framework/core/logger';
-import Storage from 'eon.extension.framework/storage';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-framework/core/logger';
+import Storage from 'neon-extension-framework/storage';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import {PreferencesContext} from './context';
 

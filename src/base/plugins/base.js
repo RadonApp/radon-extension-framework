@@ -1,14 +1,14 @@
 import Merge from 'lodash-es/merge';
 
-import DeclarativeContent from 'eon.extension.browser/declarative/content';
-import Log from 'eon.extension.framework/core/logger';
-import Messaging from 'eon.extension.framework/messaging';
-import Permissions from 'eon.extension.browser/permissions';
-import Preferences from 'eon.extension.framework/preferences';
-import Storage from 'eon.extension.framework/storage';
-import {PageStateMatcher} from 'eon.extension.browser/declarative/conditions';
-import {RequestContentScript} from 'eon.extension.browser/declarative/actions';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import DeclarativeContent from 'neon-extension-browser/declarative/content';
+import Log from 'neon-extension-framework/core/logger';
+import Messaging from 'neon-extension-framework/messaging';
+import Permissions from 'neon-extension-browser/permissions';
+import Preferences from 'neon-extension-framework/preferences';
+import Storage from 'neon-extension-framework/storage';
+import {PageStateMatcher} from 'neon-extension-browser/declarative/conditions';
+import {RequestContentScript} from 'neon-extension-browser/declarative/actions';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Plugin {
@@ -37,7 +37,7 @@ export default class Plugin {
 
     get title() {
         if(this.manifest === null || !isDefined(this.manifest.name)) {
-            return this.id.replace('eon.extension.', '');
+            return this.id.replace('neon-extension-', '');
         }
 
         return this.manifest.name;

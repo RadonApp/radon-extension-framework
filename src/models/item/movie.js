@@ -1,7 +1,7 @@
 import Pick from 'lodash-es/pick';
 
-import Item from 'eon.extension.framework/models/item/core/base';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Item from 'neon-extension-framework/models/item/core/base';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Movie extends Item {

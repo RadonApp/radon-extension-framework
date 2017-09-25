@@ -54,7 +54,7 @@ export class Logger {
     }
 
     get preferences() {
-        let preferences = require('eon.extension.framework/preferences').default;
+        let preferences = require('neon-extension-framework/preferences').default;
 
         if(!isDefined(preferences)) {
             return null;
@@ -66,21 +66,21 @@ export class Logger {
     // region Static methods
 
     static create(key, resolver) {
-        // Ensure `window.eon.loggers` object exists
-        if(!isDefined(window.eon)) {
-            window.eon = {};
+        // Ensure `window.neon.loggers` object exists
+        if(!isDefined(window.neon)) {
+            window.neon = {};
         }
 
-        if(!isDefined(window.eon.loggers)) {
-            window.eon.loggers = {};
+        if(!isDefined(window.neon.loggers)) {
+            window.neon.loggers = {};
         }
 
         // Construct logger (if not already defined)
-        if(!isDefined(window.eon.loggers[key])) {
-            window.eon.loggers[key] = new Logger(resolver);
+        if(!isDefined(window.neon.loggers[key])) {
+            window.neon.loggers[key] = new Logger(resolver);
         }
 
-        return window.eon.loggers[key];
+        return window.neon.loggers[key];
     }
 
     // endregion
@@ -214,6 +214,6 @@ export class Logger {
 }
 
 // Construct core/framework logger
-export default Logger.create('eon.extension', (preferences) =>
-    preferences.context('eon.extension').key('general.debugging.log_level')
+export default Logger.create('neon-extension', (preferences) =>
+    preferences.context('neon-extension').key('general.debugging.log_level')
 );

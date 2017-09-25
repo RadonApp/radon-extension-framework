@@ -1,8 +1,8 @@
 import Pick from 'lodash-es/pick';
 
-import Artist from 'eon.extension.framework/models/item/music/artist';
-import Item from 'eon.extension.framework/models/item/core/base';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import Artist from 'neon-extension-framework/models/item/music/artist';
+import Item from 'neon-extension-framework/models/item/core/base';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Album extends Item {

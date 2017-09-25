@@ -1,4 +1,4 @@
-import Log from 'eon.extension.framework/core/logger';
+import Log from 'neon-extension-framework/core/logger';
 
 
 export default class Service {

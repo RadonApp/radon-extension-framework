@@ -1,7 +1,7 @@
-import Log from 'eon.extension.framework/core/logger';
-import Preferences from 'eon.extension.framework/preferences';
-import {Page} from 'eon.extension.framework/services/configuration/models';
-import {isDefined, isString} from 'eon.extension.framework/core/helpers';
+import Log from 'neon-extension-framework/core/logger';
+import Preferences from 'neon-extension-framework/preferences';
+import {Page} from 'neon-extension-framework/services/configuration/models';
+import {isDefined, isString} from 'neon-extension-framework/core/helpers';
 
 
 export const OptionTypes = [
@@ -233,12 +233,12 @@ export class Registry {
 }
 
 // Construct registry
-if(typeof window.eon === 'undefined') {
-    window.eon = {};
+if(typeof window.neon === 'undefined') {
+    window.neon = {};
 }
 
-if(typeof window.eon.registry === 'undefined') {
-    window.eon.registry = new Registry();
+if(typeof window.neon.registry === 'undefined') {
+    window.neon.registry = new Registry();
 }
 
-export default window.eon.registry;
+export default window.neon.registry;

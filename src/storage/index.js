@@ -2,8 +2,8 @@ import EventEmitter from 'eventemitter3';
 import IsEqual from 'lodash-es/isEqual';
 import Merge from 'lodash-es/merge';
 
-import MessageClient from 'eon.extension.framework/messaging/client';
-import {isDefined, isUndefined} from 'eon.extension.framework/core/helpers';
+import MessageClient from 'neon-extension-framework/messaging/client';
+import {isDefined, isUndefined} from 'neon-extension-framework/core/helpers';
 
 import StorageContext from './context';
 
@@ -15,7 +15,7 @@ export class Storage extends EventEmitter {
         this._entries = {};
 
         // Retrieve service, and bind to events
-        this.messaging = MessageClient.channel('eon.extension').service('storage');
+        this.messaging = MessageClient.channel('neon-extension').service('storage');
         this.messaging.on('%subscribe', this._onSubscribed.bind(this));
         this.messaging.on('change', this._onChanged.bind(this));
     }
