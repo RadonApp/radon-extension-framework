@@ -36,11 +36,11 @@ export default class Plugin {
     }
 
     get title() {
-        if(this.manifest === null || !isDefined(this.manifest.name)) {
+        if(this.manifest === null || !isDefined(this.manifest.title)) {
             return this.id.replace('neon-extension-', '');
         }
 
-        return this.manifest.name;
+        return this.manifest.title;
     }
 
     // region Manifest properties
@@ -62,21 +62,6 @@ export default class Plugin {
             origins: this.manifest.origins,
             permissions: this.manifest.permissions
         };
-    }
-
-    get release() {
-        // Retrieve release details from manifest
-        let release = {};
-
-        if(isDefined(this.manifest) && isDefined(this.manifest.release)) {
-            release = this.manifest.release;
-        }
-
-        // Set release defaults
-        return Merge({
-            date: null,
-            version: null
-        }, release);
     }
 
     // endregion
