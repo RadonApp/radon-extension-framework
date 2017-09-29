@@ -6,5 +6,5 @@ export default class MigrateService extends Service {
         super(plugin, 'migrate', 'migrate');
     }
 
-    onPreferences(preferences) { }
+    onLegacyPreferences(preferences) { }
 }
