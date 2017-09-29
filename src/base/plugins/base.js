@@ -12,11 +12,12 @@ import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Plugin {
-    constructor(id, type, manifest) {
+    constructor(id, type) {
         this.id = id;
         this.type = type;
 
-        this.manifest = manifest || null;
+        // Retrieve manifest
+        this.manifest = neon.manifests[id];
 
         // Validate manifest
         this.valid = this.validate();
