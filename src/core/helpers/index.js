@@ -1,4 +1,17 @@
-let getType = {};
+import {cleanTitle, encodeTitle} from './metadata';
+import {isUndefined, isDefined, isFunction, isString, setDefault} from './value';
+
+
+export {
+    cleanTitle,
+    encodeTitle,
+
+    isUndefined,
+    isDefined,
+    isFunction,
+    isString,
+    setDefault
+};
 
 export function generateRandomString(length, chars) {
     let result = '';
@@ -8,22 +21,6 @@ export function generateRandomString(length, chars) {
     }
 
     return result;
-}
-
-export function isUndefined(value) {
-    return typeof value === 'undefined';
-}
-
-export function isDefined(value) {
-    return !isUndefined(value) && value !== null;
-}
-
-export function isFunction(functionToCheck) {
-    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-}
-
-export function isString(value) {
-    return isDefined(value) && typeof value === 'string';
 }
 
 export function hasClass(node, className) {
@@ -66,18 +63,6 @@ export function hasClassTree(node) {
 
 export function round(value, digits) {
     return +(Math.round(value + 'e+' + digits) + 'e-' + digits);
-}
-
-export function setDefault(value, defaultValue) {
-    if(!isDefined(value)) {
-        if(!isDefined(defaultValue)) {
-            return null;
-        }
-
-        return defaultValue;
-    }
-
-    return value;
 }
 
 export function toCssUrl(url) {
