@@ -553,10 +553,9 @@ export default class ActivityEngine {
             Log.debug('Refreshing item: %o', item);
 
             // Fetch metadata
-            return Promise.resolve(this.options.fetchMetadata(item))
-                .catch((err) => {
-                    Log.error('Unable to fetch metadata: %s', item, err.message, err);
-                });
+            return Promise.resolve(this.options.fetchMetadata(item)).catch((err) => {
+                Log.error('Unable to fetch metadata: %s', item, err.message, err);
+            });
         }
 
         return Promise.resolve();
