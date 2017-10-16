@@ -13,7 +13,7 @@ export const ItemsByType = {
     'movie': Movie
 };
 
-export default class Item {
+export class ItemParser {
     static fromDocument(document) {
         if(!isDefined(document)) {
             return null;
