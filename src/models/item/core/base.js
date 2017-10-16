@@ -1,26 +1,102 @@
+import Assign from 'lodash-es/assign';
+import CloneDeep from 'lodash-es/cloneDeep';
+import ForEach from 'lodash-es/forEach';
 import IsPlainObject from 'lodash-es/isPlainObject';
+import Merge from 'lodash-es/merge';
+import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
+import PickBy from 'lodash-es/pickBy';
 
 import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Item {
-    constructor(id, type, options) {
-        this.id = id;
-        this.type = type;
+    constructor(type, values, children) {
+        this.values = {type, ...values || {}};
 
-        // Define optional properties
-        options = options || {};
+        this._children = children || {};
 
-        this.ids = options.ids || {};
-
-        this.createdAt = options.createdAt || null;
-        this.updatedAt = options.updatedAt || null;
-        this.seenAt = options.seenAt || null;
-
-        this.changed = options.changed || false;
-        this.complete = options.complete || false;
+        // Validate type
+        if(this.values.type !== type) {
+            throw new Error('Invalid type');
+        }
     }
+
+    // region Properties
+
+    get id() {
+        return this.values.id || null;
+    }
+
+    set id(id) {
+        this.values.id = id;
+    }
+
+    get type() {
+        return this.values.type;
+    }
+
+    get children() {
+        return Object.keys(this._children);
+    }
+
+    get ids() {
+        return this.values.ids || {};
+    }
+
+    set ids(ids) {
+        this.values.ids = ids;
+    }
+
+    get createdAt() {
+        return this.values.createdAt || null;
+    }
+
+    set createdAt(createdAt) {
+        this.values.createdAt = createdAt;
+    }
+
+    get updatedAt() {
+        return this.values.updatedAt || null;
+    }
+
+    set updatedAt(updatedAt) {
+        this.values.updatedAt = updatedAt;
+    }
+
+    get seenAt() {
+        return this.values.seenAt || null;
+    }
+
+    set seenAt(seenAt) {
+        this.values.seenAt = seenAt;
+    }
+
+    get changed() {
+        return this.values.changed || false;
+    }
+
+    set changed(changed) {
+        this.values.changed = changed;
+    }
+
+    get complete() {
+        return this.values.complete || false;
+    }
+
+    set complete(complete) {
+        this.values.complete = complete;
+    }
+
+    get revision() {
+        return this.values.revision || null;
+    }
+
+    set revision(revision) {
+        this.values.revision = revision;
+    }
+
+    // endregion
 
     hasExpired(expires) {
         if(!isDefined((this.updatedAt))) {
@@ -62,8 +138,19 @@ export default class Item {
         return match(this.ids, other.ids);
     }
 
+    update(values) {
+        Assign(this.values, PickBy(values, isDefined));
+    }
+
     toDocument(options) {
-        options = options || {};
+        options = Merge({
+            keys: {}
+        }, options || {});
+
+        // Validate options
+        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
+            throw new Error('Only one key filter should be defined');
+        }
 
         // Build document
         let document = {
@@ -72,6 +159,10 @@ export default class Item {
 
         if(isDefined(this.id)) {
             document['_id'] = this.id;
+        }
+
+        if(isDefined(this.revision)) {
+            document['_rev'] = this.revision;
         }
 
         if(isDefined(this.ids)) {
@@ -90,27 +181,31 @@ export default class Item {
             document['seenAt'] = this.seenAt;
         }
 
-        // Filter document by "keys"
-        if(isDefined(options.keys)) {
-            return Pick(document, options.keys);
+        // Apply key exclude filter
+        if(isDefined(options.keys.exclude)) {
+            return Omit(document, options.keys.exclude);
+        }
+
+        // Apply key include filter
+        if(isDefined(options.keys.include)) {
+            return Pick(document, options.keys.include);
         }
 
         return document;
     }
 
     toPlainObject(options) {
-        return {
-            id: this.id,
-            type: this.type,
+        let result = CloneDeep(this.values);
 
-            ids: this.ids,
+        // Encode children (if they are defined)
+        ForEach(this._children, (value, key) => {
+            if(!isDefined(value)) {
+                return;
+            }
 
-            createdAt: this.createdAt,
-            updatedAt: this.updatedAt,
-            seenAt: this.seenAt,
+            result[key] = value.toPlainObject();
+        });
 
-            changed: this.changed,
-            complete: this.complete
-        };
+        return result;
     }
 }

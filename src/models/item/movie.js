@@ -1,3 +1,5 @@
+import Merge from 'lodash-es/merge';
+import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 
 import Item from 'neon-extension-framework/models/item/core/base';
@@ -5,18 +7,39 @@ import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Movie extends Item {
-    constructor(id, options) {
-        super(id, 'movie', options);
-
-        // Define optional properties
-        options = options || {};
-
-        this.title = options.title || null;
-        this.year = options.year || null;
+    constructor(id, values) {
+        super(id, 'movie', values);
     }
 
+    // region Properties
+
+    get title() {
+        return this.values.title || null;
+    }
+
+    set title(title) {
+        this.values.title = title;
+    }
+
+    get year() {
+        return this.values.year || null;
+    }
+
+    set year(year) {
+        this.values.year = year;
+    }
+
+    // endregion
+
     toDocument(options) {
-        options = options || {};
+        options = Merge({
+            keys: {}
+        }, options || {});
+
+        // Validate options
+        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
+            throw new Error('Only one key filter should be defined');
+        }
 
         // Build document
         let document = {
@@ -36,9 +59,14 @@ export default class Movie extends Item {
             document['year'] = this.year;
         }
 
-        // Filter document by "keys"
-        if(isDefined(options.keys)) {
-            return Pick(document, options.keys);
+        // Apply key exclude filter
+        if(isDefined(options.keys.exclude)) {
+            return Omit(document, options.keys.exclude);
+        }
+
+        // Apply key include filter
+        if(isDefined(options.keys.include)) {
+            return Pick(document, options.keys.include);
         }
 
         return document;

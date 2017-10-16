@@ -1,3 +1,6 @@
+import MapKeys from 'lodash-es/mapKeys';
+import Merge from 'lodash-es/merge';
+import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 
 import Item from 'neon-extension-framework/models/item/core/base';
@@ -5,17 +8,31 @@ import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Artist extends Item {
-    constructor(id, options) {
-        super(id, 'music/artist', options);
-
-        // Define optional properties
-        options = options || {};
-
-        this.title = options.title || null;
+    constructor(values) {
+        super('music/artist', values);
     }
 
+    // region Properties
+
+    get title() {
+        return this.values.title || null;
+    }
+
+    set title(title) {
+        this.values.title = title;
+    }
+
+    // endregion
+
     toDocument(options) {
-        options = options || {};
+        options = Merge({
+            keys: {}
+        }, options || {});
+
+        // Validate options
+        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
+            throw new Error('Only one key filter should be defined');
+        }
 
         // Build document
         let document = super.toDocument();
@@ -24,50 +41,43 @@ export default class Artist extends Item {
             document['title'] = this.title;
         }
 
-        // Filter document by "keys"
-        if(isDefined(options.keys)) {
-            return Pick(document, options.keys);
+        // Apply key exclude filter
+        if(isDefined(options.keys.exclude)) {
+            return Omit(document, options.keys.exclude);
+        }
+
+        // Apply key include filter
+        if(isDefined(options.keys.include)) {
+            return Pick(document, options.keys.include);
         }
 
         return document;
     }
 
-    toPlainObject(options) {
-        return {
-            ...super.toPlainObject(options),
-
-            title: this.title
-        };
-    }
-
-    static create(options) {
-        return new Artist(null, {
-            ...options,
-            complete: true
-        });
-    }
-
     static fromDocument(document) {
-        if(!isDefined(document)) {
+        if(!isDefined(document) || Object.keys(document).length < 1) {
             return null;
         }
 
-        if(document.type !== 'music/artist') {
-            throw new Error('Expected "music/artist", found "' + document.type + '"');
-        }
+        // Create artist
+        return new Artist(MapKeys(document, (value, key) => {
+            if(key === '_id') {
+                return 'id';
+            }
 
-        return new Artist(document['_id'], document);
+            if(key === '_rev') {
+                return 'revision';
+            }
+
+            return key;
+        }));
     }
 
     static fromPlainObject(item) {
-        if(!isDefined(item)) {
+        if(!isDefined(item) || Object.keys(item).length < 1) {
             return null;
         }
 
-        if(item.type !== 'music/artist') {
-            throw new Error('Expected "music/artist", found "' + item.type + '"');
-        }
-
-        return new Artist(item['id'], item);
+        return new Artist(item);
     }
 }

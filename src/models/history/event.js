@@ -1,3 +1,5 @@
+import Merge from 'lodash-es/merge';
+import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 
 import {isDefined} from 'neon-extension-framework/core/helpers';
@@ -14,16 +16,28 @@ export default class HistoryEvent {
     }
 
     toDocument(options) {
-        options = options || {};
+        options = Merge({
+            keys: {}
+        }, options || {});
+
+        // Validate options
+        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
+            throw new Error('Only one key filter should be defined');
+        }
 
         // Build document
         let document = {
             '_id': this.id
         };
 
-        // Filter document by "keys"
-        if(isDefined(options.keys)) {
-            return Pick(document, options.keys);
+        // Apply key exclude filter
+        if(isDefined(options.keys.exclude)) {
+            return Omit(document, options.keys.exclude);
+        }
+
+        // Apply key include filter
+        if(isDefined(options.keys.include)) {
+            return Pick(document, options.keys.include);
         }
 
         return document;

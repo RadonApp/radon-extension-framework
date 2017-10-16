@@ -1,3 +1,6 @@
+import MapKeys from 'lodash-es/mapKeys';
+import Merge from 'lodash-es/merge';
+import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 
 import Artist from 'neon-extension-framework/models/item/music/artist';
@@ -6,18 +9,46 @@ import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Album extends Item {
-    constructor(id, options) {
-        super(id, 'music/album', options);
-
-        // Define optional properties
-        options = options || {};
-
-        this.title = options.title || null;
-        this.artist = options.artist || null;
+    constructor(values, children) {
+        super('music/album', values, children);
     }
 
+    // region Properties
+
+    get title() {
+        return this.values.title || null;
+    }
+
+    set title(title) {
+        this.values.title = title;
+    }
+
+    get artist() {
+        return this._children.artist || null;
+    }
+
+    set artist(artist) {
+        this._children.artist = artist;
+
+        // Update value
+        if(isDefined(artist)) {
+            this.values['artist'] = artist.toPlainObject();
+        } else {
+            this.values['artist'] = null;
+        }
+    }
+
+    // endregion
+
     toDocument(options) {
-        options = options || {};
+        options = Merge({
+            keys: {}
+        }, options || {});
+
+        // Validate options
+        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
+            throw new Error('Only one key filter should be defined');
+        }
 
         // Build document
         let document = super.toDocument();
@@ -28,53 +59,42 @@ export default class Album extends Item {
 
         if(isDefined(this.artist)) {
             document['artist'] = this.artist.toDocument({
-                keys: ['_id', 'title']
+                keys: {
+                    include: ['_id', 'title']
+                }
             });
         }
 
-        // Filter document by "keys"
-        if(isDefined(options.keys)) {
-            return Pick(document, options.keys);
+        // Apply key exclude filter
+        if(isDefined(options.keys.exclude)) {
+            return Omit(document, options.keys.exclude);
+        }
+
+        // Apply key include filter
+        if(isDefined(options.keys.include)) {
+            return Pick(document, options.keys.include);
         }
 
         return document;
     }
 
-    toPlainObject(options) {
-        let result = {
-            ...super.toPlainObject(options),
-
-            title: this.title,
-
-            artist: null
-        };
-
-        if(isDefined(this.artist)) {
-            result['artist'] = this.artist.toPlainObject();
-        }
-
-        return result;
-    }
-
-    static create(options) {
-        return new Album(null, {
-            ...options,
-            complete: true
-        });
-    }
-
     static fromDocument(document) {
-        if(!isDefined(document)) {
+        if(!isDefined(document) || Object.keys(document).length < 1) {
             return null;
         }
 
-        if(document.type !== 'music/album') {
-            throw new Error('Expected "music/album", found "' + document.type + '"');
-        }
+        // Create album
+        return new Album(MapKeys(document, (value, key) => {
+            if(key === '_id') {
+                return 'id';
+            }
 
-        return new Album(document['_id'], {
-            ...document,
+            if(key === '_rev') {
+                return 'revision';
+            }
 
+            return key;
+        }), {
             artist: Artist.fromDocument({
                 type: 'music/artist',
                 ...document['artist']
@@ -83,17 +103,11 @@ export default class Album extends Item {
     }
 
     static fromPlainObject(item) {
-        if(!isDefined(item)) {
+        if(!isDefined(item) || Object.keys(item).length < 1) {
             return null;
         }
 
-        if(item.type !== 'music/album') {
-            throw new Error('Expected "music/album", found "' + item.type + '"');
-        }
-
-        return new Album(item['id'], {
-            ...item,
-
+        return new Album(item, {
             artist: Artist.fromPlainObject({
                 type: 'music/artist',
                 ...item['artist']
