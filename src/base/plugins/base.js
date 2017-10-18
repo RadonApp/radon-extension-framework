@@ -275,6 +275,9 @@ export default class Plugin {
                 return;
             }
 
+            // Add prefix to identifier
+            script.id = this.id + '/' + script.id;
+
             // Add rule identifier
             if(ruleIds.indexOf(script.id) !== -1) {
                 Log.warn('Content script with identifier %o has already been defined', script.id);
