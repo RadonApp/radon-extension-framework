@@ -549,10 +549,8 @@ export default class ActivityEngine {
             Log.trace('Item updated %d second(s) ago', (Date.now() - item.updatedAt) / 1000);
         }
 
-        if(!isDefined(item.duration) || item.hasExpired(this.options.metadataRefreshInterval)) {
-            Log.debug('Refreshing item: %o', item);
-
-            // Fetch metadata
+        // Fetch metadata (if the item is incomplete, or has expired)
+        if(!item.complete || item.hasExpired(this.options.metadataRefreshInterval)) {
             return Promise.resolve(this.options.fetchMetadata(item)).catch((err) => {
                 Log.error('Unable to fetch metadata: %s', item, err.message, err);
             });

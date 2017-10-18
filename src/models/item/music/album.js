@@ -1,16 +1,20 @@
-import MapKeys from 'lodash-es/mapKeys';
 import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 
-import Artist from 'neon-extension-framework/models/item/music/artist';
 import Item from 'neon-extension-framework/models/item/core/base';
 import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Album extends Item {
-    constructor(values, children) {
-        super('music/album', values, children);
+    constructor(values, options) {
+        super('music/album', values, {
+            children: {
+                'artist': 'music/artist'
+            },
+
+            ...options
+        });
     }
 
     // region Properties
@@ -24,21 +28,38 @@ export default class Album extends Item {
     }
 
     get artist() {
-        return this._children.artist || null;
+        return this.children.artist || null;
     }
 
     set artist(artist) {
-        this._children.artist = artist;
+        this.children.artist = artist;
+    }
 
-        // Update value
-        if(isDefined(artist)) {
-            this.values['artist'] = artist.toPlainObject();
-        } else {
-            this.values['artist'] = null;
+    get complete() {
+        if(!super.complete) {
+            return false;
         }
+
+        if(!isDefined(this.title) || this.title.length < 1) {
+            return false;
+        }
+
+        return true;
     }
 
     // endregion
+
+    matches(other) {
+        if(super.matches(other)) {
+            return true;
+        }
+
+        if(isDefined(this.title) && this.title === other.title && this.matchesChildren(other.children)) {
+            return true;
+        }
+
+        return false;
+    }
 
     toDocument(options) {
         options = Merge({
@@ -78,40 +99,11 @@ export default class Album extends Item {
         return document;
     }
 
-    static fromDocument(document) {
-        if(!isDefined(document) || Object.keys(document).length < 1) {
+    static decode(values, options) {
+        if(!isDefined(values) || Object.keys(values).length < 1) {
             return null;
         }
 
-        // Create album
-        return new Album(MapKeys(document, (value, key) => {
-            if(key === '_id') {
-                return 'id';
-            }
-
-            if(key === '_rev') {
-                return 'revision';
-            }
-
-            return key;
-        }), {
-            artist: Artist.fromDocument({
-                type: 'music/artist',
-                ...document['artist']
-            })
-        });
-    }
-
-    static fromPlainObject(item) {
-        if(!isDefined(item) || Object.keys(item).length < 1) {
-            return null;
-        }
-
-        return new Album(item, {
-            artist: Artist.fromPlainObject({
-                type: 'music/artist',
-                ...item['artist']
-            })
-        });
+        return new Album(values, options);
     }
 }

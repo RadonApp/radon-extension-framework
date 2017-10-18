@@ -1,7 +1,9 @@
 import Assign from 'lodash-es/assign';
 import CloneDeep from 'lodash-es/cloneDeep';
 import ForEach from 'lodash-es/forEach';
+import IsEqual from 'lodash-es/isEqual';
 import IsPlainObject from 'lodash-es/isPlainObject';
+import MapKeys from 'lodash-es/mapKeys';
 import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
@@ -11,34 +13,35 @@ import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Item {
-    constructor(type, values, children) {
-        this.values = {type, ...values || {}};
+    constructor(type, values, options) {
+        this.type = type;
 
-        this._children = children || {};
+        this.children = {};
+        this.values = {};
 
-        // Validate type
-        if(this.values.type !== type) {
-            throw new Error('Invalid type');
-        }
+        this.id = null;
+        this.revision = null;
+
+        this.createdAt = null;
+        this.updatedAt = null;
+
+        this.changed = false;
+
+        // Parse options
+        this.options = {
+            children: {},
+            builder: null,
+
+            ...options
+        };
+
+        // Update values
+        this.update(values, {
+            ignoreChanges: true
+        });
     }
 
     // region Properties
-
-    get id() {
-        return this.values.id || null;
-    }
-
-    set id(id) {
-        this.values.id = id;
-    }
-
-    get type() {
-        return this.values.type;
-    }
-
-    get children() {
-        return Object.keys(this._children);
-    }
 
     get ids() {
         return this.values.ids || {};
@@ -48,52 +51,26 @@ export default class Item {
         this.values.ids = ids;
     }
 
-    get createdAt() {
-        return this.values.createdAt || null;
-    }
-
-    set createdAt(createdAt) {
-        this.values.createdAt = createdAt;
-    }
-
-    get updatedAt() {
-        return this.values.updatedAt || null;
-    }
-
-    set updatedAt(updatedAt) {
-        this.values.updatedAt = updatedAt;
-    }
-
-    get seenAt() {
-        return this.values.seenAt || null;
-    }
-
-    set seenAt(seenAt) {
-        this.values.seenAt = seenAt;
-    }
-
-    get changed() {
-        return this.values.changed || false;
-    }
-
-    set changed(changed) {
-        this.values.changed = changed;
-    }
-
     get complete() {
-        return this.values.complete || false;
-    }
+        if(!isDefined(this.type) || this.type.length < 1) {
+            return false;
+        }
 
-    set complete(complete) {
-        this.values.complete = complete;
-    }
+        for(let key in this.options.children) {
+            if(!this.options.children.hasOwnProperty(key)) {
+                continue;
+            }
 
-    get revision() {
-        return this.values.revision || null;
-    }
+            if(!isDefined(this.children[key])) {
+                return false;
+            }
 
-    set revision(revision) {
-        this.values.revision = revision;
+            if(!this.children[key].complete) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // endregion
@@ -111,35 +88,240 @@ export default class Item {
             return true;
         }
 
-        function match(ids, otherIds) {
-            for(let key in ids) {
-                if(!ids.hasOwnProperty(key)) {
-                    continue;
-                }
-
-                // Ignore undefined entries
-                if(!isDefined(ids[key]) || !isDefined(otherIds[key])) {
-                    continue;
-                }
-
-                // Compare entries
-                if(IsPlainObject(ids[key]) && IsPlainObject(otherIds[key])) {
-                    if(match(ids[key], otherIds[key])) {
-                        return true;
-                    }
-                } else if(ids[key] === otherIds[key]) {
-                    return true;
-                }
-            }
-
-            return false;
+        if(this.matchesIds(other.ids)) {
+            return true;
         }
 
-        return match(this.ids, other.ids);
+        return false;
     }
 
-    update(values) {
-        Assign(this.values, PickBy(values, isDefined));
+    matchesChildren(children) {
+        for(let key in children) {
+            if(!children.hasOwnProperty(key) || !isDefined(this.children[key])) {
+                continue;
+            }
+
+            // Compare children
+            if(!this.children[key].matches(children[key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    matchesIds(otherIds, ids) {
+        if(!isDefined(ids)) {
+            ids = this.ids;
+        }
+
+        for(let key in ids) {
+            if(!ids.hasOwnProperty(key)) {
+                continue;
+            }
+
+            // Ignore undefined entries
+            if(!isDefined(ids[key]) || !isDefined(otherIds[key])) {
+                continue;
+            }
+
+            // Compare entries
+            if(IsPlainObject(ids[key]) && IsPlainObject(otherIds[key])) {
+                if(this.matchesIds(otherIds[key], ids[key])) {
+                    return true;
+                }
+            } else if(ids[key] === otherIds[key]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    merge(other, options) {
+        if(IsPlainObject(other)) {
+            throw new Error('Invalid value provided for "other" (expected item instance)');
+        }
+
+        let changed = false;
+
+        // Parse options
+        options = Merge({
+            ignoreChanges: false
+        }, options || {});
+
+        // Update properties
+        this.updateProperties(other);
+
+        // Update values
+        this.update(other.values, options);
+
+        // Update children
+        changed = this.updateChildren(other.children) || changed;
+
+        // Update state
+        if(changed && !options.ignoreChanges) {
+            this.changed = true;
+        }
+
+        return this;
+    }
+
+    update(values, options) {
+        if(!IsPlainObject(values)) {
+            throw new Error('Invalid value provided for "other" (expected plain object)');
+        }
+
+        if(isDefined(values.type) && values.type !== this.type) {
+            throw new Error('Invalid type');
+        }
+
+        let changed = false;
+
+        // Parse options
+        options = Merge({
+            ignoreChanges: false
+        }, options || {});
+
+        // Parse values
+        values = MapKeys(PickBy(values, isDefined), (value, key) => {
+            if(key === '_id') {
+                return 'id';
+            }
+
+            if(key === '_rev') {
+                return 'revision';
+            }
+
+            return key;
+        });
+
+        // Retrieve children
+        let children = {};
+
+        for(let key in values) {
+            if(!values.hasOwnProperty(key)) {
+                continue;
+            }
+
+            if(!isDefined(values[key]) || !isDefined(this.options.children[key])) {
+                continue;
+            }
+
+            children[key] = values[key];
+        }
+
+        // Build update values
+        let update = {
+            ...this.values,
+
+            // Include values
+            ...Omit(values, [
+                ...Object.keys(children),
+
+                'id',
+                'revision',
+                'type',
+
+                'createdAt',
+                'updatedAt'
+            ]),
+
+            // Identifiers
+            ids: Merge(
+                this.values.ids || {},
+                values.ids || {}
+            )
+        };
+
+        if(isDefined(update.artist)) {
+            throw new Error();
+        }
+
+        if(isDefined(update.album)) {
+            throw new Error();
+        }
+
+        // Check if values have changed
+        if(Object.keys(this.values).length > 0 && !IsEqual(this.values, update)) {
+            changed = true;
+        }
+
+        // Update properties
+        this.updateProperties(values);
+
+        // Update values
+        Assign(this.values, update);
+
+        // Update children
+        changed = this.updateChildren(children) || changed;
+
+        // Update state
+        if(changed && !options.ignoreChanges) {
+            this.changed = true;
+        }
+
+        return this;
+    }
+
+    updateChildren(children) {
+        let changed = false;
+
+        for(let key in children) {
+            if(!children.hasOwnProperty(key)) {
+                continue;
+            }
+
+            let type = this.options.children[key];
+            let child = children[key];
+
+            // Validate value
+            if(!isDefined(child) || Object.keys(child).length < 1) {
+                continue;
+            }
+
+            // Update item
+            if(!isDefined(this.children[key])) {
+                if(!isDefined(this.options.builder)) {
+                    throw new Error('Unable to decode "' + type + '" item, builder isn\'t available');
+                }
+
+                // Decode item
+                if(IsPlainObject(child)) {
+                    this.children[key] = this.options.builder.decode({type, ...child});
+                } else {
+                    this.children[key] = child;
+                }
+
+                // Mark as changed
+                changed = true;
+            } else {
+                // Update item
+                if(IsPlainObject(child)) {
+                    this.children[key].update(child);
+                } else {
+                    this.children[key].merge(child);
+                }
+
+                // Mark as changed
+                if(this.children[key].changed) {
+                    changed = true;
+                }
+            }
+        }
+
+        return changed;
+    }
+
+    updateProperties(other) {
+        ForEach(['id', 'revision', 'createdAt', 'updatedAt'], (key) => {
+            if(isDefined(this[key])) {
+                return;
+            }
+
+            // Update property
+            this[key] = other[key];
+        });
     }
 
     toDocument(options) {
@@ -177,10 +359,6 @@ export default class Item {
             document['updatedAt'] = this.updatedAt;
         }
 
-        if(isDefined(this.seenAt)) {
-            document['seenAt'] = this.seenAt;
-        }
-
         // Apply key exclude filter
         if(isDefined(options.keys.exclude)) {
             return Omit(document, options.keys.exclude);
@@ -197,8 +375,18 @@ export default class Item {
     toPlainObject(options) {
         let result = CloneDeep(this.values);
 
+        // Include additional properties
+        Assign(result, {
+            id: this.id,
+            revision: this.revision,
+            type: this.type,
+
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt
+        });
+
         // Encode children (if they are defined)
-        ForEach(this._children, (value, key) => {
+        ForEach(this.children, (value, key) => {
             if(!isDefined(value)) {
                 return;
             }

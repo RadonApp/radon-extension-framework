@@ -1,4 +1,3 @@
-import MapKeys from 'lodash-es/mapKeys';
 import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
@@ -8,8 +7,8 @@ import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Artist extends Item {
-    constructor(values) {
-        super('music/artist', values);
+    constructor(values, options) {
+        super('music/artist', values, options);
     }
 
     // region Properties
@@ -22,7 +21,31 @@ export default class Artist extends Item {
         this.values.title = title;
     }
 
+    get complete() {
+        if(!super.complete) {
+            return false;
+        }
+
+        if(!isDefined(this.title) || this.title.length < 1) {
+            return false;
+        }
+
+        return true;
+    }
+
     // endregion
+
+    matches(other) {
+        if(super.matches(other)) {
+            return true;
+        }
+
+        if(isDefined(this.title) && this.title === other.title) {
+            return true;
+        }
+
+        return false;
+    }
 
     toDocument(options) {
         options = Merge({
@@ -54,30 +77,11 @@ export default class Artist extends Item {
         return document;
     }
 
-    static fromDocument(document) {
-        if(!isDefined(document) || Object.keys(document).length < 1) {
+    static decode(values, options) {
+        if(!isDefined(values) || Object.keys(values).length < 1) {
             return null;
         }
 
-        // Create artist
-        return new Artist(MapKeys(document, (value, key) => {
-            if(key === '_id') {
-                return 'id';
-            }
-
-            if(key === '_rev') {
-                return 'revision';
-            }
-
-            return key;
-        }));
-    }
-
-    static fromPlainObject(item) {
-        if(!isDefined(item) || Object.keys(item).length < 1) {
-            return null;
-        }
-
-        return new Artist(item);
+        return new Artist(values, options);
     }
 }

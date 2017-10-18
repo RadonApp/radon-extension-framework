@@ -13,20 +13,20 @@ export const ItemsByType = {
     'movie': Movie
 };
 
-export class ItemParser {
-    static fromDocument(document) {
-        if(!isDefined(document)) {
-            return null;
-        }
-
-        if(!isDefined(ItemsByType[document.type])) {
-            throw new Error('Unknown item type: "' + document.type + '"');
-        }
-
-        return ItemsByType[document.type].fromDocument(document);
+export class ItemBuilder {
+    createArtist(values) {
+        return new Artist(values, { builder: this });
     }
 
-    static fromPlainObject(item) {
+    createAlbum(values) {
+        return new Album(values, { builder: this });
+    }
+
+    createTrack(values) {
+        return new Track(values, { builder: this });
+    }
+
+    decode(item) {
         if(!isDefined(item)) {
             return null;
         }
@@ -35,6 +35,10 @@ export class ItemParser {
             throw new Error('Unknown item type: "' + item.type + '"');
         }
 
-        return ItemsByType[item.type].fromPlainObject(item);
+        return ItemsByType[item.type].decode(item, {
+            builder: this
+        });
     }
 }
+
+export default new ItemBuilder();

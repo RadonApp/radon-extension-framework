@@ -1,17 +1,21 @@
-import MapKeys from 'lodash-es/mapKeys';
 import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 
-import Album from 'neon-extension-framework/models/item/music/album';
-import Artist from 'neon-extension-framework/models/item/music/artist';
 import Item from 'neon-extension-framework/models/item/core/base';
 import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Track extends Item {
-    constructor(values, children) {
-        super('music/track', values, children);
+    constructor(values, options) {
+        super('music/track', values, {
+            children: {
+                'artist': 'music/artist',
+                'album': 'music/album'
+            },
+
+            ...options
+        });
     }
 
     // region Properties
@@ -41,36 +45,50 @@ export default class Track extends Item {
     }
 
     get artist() {
-        return this._children.artist || null;
+        return this.children.artist || null;
     }
 
     set artist(artist) {
-        this._children.artist = artist;
-
-        // Update value
-        if(isDefined(artist)) {
-            this.values['artist'] = artist.toPlainObject();
-        } else {
-            this.values['artist'] = null;
-        }
+        this.children.artist = artist;
     }
 
     get album() {
-        return this._children.album || null;
+        return this.children.album || null;
     }
 
     set album(album) {
-        this._children.album = album;
+        this.children.album = album;
+    }
 
-        // Update value
-        if(isDefined(album)) {
-            this.values['album'] = album.toPlainObject();
-        } else {
-            this.values['album'] = null;
+    get complete() {
+        if(!super.complete) {
+            return false;
         }
+
+        if(!isDefined(this.title) || this.title.length < 1) {
+            return false;
+        }
+
+        if(!isDefined(this.duration)) {
+            return false;
+        }
+
+        return true;
     }
 
     // endregion
+
+    matches(other) {
+        if(super.matches(other)) {
+            return true;
+        }
+
+        if(isDefined(this.title) && this.title === other.title && this.matchesChildren(other.children)) {
+            return true;
+        }
+
+        return false;
+    }
 
     toDocument(options) {
         options = Merge({
@@ -134,50 +152,11 @@ export default class Track extends Item {
         return document;
     }
 
-    static fromDocument(document) {
-        if(!isDefined(document) || Object.keys(document).length < 1) {
+    static decode(values, options) {
+        if(!isDefined(values) || Object.keys(values).length < 1) {
             return null;
         }
 
-        // Create track
-        return new Track(MapKeys(document, (value, key) => {
-            if(key === '_id') {
-                return 'id';
-            }
-
-            if(key === '_rev') {
-                return 'revision';
-            }
-
-            return key;
-        }), {
-            artist: Artist.fromDocument({
-                type: 'music/artist',
-                ...document['artist']
-            }),
-
-            album: Album.fromDocument({
-                type: 'music/album',
-                ...document['album']
-            })
-        });
-    }
-
-    static fromPlainObject(item) {
-        if(!isDefined(item) || Object.keys(item).length < 1) {
-            return null;
-        }
-
-        return new Track(item, {
-            artist: Artist.fromPlainObject({
-                type: 'music/artist',
-                ...item['artist']
-            }),
-
-            album: Album.fromPlainObject({
-                type: 'music/album',
-                ...item['album']
-            })
-        });
+        return new Track(values, options);
     }
 }
