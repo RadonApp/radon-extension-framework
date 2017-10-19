@@ -228,9 +228,16 @@ export default class Item {
             ]),
 
             // Identifiers
-            ids: Merge(
-                this.values.ids || {},
-                values.ids || {}
+            ids: PickBy(
+                // Merge identifiers
+                Merge(
+                    this.values.ids || {},
+                    values.ids || {}
+                ),
+                // Validate identifiers (removes legacy identifiers)
+                (value, key) => {
+                    return key.indexOf('neon-extension-') === 0;
+                }
             )
         };
 
