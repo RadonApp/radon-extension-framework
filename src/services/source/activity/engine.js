@@ -211,6 +211,19 @@ export default class ActivityEngine {
             return false;
         }
 
+        // Ensure progress is available
+        if(!isDefined(this._currentSession.progress)) {
+            if(!isDefined(this._currentSession.item)) {
+                return this.error('Unable to calculate session progress, no item available');
+            }
+
+            if(!isDefined(this._currentSession.item.duration)) {
+                return this.error('Unable to calculate session progress, no duration defined');
+            }
+
+            return this.error('Unable to calculate session progress');
+        }
+
         // Switch back to previous stalled state
         if(this._currentSession.state === SessionState.stalled) {
             // Update session state
@@ -234,12 +247,6 @@ export default class ActivityEngine {
         // Ensure session hasn't ended
         if(this._currentSession.state === SessionState.ended) {
             Log.trace('Session has already ended');
-            return false;
-        }
-
-        // Ensure progress is available
-        if(!isDefined(this._currentSession.progress)) {
-            Log.trace('No progress available');
             return false;
         }
 
@@ -378,7 +385,7 @@ export default class ActivityEngine {
             return this.stop();
         }
 
-        Log.debug('Unknown state transition: %o -> %o', previous, current);
+        Log.trace('Unknown state transition: %o -> %o', previous, current);
 
         // Update state
         this._currentSession.state = current;
@@ -471,6 +478,20 @@ export default class ActivityEngine {
         if(this._currentSession.valid) {
             this.messaging.emit('activity.stopped', this._currentSession.toPlainObject());
         }
+
+        return true;
+    }
+
+    error(message) {
+        Log.error('Media error: %s', message);
+
+        if(!isDefined(this._currentSession) || this._currentSession.state === SessionState.ended) {
+            return false;
+        }
+
+        // Update state
+        this._currentSession.state = SessionState.ended;
+        this._currentSession.endedAt = Date.now();
 
         return true;
     }
