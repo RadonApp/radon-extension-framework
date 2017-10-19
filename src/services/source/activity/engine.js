@@ -573,7 +573,7 @@ export default class ActivityEngine {
         // Fetch metadata (if the item is incomplete, or has expired)
         if(!item.complete || item.hasExpired(this.options.metadataRefreshInterval)) {
             return Promise.resolve(this.options.fetchMetadata(item)).catch((err) => {
-                Log.error('Unable to fetch metadata: %s', item, err.message, err);
+                Log.error('Unable to fetch metadata for item %o: %s', item, err.message, err);
             });
         }
 
