@@ -54,7 +54,7 @@ export default class Album extends Item {
             return true;
         }
 
-        if(isDefined(this.title) && this.title === other.title && this.matchesChildren(other.children)) {
+        if(this.title === other.title && this.matchesChildren(other.children)) {
             return true;
         }
 
