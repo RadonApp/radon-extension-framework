@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+- '7'
+script:
+- npm run test
+deploy:
+  provider: npm
+  email: neapp-ci@me.dgardiner.net
+  api_key:
+    secure: WhInCPKKAEYRHv8D8LJezVNIwlJNd7tGDVXkfoT8UWQOQaUi8Adj9EEbauHlLXQpDkiJeKgXx8d12LaKm+NvRRXIemskiJg7l2kGDlCcL2b+oGbXE/FGY6QHtfpcjEm27+bjGqB4gPeRz/kO9CvZr/394kVswRVAL9bor2UPiRaEUiGhsQQnSLzEjLulZ5iqzCSvUUhX7IZXj7NlBwoAzkGZfQu9g7IIVvA4qi6IuoOHtLkSUzuhdqNX4O7AZEcu3LbQ7yNbnkXDdnUBHCv17lr0Z1qLNk1kyj/mPn6A/mEz03dlj+gvNPRMGmGbaLc1vBHqjcfYHgRikm5pDKnoSuEtK0x0bFPY+VGjIGsloFuv/ciRFrk97UN7ToalWUA+GyOepo2wwZvKqyStQOYXBhWQdwfv3ZOlR70RGozWOFGk7xpA6af2l2X0gGyIVtb+qtsOex+d+GAtsNcg5w90ozPuIUvHQsk4pJ0I7MNaLhTTpTTivjUC+yw5bN27GbniBxpwLvYA57MFZEYB50RtZNWcolSiG4fE8d2oFGt9OEob2YD1a7s7OsFlJtYhMaABOy1A+3r3lYaBH+JNzdKNHcdfe/hingndonLTVMILnKk154rTeWUawSP6LmNT4XPe7j8pnzT1e73CeQeH29/BfYRDFzbe936Xuyh2Bxyi3Cw=
+  on:
+    repo: NeApp/neon-extension-framework
+    tags: true
