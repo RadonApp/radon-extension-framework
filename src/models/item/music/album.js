@@ -35,18 +35,6 @@ export default class Album extends Item {
         this.children.artist = artist;
     }
 
-    get complete() {
-        if(!super.complete) {
-            return false;
-        }
-
-        if(!isDefined(this.title) || this.title.length < 1) {
-            return false;
-        }
-
-        return true;
-    }
-
     // endregion
 
     matches(other) {
