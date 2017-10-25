@@ -566,8 +566,8 @@ export default class ActivityEngine {
             return Promise.resolve();
         }
 
-        if(isDefined(item.updatedAt)) {
-            Log.trace('Item updated %d second(s) ago', (Date.now() - item.updatedAt) / 1000);
+        if(isDefined(item.fetchedAt)) {
+            Log.trace('Item fetched %d second(s) ago', (Date.now() - item.fetchedAt) / 1000);
         }
 
         // Fetch metadata (if the item is incomplete, or has expired)

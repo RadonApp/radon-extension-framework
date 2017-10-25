@@ -51,6 +51,14 @@ export default class Item {
         this.values.ids = ids;
     }
 
+    get fetchedAt() {
+        return this.values.fetchedAt || null;
+    }
+
+    set fetchedAt(fetchedAt) {
+        this.values.fetchedAt = fetchedAt;
+    }
+
     get complete() {
         if(!isDefined(this.type) || this.type.length < 1) {
             return false;
@@ -76,11 +84,11 @@ export default class Item {
     // endregion
 
     hasExpired(expires) {
-        if(!isDefined((this.updatedAt))) {
+        if(!isDefined((this.fetchedAt))) {
             return true;
         }
 
-        return Date.now() - this.updatedAt > expires;
+        return Date.now() - this.fetchedAt > expires;
     }
 
     matches(other) {
@@ -362,6 +370,10 @@ export default class Item {
             document['createdAt'] = this.createdAt;
         }
 
+        if(isDefined(this.fetchedAt)) {
+            document['fetchedAt'] = this.fetchedAt;
+        }
+
         if(isDefined(this.updatedAt)) {
             document['updatedAt'] = this.updatedAt;
         }
@@ -389,6 +401,7 @@ export default class Item {
             type: this.type,
 
             createdAt: this.createdAt,
+            fetchedAt: this.fetchedAt,
             updatedAt: this.updatedAt
         });
 
