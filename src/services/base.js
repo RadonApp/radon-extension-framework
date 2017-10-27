@@ -1,4 +1,5 @@
 import Log from 'neon-extension-framework/core/logger';
+import Plugin from 'neon-extension-framework/core/plugin';
 
 
 export default class Service {
@@ -9,6 +10,9 @@ export default class Service {
 
         // Generate global identifier
         this.id = plugin.id + ':' + key;
+
+        // Expose messaging channel
+        this.messaging = Plugin.messaging;
 
         // Construct preferences context
         this.preferences = this.plugin.preferences.context(this.key);
