@@ -1,15 +1,12 @@
 import IsNil from 'lodash-es/isNil';
 
-import Movie from '../movie';
 import {Artist, Album, Track} from '../music';
 
 
 export const ItemsByType = {
     'music/artist': Artist,
     'music/album': Album,
-    'music/track': Track,
-
-    'movie': Movie
+    'music/track': Track
 };
 
 export class ItemParser {

@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Uuid from 'uuid';
 
-import ItemBuilder from 'neon-extension-framework/models/item';
+import ItemParser from 'neon-extension-framework/models/item/core/parser';
 import {isDefined, round} from 'neon-extension-framework/core/helpers';
 
 
@@ -138,7 +138,7 @@ export default class Session {
             return null;
         }
 
-        return new Session(document['_id'], ItemBuilder.decode(document['item']), {
+        return new Session(document['_id'], ItemParser.decode(document['item']), {
             'clientId': document['clientId'],
 
             'state': document['state'],
@@ -158,7 +158,7 @@ export default class Session {
             return null;
         }
 
-        return new Session(item['id'], ItemBuilder.decode(item['item']), {
+        return new Session(item['id'], ItemParser.decode(item['item']), {
             'clientId': item['clientId'],
 
             'state': item['state'],
