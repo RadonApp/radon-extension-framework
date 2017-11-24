@@ -1,198 +1,240 @@
-import Assign from 'lodash-es/assign';
-import CloneDeep from 'lodash-es/cloneDeep';
 import ForEach from 'lodash-es/forEach';
 import IsEqual from 'lodash-es/isEqual';
-import IsPlainObject from 'lodash-es/isPlainObject';
+import IsNil from 'lodash-es/isNil';
+import IsString from 'lodash-es/isString';
 import MapKeys from 'lodash-es/mapKeys';
-import Merge from 'lodash-es/merge';
+import MapValues from 'lodash-es/mapValues';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 import PickBy from 'lodash-es/pickBy';
 
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import Model from 'neon-extension-framework/models/core/base';
 
 
-export default class Item {
-    constructor(type, values, options) {
-        this.type = type;
+export default class Item extends Model {
+    static type = null;
 
-        this.children = {};
-        this.values = {};
+    static children = {};
 
-        this.id = null;
-        this.revision = null;
+    static itemProperties = [
+        'id',
+        'revision',
 
-        this.createdAt = null;
-        this.updatedAt = null;
+        'createdAt',
+        'updatedAt'
+    ];
 
-        this.changed = false;
+    static metadata = [
+        'title'
+    ];
 
-        // Parse options
-        this.options = {
-            children: {},
-            builder: null,
+    constructor(values, children) {
+        super();
 
-            ...options
+        values = values || {};
+
+        this.id = values.id || null;
+        this.revision = values.revision || null;
+
+        this.values = {
+            keys: {},
+            title: null,
+
+            createdAt: null,
+
+            // Include provided values
+            ...Omit(values, [
+                'id',
+                'revision',
+                'type',
+
+                'metadata'
+            ])
         };
 
-        // Update values
-        this.update(values, {
-            ignoreChanges: true
+        this.metadata = values.metadata || {};
+
+        this.children = children || {};
+    }
+
+    get type() {
+        return this.constructor.type;
+    }
+
+    get keys() {
+        return this.values.keys;
+    }
+
+    get title() {
+        return this.values.title;
+    }
+
+    get createdAt() {
+        return this.values.createdAt;
+    }
+
+    set createdAt(createdAt) {
+        this.values.createdAt = createdAt;
+    }
+
+    get updatedAt() {
+        return this.values.updatedAt;
+    }
+
+    set updatedAt(updatedAt) {
+        this.values.updatedAt = updatedAt;
+    }
+
+    // region Public Methods
+
+    get(source) {
+        return {
+            ...Pick(this.values, this.constructor.metadata),
+            ...(this.metadata[source] || {}),
+
+            keys: this.values.keys[source] || {}
+        };
+    }
+
+    merge(base) {
+        let previous = this.toDocument();
+
+        // Update (or validate) identifier
+        if(IsNil(this.id)) {
+            this.id = base.id;
+        } else if(!IsNil(base.id) && this.id !== base.id) {
+            throw new Error('Item id mismatch');
+        }
+
+        // Update revision
+        if(IsNil(this.revision)) {
+            this.revision = base.revision;
+        } else if(!IsNil(base.revision) && this.revision !== base.revision) {
+            throw new Error('Item revision mismatch');
+        }
+
+        // Merge values
+        this.values = {
+            ...(base.values || {}),
+            ...(this.values || {}),
+
+            // Override values
+            createdAt: base.createdAt || this.createdAt
+        };
+
+        // TODO Merge children
+
+        // Merge metadata
+        ForEach(Object.keys(base.metadata), (source) => {
+            this.metadata[source] = {
+                ...Pick(base.values, this.constructor.metadata),
+                ...base.metadata[source],
+
+                ...Pick(this.values, this.constructor.metadata),
+                ...(this.metadata[source] || {}),
+            };
         });
+
+        // Check for changes
+        let current = this.toDocument();
+
+        console.debug('Comparing previous: %o, against: %o', previous, current);
+
+        return !IsEqual(previous, current);
     }
 
-    // region Properties
-
-    get ids() {
-        return this.values.ids || {};
-    }
-
-    set ids(ids) {
-        this.values.ids = ids;
-    }
-
-    get fetchedAt() {
-        return this.values.fetchedAt || null;
-    }
-
-    set fetchedAt(fetchedAt) {
-        this.values.fetchedAt = fetchedAt;
-    }
-
-    get complete() {
-        if(!isDefined(this.type) || this.type.length < 1) {
-            return false;
+    update(source, values) {
+        if(IsNil(values)) {
+            return this;
         }
 
-        for(let key in this.options.children) {
-            if(!this.options.children.hasOwnProperty(key)) {
-                continue;
+        // Set local metadata properties (if not already defined)
+        ForEach(Object.keys(this.values), (key) => {
+            if(IsNil(this.values[key]) &&!IsNil(values[key])) {
+                this.values[key] = values[key];
             }
+        });
 
-            if(!isDefined(this.children[key])) {
-                return false;
-            }
+        // Update keys
+        this.values.keys[source] = {
+            ...(this.values.keys[source] || {}),
+            ...(values.keys || {})
+        };
 
-            if(!this.children[key].complete) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // endregion
-
-    hasExpired(expires) {
-        if(!isDefined((this.fetchedAt))) {
-            return true;
-        }
-
-        return Date.now() - this.fetchedAt > expires;
-    }
-
-    matches(other) {
-        if(isDefined(this.id) && this.id === other.id) {
-            return true;
-        }
-
-        if(this.matchesIds(other.ids)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    matchesChildren(children) {
-        for(let key in children) {
-            if(!children.hasOwnProperty(key) || !isDefined(this.children[key])) {
-                continue;
-            }
-
-            // Compare children
-            if(!this.children[key].matches(children[key])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    matchesIds(otherIds, ids) {
-        if(!isDefined(ids)) {
-            ids = this.ids;
-        }
-
-        for(let key in ids) {
-            if(!ids.hasOwnProperty(key)) {
-                continue;
-            }
-
-            // Ignore undefined entries
-            if(!isDefined(ids[key]) || !isDefined(otherIds[key])) {
-                continue;
-            }
-
-            // Compare entries
-            if(IsPlainObject(ids[key]) && IsPlainObject(otherIds[key])) {
-                if(this.matchesIds(otherIds[key], ids[key])) {
-                    return true;
-                }
-            } else if(ids[key] === otherIds[key]) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    merge(other, options) {
-        if(IsPlainObject(other)) {
-            throw new Error('Invalid value provided for "other" (expected item instance)');
-        }
-
-        let changed = false;
-
-        // Parse options
-        options = Merge({
-            ignoreChanges: false
-        }, options || {});
-
-        // Update properties
-        this.updateProperties(other);
-
-        // Update values
-        this.update(other.values, options);
-
-        // Update children
-        changed = this.updateChildren(other.children) || changed;
-
-        // Update state
-        if(changed && !options.ignoreChanges) {
-            this.changed = true;
-        }
+        // Update metadata
+        this.metadata[source] = {
+            ...(this.metadata[source] || {}),
+            ...Omit(values, ['keys'])
+        };
 
         return this;
     }
 
-    update(values, options) {
-        if(!IsPlainObject(values)) {
-            throw new Error('Invalid value provided for "other" (expected plain object)');
+    toDocument() {
+        let doc = PickBy(this.values, (value) => !IsNil(value));
+
+        // Build metadata
+        let metadata = PickBy(
+            MapValues(this.metadata, (metadata) => PickBy(
+                PickBy(metadata, (value, key) => {
+                    if(key === 'keys') {
+                        return false;
+                    }
+
+                    if(this.constructor.metadata.indexOf(key) < 0) {
+                        return true;
+                    }
+
+                    return !IsEqual(doc[key], value);
+                })
+            )),
+            (metadata) => Object.keys(metadata).length > 0
+        );
+
+        if(Object.keys(metadata).length > 0) {
+            doc.metadata = metadata;
         }
 
-        if(isDefined(values.type) && values.type !== this.type) {
-            throw new Error('Invalid type');
+        // Include optional values
+        if(!IsNil(this.id)) {
+            doc['_id'] = this.id;
         }
 
-        let changed = false;
+        if(!IsNil(this.revision)) {
+            doc['_rev'] = this.revision;
+        }
 
-        // Parse options
-        options = Merge({
-            ignoreChanges: false
-        }, options || {});
+        if(!IsNil(this.constructor.type)) {
+            doc['type'] = this.constructor.type;
+        }
 
-        // Parse values
-        values = MapKeys(PickBy(values, isDefined), (value, key) => {
+        return doc;
+    }
+
+    // endregion
+
+    // region Static Methods
+
+    static create(source, values, children) {
+        if(!IsString(source)) {
+            throw new Error('Invalid value provided for the "source" parameter (expected string)');
+        }
+
+        // Create item
+        let item = (new this(
+            Pick(values, this.itemProperties),
+            children
+        ));
+
+        // Update item with source metadata
+        return item.update(
+            source,
+            Omit(values, this.itemProperties)
+        );
+    }
+
+    static decode(values, options) {
+        values = MapKeys(values, (value, key) => {
             if(key === '_id') {
                 return 'id';
             }
@@ -204,216 +246,9 @@ export default class Item {
             return key;
         });
 
-        // Retrieve children
-        let children = {};
-
-        for(let key in values) {
-            if(!values.hasOwnProperty(key)) {
-                continue;
-            }
-
-            if(!isDefined(values[key]) || !isDefined(this.options.children[key])) {
-                continue;
-            }
-
-            children[key] = values[key];
-        }
-
-        // Build update values
-        let update = {
-            ...this.values,
-
-            // Include values
-            ...Omit(values, [
-                ...Object.keys(children),
-
-                'id',
-                'revision',
-                'type',
-
-                'createdAt',
-                'updatedAt'
-            ]),
-
-            // Identifiers
-            ids: PickBy(
-                // Merge identifiers
-                Merge(
-                    this.values.ids || {},
-                    values.ids || {}
-                ),
-                // Validate identifiers (removes legacy identifiers)
-                (value, key) => {
-                    return key.indexOf('neon-extension-') === 0;
-                }
-            )
-        };
-
-        if(isDefined(update.artist)) {
-            throw new Error();
-        }
-
-        if(isDefined(update.album)) {
-            throw new Error();
-        }
-
-        // Check if values have changed
-        if(Object.keys(this.values).length > 0 && !IsEqual(this.values, update)) {
-            changed = true;
-        }
-
-        // Update properties
-        this.updateProperties(values);
-
-        // Update values
-        Assign(this.values, update);
-
-        // Update children
-        changed = this.updateChildren(children) || changed;
-
-        // Update state
-        if(changed && !options.ignoreChanges) {
-            this.changed = true;
-        }
-
-        return this;
+        // Create item
+        return (new this(values, {}));
     }
 
-    updateChildren(children) {
-        let changed = false;
-
-        for(let key in children) {
-            if(!children.hasOwnProperty(key)) {
-                continue;
-            }
-
-            let type = this.options.children[key];
-            let child = children[key];
-
-            // Validate value
-            if(!isDefined(child) || Object.keys(child).length < 1) {
-                continue;
-            }
-
-            // Update item
-            if(!isDefined(this.children[key])) {
-                if(!isDefined(this.options.builder)) {
-                    throw new Error('Unable to decode "' + type + '" item, builder isn\'t available');
-                }
-
-                // Decode item
-                if(IsPlainObject(child)) {
-                    this.children[key] = this.options.builder.decode({type, ...child});
-                } else {
-                    this.children[key] = child;
-                }
-
-                // Mark as changed
-                changed = true;
-            } else {
-                // Update item
-                if(IsPlainObject(child)) {
-                    this.children[key].update(child);
-                } else {
-                    this.children[key].merge(child);
-                }
-
-                // Mark as changed
-                if(this.children[key].changed) {
-                    changed = true;
-                }
-            }
-        }
-
-        return changed;
-    }
-
-    updateProperties(other) {
-        ForEach(['id', 'revision', 'createdAt', 'updatedAt'], (key) => {
-            if(isDefined(this[key])) {
-                return;
-            }
-
-            // Update property
-            this[key] = other[key];
-        });
-    }
-
-    toDocument(options) {
-        options = Merge({
-            keys: {}
-        }, options || {});
-
-        // Validate options
-        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
-            throw new Error('Only one key filter should be defined');
-        }
-
-        // Build document
-        let document = {
-            'type': this.type
-        };
-
-        if(isDefined(this.id)) {
-            document['_id'] = this.id;
-        }
-
-        if(isDefined(this.revision)) {
-            document['_rev'] = this.revision;
-        }
-
-        if(isDefined(this.ids)) {
-            document['ids'] = this.ids;
-        }
-
-        if(isDefined(this.createdAt)) {
-            document['createdAt'] = this.createdAt;
-        }
-
-        if(isDefined(this.fetchedAt)) {
-            document['fetchedAt'] = this.fetchedAt;
-        }
-
-        if(isDefined(this.updatedAt)) {
-            document['updatedAt'] = this.updatedAt;
-        }
-
-        // Apply key exclude filter
-        if(isDefined(options.keys.exclude)) {
-            return Omit(document, options.keys.exclude);
-        }
-
-        // Apply key include filter
-        if(isDefined(options.keys.include)) {
-            return Pick(document, options.keys.include);
-        }
-
-        return document;
-    }
-
-    toPlainObject(options) {
-        let result = CloneDeep(this.values);
-
-        // Include additional properties
-        Assign(result, {
-            id: this.id,
-            revision: this.revision,
-            type: this.type,
-
-            createdAt: this.createdAt,
-            fetchedAt: this.fetchedAt,
-            updatedAt: this.updatedAt
-        });
-
-        // Encode children (if they are defined)
-        ForEach(this.children, (value, key) => {
-            if(!isDefined(value)) {
-                return;
-            }
-
-            result[key] = value.toPlainObject();
-        });
-
-        return result;
-    }
+    // endregion
 }
