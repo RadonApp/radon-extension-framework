@@ -1,5 +1,7 @@
+var fs = require('fs');
 var path = require('path');
 var uuid = require('uuid');
+var webpack = require('webpack');
 
 
 module.exports = function(config) {
@@ -20,6 +22,8 @@ module.exports = function(config) {
         ],
 
         preprocessors: {
+            'tests/init.js': ['webpack'],
+
             'tests/*_tests.js': ['webpack', 'sourcemap'],
             'tests/**/*_tests.js': ['webpack', 'sourcemap']
         },
@@ -90,7 +94,11 @@ module.exports = function(config) {
                     },
                     {
                         test: /\.js$/,
-                        include: path.resolve('tests/'),
+                        include: [
+                            fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-browser-base/src')),
+                            fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
+                            fs.realpathSync(path.resolve('tests/'))
+                        ],
 
                         use: {
                             loader: 'babel-loader',
@@ -108,9 +116,26 @@ module.exports = function(config) {
 
             resolve: {
                 alias: {
-                    'neon-extension-framework': path.resolve(__dirname, 'src/')
-                }
-            }
+                    'neon-extension-browser': fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-browser-base/src')),
+                    'neon-extension-framework': fs.realpathSync(path.resolve(__dirname, 'src/'))
+                },
+
+                modules: [
+                    fs.realpathSync(path.resolve(__dirname, 'node_modules')),
+                    'node_modules'
+                ]
+            },
+
+            plugins: [
+                new webpack.DefinePlugin({
+                    'neon.browser': '{}',
+                    'neon.manifests': '{}',
+
+                    'process.env': {
+                        'NODE_ENV': '"development"'
+                    }
+                }),
+            ]
         },
 
         webpackMiddleware: {
