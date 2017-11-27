@@ -136,11 +136,7 @@ export default class Item extends Model {
         });
 
         // Check for changes
-        let current = this.toDocument();
-
-        console.debug('Comparing previous: %o, against: %o', previous, current);
-
-        return !IsEqual(previous, current);
+        return !IsEqual(previous, this.toDocument());
     }
 
     update(source, values) {
