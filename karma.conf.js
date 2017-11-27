@@ -22,7 +22,7 @@ module.exports = function(config) {
         ],
 
         preprocessors: {
-            'tests/init.js': ['webpack'],
+            'tests/init.js': ['webpack', 'sourcemap'],
 
             'tests/*_tests.js': ['webpack', 'sourcemap'],
             'tests/**/*_tests.js': ['webpack', 'sourcemap']
