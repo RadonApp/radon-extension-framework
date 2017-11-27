@@ -119,6 +119,12 @@ export class Logger {
             this._setLevel(value);
         });
 
+        // Set to trace in development environments
+        if(process.env['NODE_ENV'] === 'development') {
+            this._setLevel('trace');
+            return;
+        }
+
         // Retrieve current log level
         this.preferences.getString(optionKey).then(
             (level) => this._setLevel(level),
