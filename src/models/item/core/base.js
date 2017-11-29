@@ -4,6 +4,7 @@ import IsNil from 'lodash-es/isNil';
 import IsString from 'lodash-es/isString';
 import MapKeys from 'lodash-es/mapKeys';
 import MapValues from 'lodash-es/mapValues';
+import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 import PickBy from 'lodash-es/pickBy';
@@ -118,7 +119,15 @@ export default class Item extends Model {
             ...(base.values || {}),
             ...(this.values || {}),
 
+            // Merge keys
+            keys: Merge(
+                this.values.keys || {},
+                base.values.keys || {}
+            ),
+
             // Override values
+            title: base.title || this.title,
+
             createdAt: base.createdAt || this.createdAt
         };
 
