@@ -8,6 +8,7 @@ import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 import PickBy from 'lodash-es/pickBy';
+import Slugify from 'slugify';
 
 import Model from 'neon-extension-framework/models/core/base';
 
@@ -161,12 +162,21 @@ export default class Item extends Model {
         });
 
         // Update keys
+        this.values.keys['item'] = {
+            ...(this.values.keys['item'] || {}),
+
+            slug: !IsNil(this.title) ?
+                Slugify(this.title, { lower: true }) :
+                null
+        };
+
+        // Update source keys
         this.values.keys[source] = {
             ...(this.values.keys[source] || {}),
             ...(values.keys || {})
         };
 
-        // Update metadata
+        // Update source metadata
         this.metadata[source] = {
             ...(this.metadata[source] || {}),
             ...Omit(values, ['keys'])
