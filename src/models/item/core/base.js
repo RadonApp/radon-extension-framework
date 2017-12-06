@@ -150,47 +150,47 @@ export default class Item extends Model {
         };
     }
 
-    merge(base) {
-        let previous = this.toDocument();
+    merge(current) {
+        let currentDocument = current.toDocument();
 
         // Update (or validate) identifier
         if(IsNil(this.id)) {
-            this.id = base.id;
-        } else if(!IsNil(base.id) && this.id !== base.id) {
+            this.id = current.id;
+        } else if(!IsNil(current.id) && this.id !== current.id) {
             throw new Error('Item id mismatch');
         }
 
         // Update revision
         if(IsNil(this.revision)) {
-            this.revision = base.revision;
-        } else if(!IsNil(base.revision) && this.revision !== base.revision) {
+            this.revision = current.revision;
+        } else if(!IsNil(current.revision) && this.revision !== current.revision) {
             throw new Error('Item revision mismatch');
         }
 
         // Merge values
         this.values = {
-            ...(base.values || {}),
+            ...(current.values || {}),
             ...(this.values || {}),
 
             // Merge keys
             keys: Merge(
                 this.values.keys || {},
-                base.values.keys || {}
+                current.values.keys || {}
             ),
 
             // Override values
-            title: base.title || this.title,
+            title: current.title || this.title,
 
-            createdAt: base.createdAt || this.createdAt
+            createdAt: current.createdAt || this.createdAt
         };
 
         // TODO Merge children
 
         // Merge metadata
-        ForEach(Object.keys(base.metadata), (source) => {
+        ForEach(Object.keys(current.metadata), (source) => {
             this.metadata[source] = {
-                ...Pick(base.values, this.constructor.metadata),
-                ...base.metadata[source],
+                ...Pick(current.values, this.constructor.metadata),
+                ...current.metadata[source],
 
                 ...Pick(this.values, this.constructor.metadata),
                 ...(this.metadata[source] || {}),
@@ -198,7 +198,7 @@ export default class Item extends Model {
         });
 
         // Check for changes
-        return !IsEqual(previous, this.toDocument());
+        return !IsEqual(currentDocument, this.toDocument());
     }
 
     update(source, values) {
