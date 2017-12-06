@@ -1,6 +1,7 @@
 import ForEach from 'lodash-es/forEach';
 import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
+import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
 import MapKeys from 'lodash-es/mapKeys';
 import MapValues from 'lodash-es/mapValues';
@@ -88,6 +89,57 @@ export default class Item extends Model {
     }
 
     // region Public Methods
+
+    createSelectors(options) {
+        options = {
+            keys: true,
+
+            ...(options || {})
+        };
+
+        // Identifier selector
+        if(!IsNil(this.id)) {
+            return [{
+                '_id': this.id
+            }];
+        }
+
+        if(!options.keys) {
+            throw new Error('No identifier has been defined');
+        }
+
+        // Create base selector
+        let base = {
+            type: this.type
+        };
+
+        ForEach(this.children, (child, name) => {
+            if(IsNil(child)) {
+                throw new Error('No "' + name + '" has been defined')
+            }
+
+            let selectors;
+
+            try {
+                selectors = child.createSelectors({ keys: false });
+            } catch(e) {
+                throw new Error('Unable to create "' + name + '" selectors: ' + (e && e.message ? e.message : e));
+            }
+
+            ForEach(selectors, (selectors) => {
+                if(selectors.length > 1) {
+                    throw new Error('"' + name + '" returned more than one selector');
+                }
+
+                ForEach(selectors[0], (value, key) => {
+                    base[name + '.' + key] = value;
+                });
+            });
+        });
+
+        // Create key selectors
+        return this._createKeySelectors(base, this.keys);
+    }
 
     get(source) {
         return {
@@ -224,6 +276,43 @@ export default class Item extends Model {
         }
 
         return doc;
+    }
+
+    // endregion
+
+    // region Private Methods
+
+    _createKeySelectors(base, keys, prefix, selectors) {
+        if(IsNil(prefix)) {
+            prefix = 'keys';
+        }
+
+        if(IsNil(selectors)) {
+            selectors = [];
+        }
+
+        for(let source in keys) {
+            if(!keys.hasOwnProperty(source) || IsNil(keys[source])) {
+                continue;
+            }
+
+            if(IsPlainObject(keys[source])) {
+                this._createKeySelectors(base, keys[source], prefix + '.' + source, selectors);
+                continue;
+            }
+
+            // Create selector
+            let selector = {
+                ...base
+            };
+
+            selector[prefix + '.' + source] = keys[source];
+
+            // Add selector to OR clause
+            selectors.push(selector);
+        }
+
+        return selectors
     }
 
     // endregion
