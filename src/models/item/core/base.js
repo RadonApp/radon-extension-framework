@@ -217,9 +217,10 @@ export default class Item extends Model {
         this.values.keys['item'] = {
             ...(this.values.keys['item'] || {}),
 
-            slug: !IsNil(this.title) ?
-                Slugify(this.title, { lower: true }) :
-                null
+            slug: !IsNil(this.title) ? Slugify(this.title, {
+                lower: true,
+                remove: /[$*_+~.()'"!\-:@]/g
+            }) : null
         };
 
         // Update source keys
