@@ -115,7 +115,7 @@ export default class Item extends Model {
 
         ForEach(this.children, (child, name) => {
             if(IsNil(child)) {
-                throw new Error('No "' + name + '" has been defined')
+                throw new Error('No "' + name + '" has been defined');
             }
 
             let selectors;
@@ -193,7 +193,7 @@ export default class Item extends Model {
                 ...current.metadata[source],
 
                 ...Pick(this.values, this.constructor.metadata),
-                ...(this.metadata[source] || {}),
+                ...(this.metadata[source] || {})
             };
         });
 
@@ -208,7 +208,7 @@ export default class Item extends Model {
 
         // Set local metadata properties (if not already defined)
         ForEach(Object.keys(this.values), (key) => {
-            if(IsNil(this.values[key]) &&!IsNil(values[key])) {
+            if(IsNil(this.values[key]) && !IsNil(values[key])) {
                 this.values[key] = values[key];
             }
         });
@@ -313,7 +313,7 @@ export default class Item extends Model {
             selectors.push(selector);
         }
 
-        return selectors
+        return selectors;
     }
 
     // endregion
