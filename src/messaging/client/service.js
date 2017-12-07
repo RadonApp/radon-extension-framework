@@ -1,8 +1,8 @@
 import EventEmitter from 'eventemitter3';
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import Log from 'neon-extension-framework/core/logger';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class MessageClientService extends EventEmitter {
@@ -72,7 +72,7 @@ export default class MessageClientService extends EventEmitter {
         }
 
         // Subscribe to service
-        if(!isDefined(this.subscribing)) {
+        if(IsNil(this.subscribing)) {
             this.subscribing = this._subscribe();
         }
 

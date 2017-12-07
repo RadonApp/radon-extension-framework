@@ -1,5 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {isDefined} from './helpers';
+import IsNil from 'lodash-es/isNil';
 
 
 const Levels = {
@@ -23,7 +23,7 @@ const LevelKeys = {
 
 export class Logger {
     constructor(getOptionKey) {
-        if(!isDefined(getOptionKey)) {
+        if(IsNil(getOptionKey)) {
             throw new Error('Missing required "resolver" parameter');
         }
 
@@ -46,7 +46,7 @@ export class Logger {
     }
 
     get level() {
-        if(!isDefined(this._level)) {
+        if(IsNil(this._level)) {
             return null;
         }
 
@@ -56,7 +56,7 @@ export class Logger {
     get preferences() {
         let preferences = require('neon-extension-framework/preferences').default;
 
-        if(!isDefined(preferences)) {
+        if(IsNil(preferences)) {
             return null;
         }
 
@@ -67,16 +67,16 @@ export class Logger {
 
     static create(key, resolver) {
         // Ensure `window.neon.loggers` object exists
-        if(!isDefined(window.neon)) {
+        if(IsNil(window.neon)) {
             window.neon = {};
         }
 
-        if(!isDefined(window.neon.loggers)) {
+        if(IsNil(window.neon.loggers)) {
             window.neon.loggers = {};
         }
 
         // Construct logger (if not already defined)
-        if(!isDefined(window.neon.loggers[key])) {
+        if(IsNil(window.neon.loggers[key])) {
             window.neon.loggers[key] = new Logger(resolver);
         }
 
@@ -101,7 +101,7 @@ export class Logger {
             setTimeout(self._configure.bind(self, attempt + 1), 50);
         }
 
-        if(!isDefined(this.preferences)) {
+        if(IsNil(this.preferences)) {
             retry();
             return;
         }
@@ -109,7 +109,7 @@ export class Logger {
         // Retrieve option key
         let optionKey = this._getOptionKey(this.preferences);
 
-        if(!isDefined(optionKey)) {
+        if(IsNil(optionKey)) {
             this._setLevel(Levels.Trace);
             return;
         }
@@ -156,7 +156,7 @@ export class Logger {
 
         let func = this._getFunction(level);
 
-        if(!isDefined(func)) {
+        if(IsNil(func)) {
             return console.log.bind(console);
         }
 
@@ -207,7 +207,7 @@ export class Logger {
             // Retrieve console logger method
             let func = this._getFunction(item.level);
 
-            if(!isDefined(func)) {
+            if(IsNil(func)) {
                 func = console.log;
             }
 

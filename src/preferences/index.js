@@ -1,8 +1,8 @@
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import Log from 'neon-extension-framework/core/logger';
 import Storage from 'neon-extension-framework/storage';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import {PreferencesContext} from './context';
 
@@ -30,7 +30,7 @@ export class Preferences {
     }
 
     exists(key) {
-        return isDefined(this._definitions[key]);
+        return !IsNil(this._definitions[key]);
     }
 
     onChanged(key, callback) {
@@ -53,7 +53,7 @@ export class Preferences {
         }
 
         // Ensure option hasn't already been registered
-        if(isDefined(this._definitions[item.id])) {
+        if(!IsNil(this._definitions[item.id])) {
             Log.warn('Preference option %o has already been registered', item.id);
             return false;
         }
@@ -78,12 +78,12 @@ export class Preferences {
 
     registerPage(page) {
         // Ensure page group exists
-        if(!isDefined(this._pages[page.plugin.type])) {
+        if(IsNil(this._pages[page.plugin.type])) {
             this._pages[page.plugin.type] = {};
         }
 
         // Ensure page hasn't already been registered
-        if(isDefined(this._pages[page.plugin.type][page.id])) {
+        if(!IsNil(this._pages[page.plugin.type][page.id])) {
             Log.warn('Preference page %o has already been registered', page.id);
             return false;
         }
@@ -214,7 +214,7 @@ export class Preferences {
             let get = () => {
                 let definition = this._definitions[key];
 
-                if(isDefined(definition)) {
+                if(!IsNil(definition)) {
                     resolve(definition.options.default);
                     return;
                 }

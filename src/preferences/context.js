@@ -1,4 +1,4 @@
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import IsNil from 'lodash-es/isNil';
 
 
 export class PreferencesContext {
@@ -6,7 +6,7 @@ export class PreferencesContext {
         this._preferences = preferences;
         this._name = name;
 
-        if(!isDefined(this._name)) {
+        if(IsNil(this._name)) {
             throw new Error('Invalid value provided for the "name" parameter');
         }
     }

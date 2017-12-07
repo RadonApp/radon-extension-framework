@@ -1,4 +1,4 @@
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import IsNil from 'lodash-es/isNil';
 
 
 export default class StorageContext {
@@ -6,7 +6,7 @@ export default class StorageContext {
         this.storage = storage;
         this.name = name;
 
-        if(!isDefined(this.name)) {
+        if(IsNil(this.name)) {
             throw new Error('Invalid value provided for the "name" parameter');
         }
 

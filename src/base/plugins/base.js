@@ -1,3 +1,4 @@
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import DeclarativeContent from 'neon-extension-browser/declarative/content';
@@ -8,7 +9,6 @@ import Preferences from 'neon-extension-framework/preferences';
 import Storage from 'neon-extension-framework/storage';
 import {PageStateMatcher} from 'neon-extension-browser/declarative/conditions';
 import {RequestContentScript} from 'neon-extension-browser/declarative/actions';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Plugin {
@@ -37,7 +37,7 @@ export default class Plugin {
     }
 
     get title() {
-        if(this.manifest === null || !isDefined(this.manifest.title)) {
+        if(this.manifest === null || IsNil(this.manifest.title)) {
             return this.id.replace('neon-extension-', '');
         }
 
@@ -79,7 +79,7 @@ export default class Plugin {
     }
 
     validate() {
-        if(!isDefined(this.manifest)) {
+        if(IsNil(this.manifest)) {
             Log.warn('Plugin "%s": no manifest defined', this.id);
             return false;
         }
@@ -105,7 +105,7 @@ export default class Plugin {
         // Retrieve plugin content scripts
         let contentScripts = this.contentScripts;
 
-        if(!isDefined(contentScripts) || contentScripts.length < 1) {
+        if(IsNil(contentScripts) || contentScripts.length < 1) {
             return Promise.resolve(true);
         }
 
@@ -134,7 +134,7 @@ export default class Plugin {
                 // Retrieve existing rule
                 let existingRule = existingRulesMap[ruleId];
 
-                if(!isDefined(existingRule)) {
+                if(IsNil(existingRule)) {
                     matched = false;
                     return;
                 }
@@ -157,7 +157,7 @@ export default class Plugin {
         // Retrieve plugin content scripts
         let contentScripts = this.contentScripts;
 
-        if(!isDefined(contentScripts) || contentScripts.length < 1) {
+        if(IsNil(contentScripts) || contentScripts.length < 1) {
             return Promise.resolve();
         }
 
@@ -179,7 +179,7 @@ export default class Plugin {
         // Retrieve plugin content scripts
         let contentScripts = this.contentScripts;
 
-        if(!isDefined(contentScripts) || contentScripts.length < 1) {
+        if(IsNil(contentScripts) || contentScripts.length < 1) {
             return Promise.resolve();
         }
 
@@ -204,7 +204,7 @@ export default class Plugin {
         // Retrieve plugin permissions
         let permissions = this.permissions;
 
-        if(!isDefined(permissions) || Object.keys(permissions).length < 1) {
+        if(IsNil(permissions) || Object.keys(permissions).length < 1) {
             return Promise.resolve(true);
         }
 
@@ -222,7 +222,7 @@ export default class Plugin {
         // Retrieve plugin permissions
         let permissions = this.permissions;
 
-        if(!isDefined(permissions) || Object.keys(permissions).length < 1) {
+        if(IsNil(permissions) || Object.keys(permissions).length < 1) {
             return Promise.resolve();
         }
 
@@ -240,7 +240,7 @@ export default class Plugin {
         // Retrieve plugin permissions
         let permissions = this.permissions;
 
-        if(!isDefined(permissions) || Object.keys(permissions).length < 1) {
+        if(IsNil(permissions) || Object.keys(permissions).length < 1) {
             return Promise.resolve();
         }
 

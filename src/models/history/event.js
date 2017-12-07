@@ -1,8 +1,7 @@
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
-
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class HistoryEvent {
@@ -21,7 +20,7 @@ export default class HistoryEvent {
         }, options || {});
 
         // Validate options
-        if(isDefined(options.keys.include) && isDefined(options.keys.exclude)) {
+        if(!IsNil(options.keys.include) && !IsNil(options.keys.exclude)) {
             throw new Error('Only one key filter should be defined');
         }
 
@@ -31,12 +30,12 @@ export default class HistoryEvent {
         };
 
         // Apply key exclude filter
-        if(isDefined(options.keys.exclude)) {
+        if(!IsNil(options.keys.exclude)) {
             return Omit(document, options.keys.exclude);
         }
 
         // Apply key include filter
-        if(isDefined(options.keys.include)) {
+        if(!IsNil(options.keys.include)) {
             return Pick(document, options.keys.include);
         }
 

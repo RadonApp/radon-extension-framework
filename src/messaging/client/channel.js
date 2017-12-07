@@ -1,8 +1,8 @@
 import EventEmitter from 'eventemitter3';
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import Log from 'neon-extension-framework/core/logger';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import MessageClientService from './service';
 
@@ -25,7 +25,7 @@ export default class MessageClientChannel extends EventEmitter {
 
     service(name) {
         // Create service (if one doesn't exist)
-        if(!isDefined(this.services[name])) {
+        if(IsNil(this.services[name])) {
             this.services[name] = new MessageClientService(this, name);
         }
 
@@ -72,7 +72,7 @@ export default class MessageClientChannel extends EventEmitter {
         }
 
         // Join channel
-        if(!isDefined(this.joining)) {
+        if(IsNil(this.joining)) {
             this.joining = this._join();
         }
 

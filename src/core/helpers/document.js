@@ -1,17 +1,16 @@
-import {isDefined} from './value';
-
+import IsNil from 'lodash-es/isNil';
 
 
 export function awaitBody() {
     return new Promise((resolve, reject) => {
-        if(isDefined(document.body)) {
+        if(!IsNil(document.body)) {
             resolve(document.body);
             return;
         }
 
         // Wait for the "DOMContentLoaded" event to be fired
         document.addEventListener('DOMContentLoaded', () => {
-            if(isDefined(document.body)) {
+            if(!IsNil(document.body)) {
                 resolve(document.body);
             } else {
                 reject(new Error('Body wasn\'t found after the "DOMContentLoaded" event'));
@@ -25,7 +24,7 @@ export function awaitElement(container, selector) {
         function check() {
             let element = container.querySelector(selector);
 
-            if(!isDefined(element)) {
+            if(IsNil(element)) {
                 return false;
             }
 

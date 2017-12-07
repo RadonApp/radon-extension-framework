@@ -1,24 +1,13 @@
-let getType = {};
+import IsNil from 'lodash-es/isNil';
 
-export function isUndefined(value) {
-    return typeof value === 'undefined';
-}
-
-export function isDefined(value) {
-    return !isUndefined(value) && value !== null;
-}
-
-export function isFunction(functionToCheck) {
-    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-}
 
 export function isString(value) {
-    return isDefined(value) && typeof value === 'string';
+    return !IsNil(value) && typeof value === 'string';
 }
 
 export function setDefault(value, defaultValue) {
-    if(!isDefined(value)) {
-        if(!isDefined(defaultValue)) {
+    if(IsNil(value)) {
+        if(IsNil(defaultValue)) {
             return null;
         }
 

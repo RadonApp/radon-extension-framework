@@ -1,14 +1,13 @@
+import IsNil from 'lodash-es/isNil';
+
 import {cleanTitle, encodeTitle} from './metadata';
-import {isUndefined, isDefined, isFunction, isString, setDefault} from './value';
+import {isString, setDefault} from './value';
 
 
 export {
     cleanTitle,
     encodeTitle,
 
-    isUndefined,
-    isDefined,
-    isFunction,
     isString,
     setDefault
 };
@@ -24,7 +23,7 @@ export function generateRandomString(length, chars) {
 }
 
 export function hasClass(node, className) {
-    if(!isDefined(node.classList)) {
+    if(IsNil(node.classList)) {
         return false;
     }
 
@@ -37,20 +36,20 @@ export function hasClassTree(node) {
 
     for(let i = 0; i < args.length; ++i) {
         // Ensure parent exists
-        if(!isDefined(current)) {
+        if(IsNil(current)) {
             return false;
         }
 
         // Check if `current` matches class
         let className = args[i];
 
-        if(!isDefined(className)) {
+        if(IsNil(className)) {
             // Switch to parent node
             current = current.parentNode;
             continue;
         }
 
-        if(!isDefined(current.classList) || !current.classList.contains(className)) {
+        if(IsNil(current.classList) || !current.classList.contains(className)) {
             return false;
         }
 
@@ -66,7 +65,7 @@ export function round(value, digits) {
 }
 
 export function toCssUrl(url) {
-    if(!isDefined(url)) {
+    if(IsNil(url)) {
         return null;
     }
 

@@ -1,7 +1,9 @@
+import IsNil from 'lodash-es/isNil';
+
 import Log from 'neon-extension-framework/core/logger';
 import Preferences from 'neon-extension-framework/preferences';
 import {Page} from 'neon-extension-framework/services/configuration/models';
-import {isDefined, isString} from 'neon-extension-framework/core/helpers';
+import {isString} from 'neon-extension-framework/core/helpers';
 
 
 export const OptionTypes = [
@@ -34,25 +36,25 @@ export class Registry {
     }
 
     listPlugins(type, options) {
-        if(isDefined(type) && !isString(type)) {
+        if(!IsNil(type) && !isString(type)) {
             options = type;
             type = null;
         }
 
         // Set default options
         options = options || {};
-        options.disabled = isDefined(options.disabled) ? options.disabled : false;
+        options.disabled = !IsNil(options.disabled) ? options.disabled : false;
 
         // Retrieve collection
         let plugins;
 
-        if(isDefined(type)) {
+        if(!IsNil(type)) {
             plugins = this.pluginsByType[type];
         } else {
             plugins = this.plugins;
         }
 
-        if(!isDefined(plugins)) {
+        if(IsNil(plugins)) {
             return Promise.resolve([]);
         }
 
@@ -82,24 +84,24 @@ export class Registry {
     }
 
     listServices(type, options) {
-        if(isDefined(type) && !isString(type)) {
+        if(!IsNil(type) && !isString(type)) {
             options = type;
             type = null;
         }
 
         options = options || {};
-        options.disabled = isDefined(options.disabled) ? options.disabled : false;
+        options.disabled = !IsNil(options.disabled) ? options.disabled : false;
 
         // Retrieve collection
         let services;
 
-        if(isDefined(type)) {
+        if(!IsNil(type)) {
             services = this.servicesByType[type];
         } else {
             services = this.services;
         }
 
-        if(!isDefined(services)) {
+        if(IsNil(services)) {
             return Promise.resolve([]);
         }
 
@@ -130,7 +132,7 @@ export class Registry {
 
     registerComponent(component) {
         // Ensure component hasn't already been defined
-        if(isDefined(this.components[component.componentId])) {
+        if(!IsNil(this.components[component.componentId])) {
             return false;
         }
 

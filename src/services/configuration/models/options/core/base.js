@@ -1,4 +1,4 @@
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import IsNil from 'lodash-es/isNil';
 
 import Model from '../../base';
 import {getProperty} from './helpers';
@@ -25,7 +25,7 @@ export class Option extends Model {
     }
 
     _parseComponentId(componentId) {
-        if(!isDefined(componentId)) {
+        if(IsNil(componentId)) {
             return null;
         }
 
@@ -37,7 +37,7 @@ export class Option extends Model {
     }
 
     _parseRequiresOption(requires) {
-        if(!isDefined(requires)) {
+        if(IsNil(requires)) {
             return [];
         }
 

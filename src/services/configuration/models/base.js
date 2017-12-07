@@ -1,4 +1,4 @@
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import IsNil from 'lodash-es/isNil';
 
 
 export default class Model {
@@ -8,7 +8,7 @@ export default class Model {
         this.key = key;
 
         // Generate global identifier
-        if(isDefined(key)) {
+        if(!IsNil(key)) {
             this.id = plugin.id + ':' + key;
         } else {
             this.id = plugin.id;

@@ -1,11 +1,11 @@
 import EventEmitter from 'eventemitter3';
+import IsNil from 'lodash-es/isNil';
 import IsString from 'lodash-es/isString';
 import Merge from 'lodash-es/merge';
 import Uuid from 'uuid';
 
 import Log from 'neon-extension-framework/core/logger';
 import Messaging from 'neon-extension-browser/messaging';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 import {parseMessageName} from 'neon-extension-framework/messaging/core/helpers';
 
 import MessageClientChannel from './channel';
@@ -50,7 +50,7 @@ export class MessageClient extends EventEmitter {
         }
 
         // Create channel (if one doesn't exist)
-        if(!isDefined(this.channels[name])) {
+        if(IsNil(this.channels[name])) {
             this.channels[name] = new MessageClientChannel(this, name);
         }
 
@@ -72,17 +72,17 @@ export class MessageClient extends EventEmitter {
     }
 
     connect() {
-        if(isDefined(this._broker) || isDefined(this._port)) {
+        if(!IsNil(this._broker) || !IsNil(this._port)) {
             return Promise.resolve();
         }
 
         // Return reconnecting promise (if already reconnecting)
-        if(isDefined(this._reconnecting)) {
+        if(!IsNil(this._reconnecting)) {
             return this._reconnecting;
         }
 
         // Return connecting promise (if already connecting)
-        if(isDefined(this._connecting)) {
+        if(!IsNil(this._connecting)) {
             return this._connecting;
         }
 
@@ -104,12 +104,12 @@ export class MessageClient extends EventEmitter {
     }
 
     reconnect() {
-        if(isDefined(this._broker) || isDefined(this._port)) {
+        if(!IsNil(this._broker) || !IsNil(this._port)) {
             return Promise.resolve();
         }
 
         // Return reconnecting promise (if already reconnecting)
-        if(isDefined(this._reconnecting)) {
+        if(!IsNil(this._reconnecting)) {
             return this._reconnecting;
         }
 
@@ -148,7 +148,7 @@ export class MessageClient extends EventEmitter {
             // Bind to response event
             self.responses.once(id, function(response) {
                 // Stop timeout callback
-                if(isDefined(timeoutId)) {
+                if(!IsNil(timeoutId)) {
                     clearTimeout(timeoutId);
                 }
 
@@ -188,7 +188,7 @@ export class MessageClient extends EventEmitter {
         this.emit('post', message);
 
         // Ignore port messaging if we are bound directly to the broker
-        if(isDefined(this._broker)) {
+        if(!IsNil(this._broker)) {
             return Promise.resolve();
         }
 
@@ -201,7 +201,7 @@ export class MessageClient extends EventEmitter {
     // region Private Methods
 
     _reconnect() {
-        if(!isDefined(this.options.reconnect) || isDefined(this._broker)) {
+        if(IsNil(this.options.reconnect) || !IsNil(this._broker)) {
             return Promise.reject();
         }
 
@@ -302,7 +302,7 @@ export class MessageClient extends EventEmitter {
         // Parse name
         let event = parseMessageName(message.name);
 
-        if(!isDefined(event)) {
+        if(IsNil(event)) {
             Log.warn('Unable to parse event name: %s', message.name);
             return;
         }
@@ -310,9 +310,9 @@ export class MessageClient extends EventEmitter {
         // Retrieve event target
         let target;
 
-        if(isDefined(event.channel) && isDefined(event.service)) {
+        if(!IsNil(event.channel) && !IsNil(event.service)) {
             target = this.service(event.channel, event.service);
-        } else if(isDefined(event.channel)) {
+        } else if(!IsNil(event.channel)) {
             target = this.channel(event.channel);
         } else {
             Log.warn('Unsupported event: %s', message.name);

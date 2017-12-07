@@ -1,9 +1,9 @@
 import EventEmitter from 'eventemitter3';
 import IsEqual from 'lodash-es/isEqual';
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import MessageClient from 'neon-extension-framework/messaging/client';
-import {isDefined, isUndefined} from 'neon-extension-framework/core/helpers';
 
 import StorageContext from './context';
 
@@ -33,7 +33,7 @@ export class Storage extends EventEmitter {
         }, options || {});
 
         // Return value from cache (if one is available)
-        if(!isUndefined(this._entries[key]) && !options.refresh) {
+        if(!IsNil(this._entries[key]) && !options.refresh) {
             return Promise.resolve(this._entries[key].value);
         }
 
@@ -108,7 +108,7 @@ export class Storage extends EventEmitter {
             let entry = this._entries[key];
 
             // Ensure type is available
-            if(!isDefined(entry.type)) {
+            if(IsNil(entry.type)) {
                 continue;
             }
 
@@ -158,7 +158,7 @@ export class Storage extends EventEmitter {
     // region Private Methods
 
     _getMethodName(prefix, type) {
-        if(!isDefined(type)) {
+        if(IsNil(type)) {
             return prefix;
         }
 

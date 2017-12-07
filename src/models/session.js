@@ -1,8 +1,9 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import IsNil from 'lodash-es/isNil';
 import Uuid from 'uuid';
 
 import ItemParser from 'neon-extension-framework/models/item/core/parser';
-import {isDefined, round} from 'neon-extension-framework/core/helpers';
+import {round} from 'neon-extension-framework/core/helpers';
 
 
 export const SessionState = {
@@ -38,11 +39,11 @@ export default class Session {
     }
 
     get progress() {
-        if(!isDefined(this.time)) {
+        if(IsNil(this.time)) {
             return null;
         }
 
-        if(!isDefined(this.item) || !isDefined(this.item.duration)) {
+        if(IsNil(this.item) || IsNil(this.item.duration)) {
             return null;
         }
 
@@ -51,7 +52,7 @@ export default class Session {
     }
 
     get valid() {
-        if(!isDefined(this.item) || !isDefined(this.item.duration)) {
+        if(IsNil(this.item) || IsNil(this.item.duration)) {
             return false;
         }
 
@@ -63,41 +64,41 @@ export default class Session {
             '_id': this.id
         };
 
-        if(isDefined(this.item)) {
+        if(!IsNil(this.item)) {
             document['item'] = this.item.toDocument({
                 keys: ['_id', 'type']
             });
         }
 
-        if(isDefined(this.clientId)) {
+        if(!IsNil(this.clientId)) {
             document['clientId'] = this.clientId;
         }
 
-        if(isDefined(this.state)) {
+        if(!IsNil(this.state)) {
             document['state'] = this.state;
         }
 
-        if(isDefined(this.time)) {
+        if(!IsNil(this.time)) {
             document['time'] = this.time;
         }
 
-        if(isDefined(this.createdAt)) {
+        if(!IsNil(this.createdAt)) {
             document['createdAt'] = this.createdAt;
         }
 
-        if(isDefined(this.updatedAt)) {
+        if(!IsNil(this.updatedAt)) {
             document['updatedAt'] = this.updatedAt;
         }
 
-        if(isDefined(this.endedAt)) {
+        if(!IsNil(this.endedAt)) {
             document['endedAt'] = this.endedAt;
         }
 
-        if(isDefined(this.stalledAt)) {
+        if(!IsNil(this.stalledAt)) {
             document['stalledAt'] = this.stalledAt;
         }
 
-        if(isDefined(this.stalledPreviousState)) {
+        if(!IsNil(this.stalledPreviousState)) {
             document['stalledPreviousState'] = this.stalledPreviousState;
         }
 
@@ -122,7 +123,7 @@ export default class Session {
             'item': null
         };
 
-        if(isDefined(this.item)) {
+        if(!IsNil(this.item)) {
             document['item'] = this.item.toPlainObject();
         }
 
@@ -134,7 +135,7 @@ export default class Session {
     }
 
     static fromDocument(document) {
-        if(!isDefined(document)) {
+        if(IsNil(document)) {
             return null;
         }
 
@@ -154,7 +155,7 @@ export default class Session {
     }
 
     static fromPlainObject(item) {
-        if(!isDefined(item)) {
+        if(IsNil(item)) {
             return null;
         }
 

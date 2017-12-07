@@ -1,8 +1,8 @@
-import {isDefined} from './value';
+import IsNil from 'lodash-es/isNil';
 
 
 export function cleanTitle(value) {
-    if(!isDefined(value)) {
+    if(IsNil(value)) {
         return value;
     }
 
@@ -13,7 +13,7 @@ export function cleanTitle(value) {
 }
 
 export function encodeTitle(value) {
-    if(!isDefined(value)) {
+    if(IsNil(value)) {
         return value;
     }
 

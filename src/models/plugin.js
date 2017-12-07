@@ -1,6 +1,5 @@
+import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
-
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 
 export default class Plugin {
@@ -26,21 +25,21 @@ export default class Plugin {
     }
 
     static parse(data) {
-        if(!isDefined(data)) {
+        if(IsNil(data)) {
             return null;
         }
 
         // Retrieve identifier
         let id = data.id || data._id;
 
-        if(!isDefined(id)) {
+        if(IsNil(id)) {
             return null;
         }
 
         // Retrieve type
         let type = data.type || data['#type'];
 
-        if(!isDefined(type) || type.indexOf('/') < 0) {
+        if(IsNil(type) || type.indexOf('/') < 0) {
             return null;
         }
 
