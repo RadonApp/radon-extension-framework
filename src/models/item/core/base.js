@@ -316,6 +316,15 @@ export default class Item extends Model {
             doc.metadata = metadata;
         }
 
+        // Include children as references
+        ForEach(this.children, (child, name) => {
+            if(IsNil(child)) {
+                return;
+            }
+
+            doc[name] = child.toReference();
+        });
+
         // Include optional values
         if(!IsNil(this.id)) {
             doc['_id'] = this.id;
