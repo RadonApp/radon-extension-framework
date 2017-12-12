@@ -3,15 +3,20 @@ import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
+import Map from 'lodash-es/map';
 import MapKeys from 'lodash-es/mapKeys';
 import MapValues from 'lodash-es/mapValues';
 import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 import PickBy from 'lodash-es/pickBy';
+import Reduce from 'lodash-es/reduce';
+import Without from 'lodash-es/without';
 
+import Log from 'neon-extension-framework/core/logger';
 import Model from 'neon-extension-framework/models/core/base';
 import {createSlug} from 'neon-extension-framework/core/helpers/metadata';
+import {product} from 'neon-extension-framework/core/helpers/value';
 
 
 export default class Item extends Model {
@@ -110,53 +115,54 @@ export default class Item extends Model {
 
     createSelectors(options) {
         options = {
-            keys: true,
+            prefix: null,
+            reference: false,
 
             ...(options || {})
         };
 
-        // Identifier selector
+        // Identifier Selector
         if(!IsNil(this.id)) {
-            return [{
-                '_id': this.id
-            }];
-        }
+            let selector = {};
 
-        if(!options.keys) {
-            throw new Error('No identifier has been defined');
+            selector[(options.prefix || '') + '_id'] = this.id;
+
+            return [selector];
         }
 
         // Create base selector
-        let base = {
-            type: this.type
-        };
+        let base = {};
+
+        if(!options.reference) {
+            base[(options.prefix || '') + 'type'] = this.type;
+        }
+
+        // Create selectors
+        let selectors = [Map(this._getOrderedKeys({ prefix: options.prefix }), (selector) => ({
+            ...base,
+            ...selector
+        }))];
 
         ForEach(this.children, (child, name) => {
             if(IsNil(child)) {
-                throw new Error('No "' + name + '" has been defined');
+                Log.debug('No "' + name + '" has been defined');
+                return;
             }
-
-            let selectors;
 
             try {
-                selectors = child.createSelectors({ keys: false });
+                selectors.push(child.createSelectors({
+                    prefix: (options.prefix || '') + name + '.',
+                    reference: true
+                }));
             } catch(e) {
-                throw new Error('Unable to create "' + name + '" selectors: ' + (e && e.message ? e.message : e));
+                Log.debug('Unable to create "' + name + '" selectors: ' + (e && e.message ? e.message : e));
             }
-
-            ForEach(selectors, (selectors) => {
-                if(selectors.length > 1) {
-                    throw new Error('"' + name + '" returned more than one selector');
-                }
-
-                ForEach(selectors[0], (value, key) => {
-                    base[name + '.' + key] = value;
-                });
-            });
         });
 
-        // Create key selectors
-        return this._createKeySelectors(base, this.keys);
+        // Merge selectors
+        return Map(product(...selectors), (selectors) =>
+            Merge({}, ...selectors)
+        );
     }
 
     get(source) {
@@ -326,42 +332,6 @@ export default class Item extends Model {
         return doc;
     }
 
-    // endregion
-
-    // region Private Methods
-
-    _createKeySelectors(base, keys, prefix, selectors) {
-        if(IsNil(prefix)) {
-            prefix = 'keys';
-        }
-
-        if(IsNil(selectors)) {
-            selectors = [];
-        }
-
-        for(let source in keys) {
-            if(!keys.hasOwnProperty(source) || IsNil(keys[source])) {
-                continue;
-            }
-
-            if(IsPlainObject(keys[source])) {
-                this._createKeySelectors(base, keys[source], prefix + '.' + source, selectors);
-                continue;
-            }
-
-            // Create selector
-            let selector = {
-                ...base
-            };
-
-            selector[prefix + '.' + source] = keys[source];
-
-            // Add selector to OR clause
-            selectors.push(selector);
-        }
-
-        return selectors;
-
     toPlainObject() {
         let data = PickBy(this.values, (value) => !IsNil(value));
 
@@ -448,6 +418,29 @@ export default class Item extends Model {
 
             slug: createSlug(this.title)
         };
+    }
+
+    _getOrderedKeys(options) {
+        options = {
+            prefix: null,
+
+            ...(options || {})
+        };
+
+        // Build array of sources
+        let sources = Without(Object.keys(this.keys), 'item').concat(['item']);
+
+        // Build array of keys
+        return Reduce(sources, (result, source) =>
+            Reduce(this.keys[source], (result, value, name) => {
+                let item = {};
+
+                item[(options.prefix || '') + 'keys.' + source + '.' + name] = value;
+
+                result.push(item);
+                return result;
+            }, result),
+        []);
     }
 
     _matchesChildren(children) {
