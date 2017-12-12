@@ -362,6 +362,32 @@ export default class Item extends Model {
 
         return selectors;
 
+    toReference() {
+        if(IsNil(this.id)) {
+            return null;
+        }
+
+        let reference = {
+            '_id': this.id,
+
+            ...Pick(this.values, [
+                'keys',
+                'title'
+            ])
+        };
+
+        // Include children as references
+        ForEach(this.children, (child, name) => {
+            if(IsNil(child)) {
+                return;
+            }
+
+            reference[name] = child.toReference();
+        });
+
+        return reference;
+    }
+
     // endregion
 
     // region Private Methods
