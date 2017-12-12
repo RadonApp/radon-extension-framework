@@ -168,6 +168,26 @@ export default class Item extends Model {
         };
     }
 
+    matches(other) {
+        if(IsNil(other) || this.type !== other.type) {
+            return false;
+        }
+
+        if(!IsNil(this.id) && this.id !== other.id) {
+            return false;
+        }
+
+        if(!this._matchesKeys(other.keys)) {
+            return false;
+        }
+
+        if(!this._matchesChildren(other.children)) {
+            return false;
+        }
+
+        return true;
+    }
+
     merge(current) {
         let currentDocument = current.toDocument();
 
@@ -336,6 +356,41 @@ export default class Item extends Model {
 
             slug: createSlug(this.title)
         };
+    }
+
+    _matchesChildren(children) {
+        for(let key in children) {
+            if(!children.hasOwnProperty(key) || IsNil(this.children[key])) {
+                continue;
+            }
+
+            // Compare children
+            if(!this.children[key].matches(children[key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    _matchesKeys(keys) {
+        for(let source in keys) {
+            if(!keys.hasOwnProperty(source) || IsNil(this.keys[source])) {
+                continue;
+            }
+
+            for(let name in keys[source]) {
+                if(!keys[source].hasOwnProperty(name) || IsNil(this.keys[source][name]) || IsNil(keys[source][name])) {
+                    continue;
+                }
+
+                if(this.keys[source][name] === keys[source][name]) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // endregion
