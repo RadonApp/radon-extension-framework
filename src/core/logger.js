@@ -90,6 +90,13 @@ export class Logger {
     _configure(attempt = 0) {
         let self = this;
 
+        // Set to trace in development environments
+        if(process.env['NODE_ENV'] === 'development') {
+            this._setLevel('trace');
+            return;
+        }
+
+        // Wait until preferences are available
         function retry() {
             if(attempt > 50) {
                 console.warn('Unable to retrieve the current log level, defaulting to trace');
@@ -118,12 +125,6 @@ export class Logger {
         this.preferences.onChanged(optionKey, ({value}) => {
             this._setLevel(value);
         });
-
-        // Set to trace in development environments
-        if(process.env['NODE_ENV'] === 'development') {
-            this._setLevel('trace');
-            return;
-        }
 
         // Retrieve current log level
         this.preferences.getString(optionKey).then(
