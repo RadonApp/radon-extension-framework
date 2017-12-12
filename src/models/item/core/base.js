@@ -362,6 +362,56 @@ export default class Item extends Model {
 
         return selectors;
 
+    toPlainObject() {
+        let data = PickBy(this.values, (value) => !IsNil(value));
+
+        // Build metadata
+        let metadata = PickBy(
+            MapValues(this.metadata, (metadata) => PickBy(
+                PickBy(metadata, (value, key) => {
+                    if(key === 'keys') {
+                        return false;
+                    }
+
+                    if(this.constructor.metadata.indexOf(key) < 0) {
+                        return true;
+                    }
+
+                    return !IsEqual(data[key], value);
+                })
+            )),
+            (metadata) => Object.keys(metadata).length > 0
+        );
+
+        if(Object.keys(metadata).length > 0) {
+            data.metadata = metadata;
+        }
+
+        // Include children as plain objects
+        ForEach(this.children, (child, name) => {
+            if(IsNil(child)) {
+                return;
+            }
+
+            data[name] = child.toPlainObject();
+        });
+
+        // Include optional values
+        if(!IsNil(this.id)) {
+            data['id'] = this.id;
+        }
+
+        if(!IsNil(this.revision)) {
+            data['revision'] = this.revision;
+        }
+
+        if(!IsNil(this.constructor.type)) {
+            data['type'] = this.constructor.type;
+        }
+
+        return data;
+    }
+
     toReference() {
         if(IsNil(this.id)) {
             return null;
