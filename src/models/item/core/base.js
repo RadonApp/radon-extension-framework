@@ -189,6 +189,10 @@ export default class Item extends Model {
     }
 
     merge(current) {
+        if(IsNil(current)) {
+            return false;
+        }
+
         let currentDocument = current.toDocument();
 
         // Update (or validate) identifier
@@ -208,7 +212,9 @@ export default class Item extends Model {
         // Merge values
         this.values = {
             ...(current.values || {}),
-            ...(this.values || {}),
+
+            // Update values
+            ...PickBy(this.values || {}, (value) => !IsNil(value)),
 
             // Merge keys
             keys: Merge(
@@ -216,13 +222,23 @@ export default class Item extends Model {
                 current.values.keys || {}
             ),
 
-            // Override values
+            // Fixed values
             title: current.title || this.title,
-
             createdAt: current.createdAt || this.createdAt
         };
 
-        // TODO Merge children
+        // Merge children
+        ForEach(current.children, (child, name) => {
+            if(IsNil(child)) {
+                return;
+            }
+
+            if(IsNil(this.children[name])) {
+                this.children[name] = child;
+            } else {
+                this.children[name].merge(child);
+            }
+        });
 
         // Merge metadata
         ForEach(Object.keys(current.metadata), (source) => {
