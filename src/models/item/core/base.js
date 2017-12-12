@@ -432,20 +432,41 @@ export default class Item extends Model {
     }
 
     static decode(values, options) {
-        values = MapKeys(values, (value, key) => {
-            if(key === '_id') {
-                return 'id';
+        // Decode children
+        let children = MapValues(this.children, (type, name) => {
+            let value = values[name];
+
+            if(IsNil(value) || !IsPlainObject(value)) {
+                return value || null;
             }
 
-            if(key === '_rev') {
-                return 'revision';
+            // Ensure parser instance has been provided
+            if(IsNil(options) || IsNil(options.parser)) {
+                throw new Error('Missing required option: parser');
             }
 
-            return key;
+            // Decode child
+            return options.parser.decode(type, value);
         });
 
+        // Filter (and map) values
+        values = Omit(
+            MapKeys(values, (value, key) => {
+                if(key === '_id') {
+                    return 'id';
+                }
+
+                if(key === '_rev') {
+                    return 'revision';
+                }
+
+                return key;
+            }),
+            Object.keys(this.children)
+        );
+
         // Create item
-        return (new this(values, {}));
+        return (new this(values, children));
     }
 
     // endregion
