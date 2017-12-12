@@ -139,7 +139,7 @@ export default class Session {
             return null;
         }
 
-        return new Session(document['_id'], ItemParser.decode(document['item']), {
+        return new Session(document['_id'], ItemParser.decodeItem(document['item']), {
             'clientId': document['clientId'],
 
             'state': document['state'],
@@ -159,7 +159,7 @@ export default class Session {
             return null;
         }
 
-        return new Session(item['id'], ItemParser.decode(item['item']), {
+        return new Session(item['id'], ItemParser.decodeItem(item['item']), {
             'clientId': item['clientId'],
 
             'state': item['state'],
