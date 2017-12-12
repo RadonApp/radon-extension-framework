@@ -640,8 +640,6 @@ describe('Track', function() {
 
             expect(selectors.length).toBe(16);
 
-            console.log(JSON.stringify(selectors));
-
             expect(selectors[0]).toEqual({
                 'type': 'music/track',
                 'keys.test.id': '3',
