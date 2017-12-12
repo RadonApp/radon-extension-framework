@@ -9,9 +9,9 @@ import Merge from 'lodash-es/merge';
 import Omit from 'lodash-es/omit';
 import Pick from 'lodash-es/pick';
 import PickBy from 'lodash-es/pickBy';
-import Slugify from 'slugify';
 
 import Model from 'neon-extension-framework/models/core/base';
+import {createSlug} from 'neon-extension-framework/core/helpers/metadata';
 
 
 export default class Item extends Model {
@@ -45,7 +45,7 @@ export default class Item extends Model {
 
             createdAt: null,
 
-            // Include provided values
+            // Omit properties
             ...Omit(values, [
                 'id',
                 'revision',
@@ -58,6 +58,9 @@ export default class Item extends Model {
         this.metadata = values.metadata || {};
 
         this.children = children || {};
+
+        // Generate slug
+        this._generateSlug();
     }
 
     get type() {
@@ -68,8 +71,23 @@ export default class Item extends Model {
         return this.values.keys;
     }
 
+    get slug() {
+        if(IsNil(this.values.keys['item'])) {
+            return null;
+        }
+
+        return this.values.keys['item'].slug || null;
+    }
+
     get title() {
         return this.values.title;
+    }
+
+    set title(title) {
+        this.values.title = title;
+
+        // Generate slug
+        this._generateSlug();
     }
 
     get createdAt() {
@@ -213,15 +231,8 @@ export default class Item extends Model {
             }
         });
 
-        // Update keys
-        this.values.keys['item'] = {
-            ...(this.values.keys['item'] || {}),
-
-            slug: !IsNil(this.title) ? Slugify(this.title, {
-                lower: true,
-                remove: /[$*_+~.()'"!\-:@]/g
-            }) : null
-        };
+        // Generate slug
+        this._generateSlug();
 
         // Update source keys
         this.values.keys[source] = {
@@ -314,6 +325,17 @@ export default class Item extends Model {
         }
 
         return selectors;
+
+    // endregion
+
+    // region Private Methods
+
+    _generateSlug() {
+        this.values.keys['item'] = {
+            ...(this.values.keys['item'] || {}),
+
+            slug: createSlug(this.title)
+        };
     }
 
     // endregion
