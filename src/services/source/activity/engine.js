@@ -566,14 +566,19 @@ export default class ActivityEngine {
             return Promise.resolve();
         }
 
-        if(!IsNil(item.fetchedAt)) {
-            Log.trace('Item fetched %d second(s) ago', (Date.now() - item.fetchedAt) / 1000);
+        let fetchedAt = item.get(this.plugin.id).fetchedAt;
+        let fetchedAgo;
+
+        if(!IsNil(fetchedAt)) {
+            fetchedAgo = Date.now() - fetchedAt;
+
+            Log.trace('Item fetched %d second(s) ago', fetchedAgo / 1000);
         }
 
         // Fetch metadata (if the item is incomplete, or has expired)
-        if(!item.complete || item.hasExpired(this.options.metadataRefreshInterval)) {
+        if(IsNil(item.duration) || IsNil(fetchedAgo) || fetchedAgo > this.options.metadataRefreshInterval) {
             return Promise.resolve(this.options.fetchMetadata(item)).catch((err) => {
-                Log.error('Unable to fetch metadata for item %o: %s', item, err.message, err);
+                Log.error('Unable to fetch metadata for item %o: %s', item, err && err.message ? err.message : err);
             });
         }
 
