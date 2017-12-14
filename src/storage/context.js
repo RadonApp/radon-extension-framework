@@ -9,14 +9,14 @@ export default class StorageContext {
         if(IsNil(this.name)) {
             throw new Error('Invalid value provided for the "name" parameter');
         }
+    }
 
-        if(this.name.indexOf(':') !== -1) {
-            throw new Error('Context names can\'t contain ":" characters');
-        }
+    context(name) {
+        return new StorageContext(this, this.key(name));
     }
 
     key(key) {
-        return this.name + ':' + key;
+        return this.name + ':' + encodeURIComponent(key);
     }
 
     get(key) {
