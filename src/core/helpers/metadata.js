@@ -3,7 +3,7 @@ import Slugify from 'slugify';
 
 
 const SlugRemoveRegex = /[\>\<]/g;
-const SlugSpaceRegex = /(\s[~+_,\-\\\/!;:@]+\s)|((^|\s)[~+_,\-\\\/!;:@]+)|([~+_,\-\\\/!;:@]+($|\s))|([;:]+)/g;
+const SlugSpaceRegex = /(\s[~+_,\-\\\/!;:@]+\s)|((^|\s)[~+_,\-\\\/!;:@]+)|([~+_,\-\\\/!;:@]+($|\s))|([;:\|]+)/g;
 
 export function cleanTitle(value) {
     if(IsNil(value)) {
