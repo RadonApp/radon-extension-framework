@@ -197,6 +197,25 @@ export default class Item extends Model {
         return doc;
     }
 
+    toPlainObject() {
+        let metadata = {};
+
+        ForEach(this.metadata, (values, source) => {
+            let data = {};
+
+            // Copy source metadata values to `data`
+            this.resolve(source).copy(data);
+
+            // Add source metadata
+            metadata[source] = data;
+        });
+
+        return {
+            ...super.toPlainObject(),
+            metadata
+        }
+    }
+
     toReference() {
         let obj = {};
 
