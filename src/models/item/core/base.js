@@ -303,7 +303,10 @@ export default class Item extends Model {
 
         // Apply metadata values
         ForEach(doc.metadata, (values, source) => {
-            this.resolve(source).apply(values, options);
+            item.resolve(source).apply({
+                ...doc,
+                ...values
+            }, options);
         });
 
         // Apply item values
