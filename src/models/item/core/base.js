@@ -146,16 +146,16 @@ export default class Item extends Model {
         }
 
         // Apply deferred values
-        changed = this.apply(this.extract(values, {
+        this.apply(this.extract(values, {
             deferred: true
-        })) || changed;
+        }));
 
         ForEach(metadata, (values, name) => {
             let source = this.resolve(name);
 
-            changed = source.apply(source.extract(values, {
+            source.apply(source.extract(values, {
                 deferred: true
-            })) || changed;
+            }));
         });
 
         return changed;
