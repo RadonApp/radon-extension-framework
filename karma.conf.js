@@ -12,7 +12,7 @@ module.exports = function(config) {
         frameworks: ['jasmine'],
 
         files: [
-            'node_modules/babel-polyfill/dist/polyfill.js',
+            'node_modules/@babel/polyfill/dist/polyfill.js',
             'node_modules/jasmine-promises/dist/jasmine-promises.js',
 
             'tests/init.js',
@@ -83,12 +83,7 @@ module.exports = function(config) {
                         use: {
                             loader: 'babel-loader',
                             options: {
-                                plugins: [
-                                    "istanbul",
-                                    "transform-class-properties",
-                                    "transform-object-rest-spread"
-                                ],
-                                presets: ['es2015', 'react']
+                                plugins: ["istanbul"]
                             }
                         }
                     },
@@ -102,13 +97,6 @@ module.exports = function(config) {
 
                         use: {
                             loader: 'babel-loader',
-                            options: {
-                                plugins: [
-                                    "transform-class-properties",
-                                    "transform-object-rest-spread"
-                                ],
-                                presets: ['es2015', 'react']
-                            }
                         }
                     }
                 ]
