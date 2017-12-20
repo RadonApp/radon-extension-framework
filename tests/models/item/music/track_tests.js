@@ -99,7 +99,7 @@ describe('Track', () => {
 
             // Item
             expect(track.title).toBe('Feel Good Inc');
-            expect(track.genres).toBeUndefined();
+            expect(track.get('genres')).toBeUndefined();
 
             expect(track.album.title).toBe('Demon Days');
             expect(track.album.artist.title).toBe('Gorillaz');
@@ -121,23 +121,54 @@ describe('Track', () => {
                     _id: '3',
                     _rev: '#1',
 
-                    title: 'Feel Good Inc'
+                    title: 'Feel Good Inc',
+                    type: 'music/track',
+
+                    metadata: {
+                        alpha: {
+                            genres: ['alternative rock', 'funk rock'],
+                        }
+                    }
                 });
 
+                // Item
                 expect(track.id).toBe('3');
                 expect(track.revision).toBe('#1');
 
                 expect(track.title).toBe('Feel Good Inc');
+
+                expect(track.values).toEqual({
+                    id: '3',
+                    revision: '#1',
+
+                    title: 'Feel Good Inc'
+                });
+
+                // Metadata
                 expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+
+                expect(track.resolve('alpha').get('genres')).toEqual([
+                    'alternative rock',
+                    'funk rock'
+                ]);
+
+                expect(track.resolve('alpha').values).toEqual({
+                    title: 'Feel Good Inc',
+
+                    genres: [
+                        'alternative rock',
+                        'funk rock'
+                    ]
+                });
             });
 
             it('with children', () => {
                 let track = ItemDecoder.fromDocument({
                     _id: '3',
                     _rev: '#1',
-                    type: 'music/track',
 
                     title: 'Feel Good Inc',
+                    type: 'music/track',
 
                     artist: {
                         _id: '1',
@@ -178,14 +209,29 @@ describe('Track', () => {
                     id: '3',
                     revision: '#1',
 
-                    title: 'Feel Good Inc'
+                    title: 'Feel Good Inc',
+                    type: 'music/track',
+
+                    metadata: {
+                        alpha: {
+                            genres: ['alternative rock', 'funk rock'],
+                        }
+                    }
                 });
 
+                // Item
                 expect(track.id).toBe('3');
                 expect(track.revision).toBe('#1');
 
                 expect(track.title).toBe('Feel Good Inc');
+
+                // Metadata
                 expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+
+                expect(track.resolve('alpha').get('genres')).toEqual([
+                    'alternative rock',
+                    'funk rock'
+                ]);
             });
 
             it('with children', () => {
@@ -261,6 +307,7 @@ describe('Track', () => {
                 expect(track.toDocument()).toEqual({
                     _id: '3',
                     title: 'Feel Good Inc',
+                    type: 'music/track',
 
                     createdAt: 1000,
                     updatedAt: 2000,
@@ -307,6 +354,7 @@ describe('Track', () => {
                 expect(track.toPlainObject()).toEqual({
                     id: '3',
                     title: 'Feel Good Inc',
+                    type: 'music/track',
 
                     createdAt: 1000,
                     updatedAt: 2000,
@@ -323,6 +371,7 @@ describe('Track', () => {
                     artist: {
                         id: '1',
                         title: 'Gorillaz',
+                        type: 'music/artist',
 
                         metadata: {
                             alpha: {
@@ -334,6 +383,7 @@ describe('Track', () => {
                     album: {
                         id: '2',
                         title: 'Demon Days',
+                        type: 'music/album',
 
                         metadata: {
                             alpha: {
@@ -344,6 +394,7 @@ describe('Track', () => {
                         artist: {
                             id: '1',
                             title: 'Gorillaz',
+                            type: 'music/artist',
 
                             metadata: {
                                 alpha: {
