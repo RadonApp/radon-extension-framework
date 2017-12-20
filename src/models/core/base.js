@@ -80,9 +80,9 @@ export class BaseModel {
                 return;
             }
 
-            // Set known property
-            changed = prop.set(source, this.values, key, {
-                format: options.format,
+            // Apply value to property
+            changed = prop.apply(source, this.values, key, {
+                ...options,
                 item: this
             }) || changed;
         });
@@ -129,9 +129,9 @@ export class BaseModel {
                 return;
             }
 
-            // Copy known property
-            changed = prop.encode(this.values, target, key, {
-                format: options.format,
+            // Copy value to property
+            changed = prop.copy(this.values, target, key, {
+                ...options,
                 item: this
             }) || changed;
         });
@@ -178,8 +178,8 @@ export class BaseModel {
                 return;
             }
 
-            // Encode known property
-            prop.encode(source, obj, key, {
+            // Copy value to property
+            prop.copy(source, obj, key, {
                 format: options.format,
                 item: this
             });
@@ -309,7 +309,7 @@ export default class Model extends BaseModel {
         return this.apply(values);
     }
 
-    static fromPlainObject(obj) {
+    static fromPlainObject(obj, options) {
         if(IsNil(obj)) {
             return null;
         }
@@ -321,7 +321,7 @@ export default class Model extends BaseModel {
         let item = new this();
 
         // Apply values from `obj`
-        item.apply(obj);
+        item.apply(obj, options);
 
         return item;
     }

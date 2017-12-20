@@ -30,7 +30,9 @@ export default class ItemDecoder {
         }
 
         // Decode document
-        return model[type].fromDocument(doc);
+        return model.fromDocument(value, {
+            decoder: this
+        });
     }
 
     static fromPlainObject(...args) {
@@ -52,11 +54,13 @@ export default class ItemDecoder {
         }
 
         // Decode plain object
-        return model[type].fromPlainObject(value);
+        return model.fromPlainObject(value, {
+            decoder: this
+        });
     }
 
     static get(type) {
-        return this.constructor.Items[type] || null;
+        return this.Items[type] || null;
     }
 
     static _parseArguments(args) {

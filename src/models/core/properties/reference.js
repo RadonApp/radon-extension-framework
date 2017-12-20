@@ -1,30 +1,65 @@
 import IsNil from 'lodash-es/isNil';
 
 import ValueProperty from './value';
+import {BaseModel} from '../base';
 
 
 export default class Reference extends ValueProperty {
+    static defaultOptions = {
+        ...ValueProperty.defaultOptions,
+
+        referenceFormats: ['document']
+    };
+
     constructor(model, options) {
         super(options);
 
         this.model = model;
     }
 
-    encode(source, target, key, options) {
-        let value = source[key];
-
-        if(IsNil(value) && this.getOption(options.format, 'required', true)) {
-            throw new Error(options.item.constructor.name + '.' + key + ' is required');
+    encode(value, options) {
+        if(this.options.referenceFormats.indexOf(options.format) >= 0) {
+            return value.toReference();
         }
 
-        if(!this.shouldEncodeValue(value)) {
-            return false;
+        if(options.format === 'document') {
+            return value.toDocument();
         }
 
-        target[this.getOption(options.format, 'key', key)] = value.toReference();
+        if(IsNil(options.format) || options.format === 'plain') {
+            return value.toPlainObject();
+        }
+
+        throw new Error('Unsupported format: ' + options.format);
     }
 
-    shouldEncodeValue(item) {
+    decode(value, options) {
+        if(value instanceof BaseModel) {
+            return value;
+        }
+
+        if(IsNil(options.decoder)) {
+            throw new Error('Decoder required for children');
+        }
+
+        if(options.format === 'document') {
+            return options.decoder.fromDocument({
+                type: this.model,
+                ...value
+            });
+        }
+
+        if(IsNil(options.format) || options.format === 'plain') {
+            return options.decoder.fromPlainObject({
+                type: this.model,
+                ...value
+            });
+        }
+
+        throw new Error('Unsupported format: ' + options.format);
+    }
+
+    shouldCopyValue(item) {
         return (
             !IsNil(item) &&
             !IsNil(item.id)

@@ -9,38 +9,8 @@ export default class ValueProperty extends Property {
         super(options);
     }
 
-    encode(source, target, key, options) {
-        let value = source[key];
-
-        if(IsNil(value) && this.getOption(options.format, 'required', true)) {
-            throw new Error(options.item.constructor.name + '.' + key + ' is required');
-        }
-
-        if(!this.shouldEncodeValue(value)) {
-            return false;
-        }
-
-        target[this.getOption(options.format, 'key', key)] = value;
-    }
-
-    shouldEncodeValue(value) {
-        return !IsNil(value);
-    }
-
-    get(source, key) {
-        let value = source[key];
-
-        // TODO Validate `value`
-
-        if(IsNil(value)) {
-            return null;
-        }
-
-        return value;
-    }
-
-    set(source, target, key, options) {
-        let value = source[this.getOption(options.format, 'key', key)];
+    apply(source, target, key, options) {
+        let value = this.decode(source[this.getOption(options.format, 'key', key)], options);
 
         if(IsNil(value) || target[key] === value) {
             return false;
@@ -58,10 +28,52 @@ export default class ValueProperty extends Property {
 
         return true;
     }
+
+    copy(source, target, key, options) {
+        let value = source[key];
+
+        if(!this.shouldCopyValue(value)) {
+            return false;
+        }
+
+        // Encode value
+        let encoded = this.encode(value, options);
+
+        if(IsNil(encoded) && this.getOption(options.format, 'required', true)) {
+            throw new Error(options.item.constructor.name + '.' + key + ' is required');
+        }
+
+        if(!this.shouldCopyEncodedValue(encoded)) {
+            return false;
+        }
+
+        // Set value
+        target[this.getOption(options.format, 'key', key)] = encoded;
+    }
+
+    shouldCopyValue(value) {
+        return !IsNil(value);
+    }
+
+    shouldCopyEncodedValue(value) {
+        return !IsNil(value);
+    }
+
+    get(source, key) {
+        let value = source[key];
+
+        // TODO Validate `value`
+
+        if(IsNil(value)) {
+            return null;
+        }
+
+        return value;
+    }
 }
 
 export class Dictionary extends ValueProperty {
-    shouldEncodeValue(items) {
+    shouldCopyEncodedValue(items) {
         return (
             !IsNil(items) &&
             Object.keys(items).length > 0
@@ -70,7 +82,7 @@ export class Dictionary extends ValueProperty {
 }
 
 export class Index extends ValueProperty {
-    shouldEncodeValue(items) {
+    shouldCopyEncodedValue(items) {
         return (
             !IsNil(items) &&
             Object.keys(items).length > 0 &&

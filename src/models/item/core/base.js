@@ -242,7 +242,7 @@ export default class Item extends Model {
         return item;
     }
 
-    static fromDocument(doc) {
+    static fromDocument(doc, options) {
         if(IsNil(doc)) {
             return null;
         }
@@ -251,15 +251,22 @@ export default class Item extends Model {
             throw new Error('Invalid value provided for the "doc" parameter');
         }
 
+        options = {
+            ...options,
+
+            format: 'document'
+        };
+
+        // Create item
         let item = new this();
 
         // Apply metadata values
         ForEach(doc.metadata, (values, source) => {
-            this.resolve(source).apply(values, { format: 'document' });
+            this.resolve(source).apply(values, options);
         });
 
         // Apply item values
-        item.apply(doc, { format: 'document' });
+        item.apply(doc, options);
 
         return item;
     }
