@@ -1,4 +1,3 @@
-import Every from 'lodash-es/every';
 import IsNil from 'lodash-es/isNil';
 
 import Property from './core/base';
@@ -12,7 +11,7 @@ export default class ValueProperty extends Property {
     apply(source, target, key, options) {
         let value = this.decode(source[this.getOption(options.format, 'key', key)], options);
 
-        if(IsNil(value) || target[key] === value) {
+        if(IsNil(value) || this.isEqual(target[key], value)) {
             return false;
         }
 
@@ -24,9 +23,13 @@ export default class ValueProperty extends Property {
         }
 
         // Update value
-        target[key] = value;
+        target[key] = this.update(target[key], value);
 
         return true;
+    }
+
+    update(current, value) {
+        return value;
     }
 
     copy(source, target, key, options) {
@@ -47,8 +50,14 @@ export default class ValueProperty extends Property {
             return false;
         }
 
-        // Set value
+        // Copy value to `target`
         target[this.getOption(options.format, 'key', key)] = encoded;
+
+        return true;
+    }
+
+    isEqual(a, b) {
+        return a === b;
     }
 
     shouldCopyValue(value) {
@@ -69,25 +78,6 @@ export default class ValueProperty extends Property {
         }
 
         return value;
-    }
-}
-
-export class Dictionary extends ValueProperty {
-    shouldCopyEncodedValue(items) {
-        return (
-            !IsNil(items) &&
-            Object.keys(items).length > 0
-        );
-    }
-}
-
-export class Index extends ValueProperty {
-    shouldCopyEncodedValue(items) {
-        return (
-            !IsNil(items) &&
-            Object.keys(items).length > 0 &&
-            Every(items, (value) => Object.keys(value).length > 0)
-        );
     }
 }
 

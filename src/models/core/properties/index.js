@@ -1,5 +1,6 @@
+import Dictionary, {Index} from './dictionary';
 import Reference from './reference';
-import {Dictionary, Index, Integer, Text} from './value';
+import {Integer, Text} from './value';
 
 
 export default {
