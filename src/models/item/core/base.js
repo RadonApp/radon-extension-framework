@@ -11,13 +11,13 @@ import Model, {BaseModel} from '../../core/base';
 export class Metadata extends BaseModel {
     static Apply = {
         exclude: [
-            '_id',
-            '_rev',
+            '_id', 'id',
+            '_rev', 'rev', 'revision',
 
-            'id',
-            'rev',
+            'createdAt',
             'keys',
-            'createdAt'
+            'metadata',
+            'type'
         ],
 
         unknown: true
