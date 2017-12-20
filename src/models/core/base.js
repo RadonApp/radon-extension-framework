@@ -234,7 +234,7 @@ export default class Model extends BaseModel {
         }),
 
         revision: new Properties.Text({
-            change: false,
+            change: true,
             reference: true,
 
             document: {
