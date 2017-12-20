@@ -1,5 +1,6 @@
 import CloneDeep from 'lodash-es/cloneDeep';
 import ForEach from 'lodash-es/forEach';
+import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import MapKeys from 'lodash-es/mapKeys';
@@ -73,8 +74,9 @@ export class BaseModel {
             let {key, prop} = schema[sourceKey] || {};
 
             if(IsNil(prop)) {
-                if(this.applyOptions.unknown) {
+                if(this.applyOptions.unknown && !IsEqual(this.values[sourceKey], value)) {
                     this.values[sourceKey] = value;
+                    changed = true;
                 }
 
                 return;
@@ -101,7 +103,7 @@ export class BaseModel {
         };
 
         let schema = this.getFormatSchema('plain');
-        let changed = false;
+        let copied = false;
 
         ForEach(this.values, (value, sourceKey) => {
             if(this.copyOptions.exclude.indexOf(sourceKey) >= 0) {
@@ -114,6 +116,7 @@ export class BaseModel {
             if(IsNil(prop)) {
                 if(this.copyOptions.unknown) {
                     target[sourceKey] = value;
+                    copied = true;
                 }
 
                 return;
@@ -130,13 +133,13 @@ export class BaseModel {
             }
 
             // Copy value to property
-            changed = prop.copy(this.values, target, key, {
+            copied = prop.copy(this.values, target, key, {
                 ...options,
                 item: this
-            }) || changed;
+            }) || copied;
         });
 
-        return changed;
+        return copied;
     }
 
     extract(source, options) {
