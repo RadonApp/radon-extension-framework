@@ -1,3 +1,4 @@
+import IsFunction from 'lodash-es/isFunction';
 import IsNil from 'lodash-es/isNil';
 
 import Property from './core/base';
@@ -18,8 +19,14 @@ export default class ValueProperty extends Property {
         // TODO Validate `value`
 
         // Change Handler
-        if(!IsNil(target[key]) && (this.options.change === false || !this.options.change(target[key], value))) {
-            return false;
+        if(!IsNil(target[key])) {
+            if(this.options.change === false) {
+                return false;
+            }
+
+            if(IsFunction(this.options.change) && !this.options.change(target[key], value)) {
+                return false;
+            }
         }
 
         // Update value
