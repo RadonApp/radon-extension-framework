@@ -195,7 +195,7 @@ export class BaseModel {
         let prop = this.schema[key];
 
         if(IsNil(prop)) {
-            return this.values[key] || defaultValue || null;
+            return this.values[key] || defaultValue;
         }
 
         return prop.get(this.values, key) || defaultValue || null;
