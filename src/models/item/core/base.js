@@ -1,551 +1,274 @@
+import CloneDeep from 'lodash-es/cloneDeep';
 import ForEach from 'lodash-es/forEach';
-import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
-import Map from 'lodash-es/map';
-import MapKeys from 'lodash-es/mapKeys';
-import MapValues from 'lodash-es/mapValues';
-import Merge from 'lodash-es/merge';
-import Omit from 'lodash-es/omit';
-import Pick from 'lodash-es/pick';
-import PickBy from 'lodash-es/pickBy';
-import Reduce from 'lodash-es/reduce';
-import Without from 'lodash-es/without';
+import OmitBy from 'lodash-es/omitBy';
 
-import Log from 'neon-extension-framework/core/logger';
-import Model from 'neon-extension-framework/models/core/base';
-import {createSlug} from 'neon-extension-framework/core/helpers/metadata';
-import {product} from 'neon-extension-framework/core/helpers/value';
+import Model, {BaseModel} from '../../core/base';
 
 
-export default class Item extends Model {
-    static type = null;
+export class Metadata extends BaseModel {
+    static Apply = {
+        exclude: [
+            '_id',
+            '_rev',
 
-    static children = {};
+            'id',
+            'rev',
+            'keys',
+            'createdAt'
+        ],
 
-    static itemProperties = [
-        'id',
-        'revision',
+        unknown: true
+    };
 
-        'createdAt',
-        'updatedAt'
-    ];
+    static Copy = {
+        unknown: true
+    };
 
-    static metadata = [
-        'title'
-    ];
+    static Extract = {
+        unknown: true
+    };
 
-    constructor(values, children) {
+    static Schema = {
+        updatedAt: new Model.Properties.Integer({
+            deferred: true
+        })
+    };
+
+    constructor(parent, source) {
         super();
 
-        values = values || {};
-
-        this.id = values.id || null;
-        this.revision = values.revision || null;
-
-        this.values = {
-            keys: {},
-            title: null,
-
-            createdAt: null,
-
-            // Omit properties
-            ...Omit(values, [
-                'id',
-                'revision',
-                'type',
-
-                'metadata'
-            ])
-        };
-
-        this.metadata = values.metadata || {};
-
-        this.children = children || {};
-
-        // Generate slug
-        this._generateSlug();
+        this._parent = parent;
+        this._source = source;
     }
 
-    get type() {
-        return this.constructor.type;
+    get parent() {
+        return this._parent;
+    }
+
+    get source() {
+        return this._source;
+    }
+
+    get values() {
+        return this.parent.metadata[this.source];
     }
 
     get keys() {
-        return this.values.keys;
-    }
-
-    get slug() {
-        if(IsNil(this.values.keys['item'])) {
-            return null;
-        }
-
-        return this.values.keys['item'].slug || null;
-    }
-
-    get title() {
-        return this.values.title;
-    }
-
-    set title(title) {
-        this.values.title = title;
-
-        // Generate slug
-        this._generateSlug();
-    }
-
-    get createdAt() {
-        return this.values.createdAt;
-    }
-
-    set createdAt(createdAt) {
-        this.values.createdAt = createdAt;
+        return this._parent.get('keys')[this.source];
     }
 
     get updatedAt() {
-        return this.values.updatedAt;
+        return this.get('updatedAt');
     }
 
-    set updatedAt(updatedAt) {
-        this.values.updatedAt = updatedAt;
+    get(key) {
+        return super.get(key) || this._parent.get(key);
+    }
+}
+
+export default class Item extends Model {
+    static Metadata = Metadata;
+
+    static Schema = {
+        ...Model.Schema,
+
+        keys: new Model.Properties.Index({
+            reference: true
+        }),
+
+        // Timestamps
+        createdAt: new Model.Properties.Integer({
+            change: false
+        })
+    };
+
+    constructor(values, metadata) {
+        super(values);
+
+        this._metadata = metadata || {};
     }
 
-    // region Public Methods
+    get metadata() {
+        return this._metadata;
+    }
 
-    createSelectors(options) {
-        options = {
-            prefix: null,
-            reference: false,
+    get keys() {
+        return this.get('keys');
+    }
 
-            ...(options || {})
-        };
+    get createdAt() {
+        return this.get('createdAt');
+    }
 
-        // Identifier Selector
-        if(!IsNil(this.id)) {
-            let selector = {};
+    get updatedAt() {
+        return this.get('updatedAt');
+    }
 
-            selector[(options.prefix || '') + '_id'] = this.id;
-
-            return [selector];
+    inherit(item) {
+        if(!(item instanceof Model)) {
+            throw new Error('Invalid value provided for the "item" parameter');
         }
 
-        // Create base selector
-        let base = {};
+        let metadata = this._metadata;
+        let values = this._values;
 
-        if(!options.reference) {
-            base[(options.prefix || '') + 'type'] = this.type;
-        }
+        // Replace with `item` metadata and values
+        this._metadata = CloneDeep(item.metadata);
+        this._values = CloneDeep(item.values);
 
-        // Create selectors
-        let selectors = [Map(this._getOrderedKeys({ prefix: options.prefix }), (selector) => ({
-            ...base,
-            ...selector
-        }))];
+        // Update item
+        let changed = false;
 
-        ForEach(this.children, (child, name) => {
-            if(IsNil(child)) {
-                Log.debug('No "' + name + '" has been defined');
-                return;
-            }
+        // Apply values
+        changed = this.apply(this.extract(values, {
+            deferred: false
+        })) || changed;
 
-            try {
-                selectors.push(child.createSelectors({
-                    prefix: (options.prefix || '') + name + '.',
-                    reference: true
-                }));
-            } catch(e) {
-                Log.debug('Unable to create "' + name + '" selectors: ' + (e && e.message ? e.message : e));
-            }
+        ForEach(metadata, (values, name) => {
+            let source = this.resolve(name);
+
+            changed = source.apply(source.extract(values, {
+                deferred: false
+            })) || changed;
         });
 
-        // Merge selectors
-        return Map(product(...selectors), (selectors) =>
-            Merge({}, ...selectors)
-        );
-    }
-
-    get(source) {
-        return {
-            ...Pick(this.values, this.constructor.metadata),
-            ...(this.metadata[source] || {}),
-
-            keys: this.values.keys[source] || {}
-        };
-    }
-
-    matches(other) {
-        if(IsNil(other) || this.type !== other.type) {
+        // Ignore deferred values (if no other changes)
+        if(!changed) {
             return false;
         }
 
-        if(!IsNil(this.id) && this.id !== other.id) {
-            return false;
-        }
+        // Apply deferred values
+        changed = this.apply(this.extract(values, {
+            deferred: true
+        })) || changed;
 
-        if(!this._matchesKeys(other.keys)) {
-            return false;
-        }
+        ForEach(metadata, (values, name) => {
+            let source = this.resolve(name);
 
-        if(!this._matchesChildren(other.children)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    merge(current) {
-        if(IsNil(current)) {
-            return false;
-        }
-
-        let currentDocument = current.toDocument();
-
-        // Update (or validate) identifier
-        if(IsNil(this.id)) {
-            this.id = current.id;
-        } else if(!IsNil(current.id) && this.id !== current.id) {
-            throw new Error('Item id mismatch');
-        }
-
-        // Update revision
-        if(IsNil(this.revision)) {
-            this.revision = current.revision;
-        } else if(!IsNil(current.revision) && this.revision !== current.revision) {
-            throw new Error('Item revision mismatch');
-        }
-
-        // Merge values
-        this.values = {
-            ...(current.values || {}),
-
-            // Update values
-            ...PickBy(this.values || {}, (value) => !IsNil(value)),
-
-            // Merge keys
-            keys: Merge(
-                this.values.keys || {},
-                current.values.keys || {}
-            ),
-
-            // Fixed values
-            title: current.title || this.title,
-            createdAt: current.createdAt || this.createdAt
-        };
-
-        // Merge children
-        ForEach(current.children, (child, name) => {
-            if(IsNil(child)) {
-                return;
-            }
-
-            if(IsNil(this.children[name])) {
-                this.children[name] = child;
-            } else {
-                this.children[name].merge(child);
-            }
+            changed = source.apply(source.extract(values, {
+                deferred: true
+            })) || changed;
         });
 
-        // Merge metadata
-        ForEach(Object.keys(current.metadata), (source) => {
-            this.metadata[source] = {
-                ...Pick(current.values, this.constructor.metadata),
-                ...current.metadata[source],
-
-                ...Pick(this.values, this.constructor.metadata),
-                ...(this.metadata[source] || {})
-            };
-        });
-
-        // Check for changes
-        return !IsEqual(currentDocument, this.toDocument());
+        return changed;
     }
 
-    update(source, values) {
-        if(IsNil(values)) {
-            return this;
+    resolve(source) {
+        if(IsNil(this._metadata[source])) {
+            this._metadata[source] = {};
         }
 
-        // Set local metadata properties (if not already defined)
-        ForEach(Object.keys(this.values), (key) => {
-            if(IsNil(this.values[key]) && !IsNil(values[key])) {
-                this.values[key] = values[key];
-            }
-        });
-
-        // Generate slug
-        this._generateSlug();
-
-        // Update source keys
-        this.values.keys[source] = {
-            ...(this.values.keys[source] || {}),
-            ...(values.keys || {})
-        };
-
-        // Update source metadata
-        this.metadata[source] = {
-            ...(this.metadata[source] || {}),
-            ...Omit(values, ['keys'])
-        };
-
-        return this;
+        return new this.constructor.Metadata(this, source);
     }
 
     toDocument() {
-        let doc = PickBy(this.values, (value) => !IsNil(value));
+        let doc = {};
 
-        // Build metadata
-        let metadata = PickBy(
-            MapValues(this.metadata, (metadata) => PickBy(
-                PickBy(metadata, (value, key) => {
-                    if(key === 'keys') {
-                        return false;
-                    }
+        // Copy item values to `document`
+        this.copy(doc, { format: 'document' });
 
-                    if(this.constructor.metadata.indexOf(key) < 0) {
-                        return true;
-                    }
+        // Copy metadata values to `document`
+        let metadata = {};
 
-                    return !IsEqual(doc[key], value);
-                })
-            )),
-            (metadata) => Object.keys(metadata).length > 0
-        );
+        ForEach(this.metadata, (values, source) => {
+            let data = {};
+
+            // Copy source metadata values to `data`
+            this.resolve(source).copy(data, { format: 'document' });
+
+            // Omit duplicate values
+            data = OmitBy(data, (value, key) =>
+                doc[key] === value
+            );
+
+            // Add source metadata (if at least one property exists)
+            if(Object.keys(data).length > 0) {
+                metadata[source] = data;
+            }
+        });
 
         if(Object.keys(metadata).length > 0) {
             doc.metadata = metadata;
         }
 
-        // Include children as references
-        ForEach(this.children, (child, name) => {
-            if(IsNil(child)) {
-                return;
-            }
-
-            doc[name] = child.toReference();
-        });
-
-        // Include optional values
-        if(!IsNil(this.id)) {
-            doc['_id'] = this.id;
-        }
-
-        if(!IsNil(this.revision)) {
-            doc['_rev'] = this.revision;
-        }
-
-        if(!IsNil(this.constructor.type)) {
-            doc['type'] = this.constructor.type;
-        }
-
         return doc;
     }
 
-    toPlainObject() {
-        let data = PickBy(this.values, (value) => !IsNil(value));
+    toReference() {
+        let obj = {};
 
-        // Build metadata
-        let metadata = PickBy(
-            MapValues(this.metadata, (metadata) => PickBy(
-                PickBy(metadata, (value, key) => {
-                    if(key === 'keys') {
-                        return false;
-                    }
-
-                    if(this.constructor.metadata.indexOf(key) < 0) {
-                        return true;
-                    }
-
-                    return !IsEqual(data[key], value);
-                })
-            )),
-            (metadata) => Object.keys(metadata).length > 0
-        );
-
-        if(Object.keys(metadata).length > 0) {
-            data.metadata = metadata;
-        }
-
-        // Include children as plain objects
-        ForEach(this.children, (child, name) => {
-            if(IsNil(child)) {
-                return;
-            }
-
-            data[name] = child.toPlainObject();
+        // Copy reference values to `obj`
+        this.copy(obj, {
+            format: 'document',
+            reference: true
         });
 
-        // Include optional values
-        if(!IsNil(this.id)) {
-            data['id'] = this.id;
-        }
-
-        if(!IsNil(this.revision)) {
-            data['revision'] = this.revision;
-        }
-
-        if(!IsNil(this.constructor.type)) {
-            data['type'] = this.constructor.type;
-        }
-
-        return data;
+        return obj;
     }
 
-    toReference() {
-        if(IsNil(this.id)) {
+    update(source, values) {
+        if(!IsString(source)) {
+            throw new Error('Invalid value provided for the "source" parameter');
+        }
+
+        if(!IsPlainObject(values)) {
+            throw new Error('Invalid value provided for the "values" parameter');
+        }
+
+        let changed = false;
+
+        // Apply metadata values
+        changed = this.resolve(source).apply(values) || changed;
+
+        // Apply item values
+        changed = this.apply({
+            ...values,
+
+            keys: this._buildSourceKeys(source, values.keys)
+        }) || changed;
+
+        return changed;
+    }
+
+    static create(source, values) {
+        let item = new this();
+
+        // Update `item` with source `values`
+        item.update(source, values);
+
+        return item;
+    }
+
+    static fromDocument(doc) {
+        if(IsNil(doc)) {
             return null;
         }
 
-        let reference = {
-            '_id': this.id,
+        if(!IsPlainObject(doc)) {
+            throw new Error('Invalid value provided for the "doc" parameter');
+        }
 
-            ...Pick(this.values, [
-                'keys',
-                'title'
-            ])
-        };
+        let item = new this();
 
-        // Include children as references
-        ForEach(this.children, (child, name) => {
-            if(IsNil(child)) {
-                return;
-            }
-
-            reference[name] = child.toReference();
+        // Apply metadata values
+        ForEach(doc.metadata, (values, source) => {
+            this.resolve(source).apply(values, { format: 'document' });
         });
 
-        return reference;
+        // Apply item values
+        item.apply(doc, { format: 'document' });
+
+        return item;
     }
 
-    // endregion
+    _buildSourceKeys(source, keys) {
+        let result = {};
 
-    // region Private Methods
+        result[source] = keys || {};
 
-    _generateSlug() {
-        this.values.keys['item'] = {
-            ...(this.values.keys['item'] || {}),
-
-            slug: createSlug(this.title)
-        };
+        return result;
     }
-
-    _getOrderedKeys(options) {
-        options = {
-            prefix: null,
-
-            ...(options || {})
-        };
-
-        // Build array of sources
-        let sources = Without(Object.keys(this.keys), 'item').concat(['item']);
-
-        // Build array of keys
-        return Reduce(sources, (result, source) =>
-            Reduce(this.keys[source], (result, value, name) => {
-                let item = {};
-
-                item[(options.prefix || '') + 'keys.' + source + '.' + name] = value;
-
-                result.push(item);
-                return result;
-            }, result),
-        []);
-    }
-
-    _matchesChildren(children) {
-        for(let key in children) {
-            if(!children.hasOwnProperty(key) || IsNil(this.children[key])) {
-                continue;
-            }
-
-            // Compare children
-            if(!this.children[key].matches(children[key])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    _matchesKeys(keys) {
-        for(let source in keys) {
-            if(!keys.hasOwnProperty(source) || IsNil(this.keys[source])) {
-                continue;
-            }
-
-            for(let name in keys[source]) {
-                if(!keys[source].hasOwnProperty(name) || IsNil(this.keys[source][name]) || IsNil(keys[source][name])) {
-                    continue;
-                }
-
-                if(this.keys[source][name] === keys[source][name]) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // endregion
-
-    // region Static Methods
-
-    static create(source, values, children) {
-        if(!IsString(source)) {
-            throw new Error('Invalid value provided for the "source" parameter (expected string)');
-        }
-
-        // Create item
-        let item = (new this(
-            Pick(values, this.itemProperties),
-            children
-        ));
-
-        // Update item with source metadata
-        return item.update(
-            source,
-            Omit(values, this.itemProperties)
-        );
-    }
-
-    static decode(values, options) {
-        // Decode children
-        let children = MapValues(this.children, (type, name) => {
-            let value = values[name];
-
-            if(IsNil(value) || !IsPlainObject(value)) {
-                return value || null;
-            }
-
-            // Ensure parser instance has been provided
-            if(IsNil(options) || IsNil(options.parser)) {
-                throw new Error('Missing required option: parser');
-            }
-
-            // Decode child
-            return options.parser.decode(type, value);
-        });
-
-        // Filter (and map) values
-        values = Omit(
-            MapKeys(values, (value, key) => {
-                if(key === '_id') {
-                    return 'id';
-                }
-
-                if(key === '_rev') {
-                    return 'revision';
-                }
-
-                return key;
-            }),
-            Object.keys(this.children)
-        );
-
-        // Create item
-        return (new this(values, children));
-    }
-
-    // endregion
 }

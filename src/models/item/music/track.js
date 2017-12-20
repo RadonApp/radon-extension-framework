@@ -1,54 +1,105 @@
-import Item from '../core/base';
+import IsNil from 'lodash-es/isNil';
+
+import Item, {Metadata} from '../core/base';
 
 
-export default class Track extends Item {
-    static type = 'music/track';
+export class TrackMetadata extends Metadata {
+    static Apply = {
+        ...Metadata.Apply,
 
-    static children = {
-        'artist': 'music/artist',
-        'album': 'music/album'
+        exclude: [
+            ...Metadata.Apply.exclude,
+
+            'artist',
+            'album'
+        ]
     };
 
-    static metadata = Item.metadata.concat([
-        'number',
-        'duration'
-    ]);
+    static Schema = {
+        ...Metadata.Schema,
 
-    constructor(values, children) {
-        super({
-            number: null,
-            duration: null,
+        title: new Item.Properties.Text({
+            change: false,
+            reference: true
+        }),
 
-            ...(values || {})
-        }, {
-            artist: null,
-            album: null,
+        number: new Item.Properties.Integer({
+            change: false,
 
-            ...(children || {})
-        });
-    }
+            document: {
+                required: false
+            }
+        }),
 
-    get album() {
-        return this.children.album;
-    }
+        duration: new Item.Properties.Integer({
+            change: (current, value) => {
+                if(IsNil(value) || value >= current) {
+                    return false;
+                }
 
-    set album(album) {
-        this.children.album = album;
-    }
+                if(current - value > 15 * 1000) {
+                    return false;
+                }
 
-    get artist() {
-        return this.children.artist;
-    }
+                return true;
+            },
 
-    set artist(artist) {
-        this.children.artist = artist;
-    }
+            document: {
+                required: false
+            }
+        })
+    };
 
-    get number() {
-        return this.values.number;
+    get title() {
+        return this.get('title');
     }
 
     get duration() {
-        return this.values.duration;
+        return this.get('duration');
+    }
+
+    get number() {
+        return this.get('number');
+    }
+}
+
+export default class Track extends Item {
+    static Metadata = TrackMetadata;
+
+    static Schema = {
+        ...Item.Schema,
+        ...TrackMetadata.Schema,
+
+        //
+        // Children
+        //
+
+        artist: new Item.Properties.Reference('music/artist', {
+            reference: true
+        }),
+
+        album: new Item.Properties.Reference('music/album', {
+            reference: true
+        })
+    };
+
+    get artist() {
+        return this.get('artist');
+    }
+
+    get album() {
+        return this.get('album');
+    }
+
+    get title() {
+        return this.get('title');
+    }
+
+    get duration() {
+        return this.get('duration');
+    }
+
+    get number() {
+        return this.get('number');
     }
 }

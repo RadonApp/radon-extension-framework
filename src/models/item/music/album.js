@@ -1,26 +1,52 @@
-import Item from '../core/base';
+import Item, {Metadata} from '../core/base';
 
 
-export default class Album extends Item {
-    static type = 'music/album';
+export class AlbumMetadata extends Metadata {
+    static Apply = {
+        ...Metadata.Apply,
 
-    static children = {
-        'artist': 'music/artist'
+        exclude: [
+            ...Metadata.Apply.exclude,
+
+            'artist'
+        ]
     };
 
-    constructor(values, children) {
-        super(values, {
-            artist: null,
+    static Schema = {
+        ...Metadata.Schema,
 
-            ...(children || {})
-        });
+        title: new Item.Properties.Text({
+            change: false,
+            reference: true
+        })
+    };
+
+    get title() {
+        return this.get('title');
     }
+}
+
+export default class Album extends Item {
+    static Metadata = AlbumMetadata;
+
+    static Schema = {
+        ...Item.Schema,
+        ...AlbumMetadata.Schema,
+
+        //
+        // Children
+        //
+
+        artist: new Item.Properties.Reference('music/artist', {
+            reference: true
+        }),
+    };
 
     get artist() {
-        return this.children.artist;
+        return this.get('artist');
     }
 
-    set artist(artist) {
-        this.children.artist = artist;
+    get title() {
+        return this.get('title');
     }
 }

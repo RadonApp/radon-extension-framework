@@ -2,7 +2,7 @@
 import IsNil from 'lodash-es/isNil';
 import Uuid from 'uuid';
 
-import ItemParser from 'neon-extension-framework/models/item/core/parser';
+import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import {round} from 'neon-extension-framework/core/helpers';
 
 
@@ -139,7 +139,7 @@ export default class Session {
             return null;
         }
 
-        return new Session(document['_id'], ItemParser.decodeItem(document['item']), {
+        return new Session(document['_id'], ItemDecoder.fromDocument(document['item']), {
             'clientId': document['clientId'],
 
             'state': document['state'],
@@ -159,7 +159,7 @@ export default class Session {
             return null;
         }
 
-        return new Session(item['id'], ItemParser.decodeItem(item['item']), {
+        return new Session(item['id'], ItemDecoder.fromPlainObject(item['item']), {
             'clientId': item['clientId'],
 
             'state': item['state'],

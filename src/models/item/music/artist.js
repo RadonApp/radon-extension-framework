@@ -1,10 +1,30 @@
-import Item from '../core/base';
+import Item, {Metadata} from '../core/base';
 
+
+export class ArtistMetadata extends Metadata {
+    static Schema = {
+        ...Metadata.Schema,
+
+        title: new Item.Properties.Text({
+            change: false,
+            reference: true
+        })
+    };
+
+    get title() {
+        return this.get('title');
+    }
+}
 
 export default class Artist extends Item {
-    static type = 'music/artist';
+    static Metadata = ArtistMetadata;
 
-    constructor(values, children) {
-        super(values, children);
+    static Schema = {
+        ...Item.Schema,
+        ...ArtistMetadata.Schema
+    };
+
+    get title() {
+        return this.get('title');
     }
 }
