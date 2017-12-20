@@ -71,6 +71,7 @@ export class Metadata extends BaseModel {
 
 export default class Item extends Model {
     static Metadata = Metadata;
+    static Type = null;
 
     static Schema = {
         ...Model.Schema,
@@ -93,6 +94,10 @@ export default class Item extends Model {
 
     get metadata() {
         return this._metadata;
+    }
+
+    get type() {
+        return this.constructor.Type;
     }
 
     get keys() {
@@ -190,8 +195,14 @@ export default class Item extends Model {
             }
         });
 
+        // Include metadata (if at least one source exists)
         if(Object.keys(metadata).length > 0) {
             doc.metadata = metadata;
+        }
+
+        // Include type (if defined)
+        if(!IsNil(this.type)) {
+            doc.type = this.type;
         }
 
         return doc;
@@ -212,7 +223,8 @@ export default class Item extends Model {
 
         return {
             ...super.toPlainObject(),
-            metadata
+            type: this.type,
+            metadata,
         }
     }
 
@@ -267,7 +279,17 @@ export default class Item extends Model {
         }
 
         if(!IsPlainObject(doc)) {
-            throw new Error('Invalid value provided for the "doc" parameter');
+            throw new Error(
+                'Invalid value provided for the "doc" parameter ' +
+                '(expected plain object)'
+            );
+        }
+
+        if(!IsNil(this.Type) && doc.type !== this.Type) {
+            throw new Error(
+                'Invalid value provided for the "doc" parameter ' +
+                '(expected value.type === "' + this.Type + '")'
+            );
         }
 
         options = {

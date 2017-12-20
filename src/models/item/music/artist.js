@@ -18,6 +18,7 @@ export class ArtistMetadata extends Metadata {
 
 export default class Artist extends Item {
     static Metadata = ArtistMetadata;
+    static Type = 'music/artist';
 
     static Schema = {
         ...Item.Schema,

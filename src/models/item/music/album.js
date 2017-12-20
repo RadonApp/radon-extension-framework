@@ -28,6 +28,7 @@ export class AlbumMetadata extends Metadata {
 
 export default class Album extends Item {
     static Metadata = AlbumMetadata;
+    static Type = 'music/album';
 
     static Schema = {
         ...Item.Schema,

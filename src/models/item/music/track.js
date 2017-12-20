@@ -65,6 +65,7 @@ export class TrackMetadata extends Metadata {
 
 export default class Track extends Item {
     static Metadata = TrackMetadata;
+    static Type = 'music/track';
 
     static Schema = {
         ...Item.Schema,
