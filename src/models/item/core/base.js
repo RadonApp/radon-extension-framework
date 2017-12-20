@@ -315,6 +315,38 @@ export default class Item extends Model {
         return item;
     }
 
+    static fromPlainObject(obj, options) {
+        if(IsNil(obj)) {
+            return null;
+        }
+
+        if(!IsPlainObject(obj)) {
+            throw new Error(
+                'Invalid value provided for the "obj" parameter ' +
+                '(expected plain object)'
+            );
+        }
+
+        if(!IsNil(this.Type) && obj.type !== this.Type) {
+            throw new Error(
+                'Invalid value provided for the "obj" parameter ' +
+                '(expected value.type === "' + this.Type + '")'
+            );
+        }
+
+        let item = new this();
+
+        // Apply metadata values
+        ForEach(obj.metadata, (values, source) => {
+            item.resolve(source).apply(values, options);
+        });
+
+        // Apply item values
+        item.apply(obj, options);
+
+        return item;
+    }
+
     _buildSourceKeys(source, keys) {
         let result = {};
 
