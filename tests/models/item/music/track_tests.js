@@ -1,3 +1,4 @@
+import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
 import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
 
 
@@ -131,7 +132,43 @@ describe('Track', () => {
             });
 
             it('with children', () => {
+                let track = ItemDecoder.fromDocument({
+                    _id: '3',
+                    _rev: '#1',
+                    type: 'music/track',
 
+                    title: 'Feel Good Inc',
+
+                    artist: {
+                        _id: '1',
+                        title: 'Gorillaz'
+                    },
+
+                    album: {
+                        _id: '2',
+                        title: 'Demon Days',
+
+                        artist: {
+                            _id: '1',
+                            title: 'Gorillaz'
+                        },
+                    }
+                });
+
+                expect(track.id).toBe('3');
+                expect(track.revision).toBe('#1');
+
+                expect(track.title).toBe('Feel Good Inc');
+                expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+
+                expect(track.artist.id).toBe('1');
+                expect(track.artist.title).toBe('Gorillaz');
+
+                expect(track.album.id).toBe('2');
+                expect(track.album.title).toBe('Demon Days');
+
+                expect(track.album.artist.id).toBe('1');
+                expect(track.album.artist.title).toBe('Gorillaz');
             });
         });
 
@@ -152,7 +189,43 @@ describe('Track', () => {
             });
 
             it('with children', () => {
+                let track = ItemDecoder.fromPlainObject({
+                    id: '3',
+                    revision: '#1',
+                    type: 'music/track',
 
+                    title: 'Feel Good Inc',
+
+                    artist: {
+                        id: '1',
+                        title: 'Gorillaz'
+                    },
+
+                    album: {
+                        id: '2',
+                        title: 'Demon Days',
+
+                        artist: {
+                            id: '1',
+                            title: 'Gorillaz'
+                        },
+                    }
+                });
+
+                expect(track.id).toBe('3');
+                expect(track.revision).toBe('#1');
+
+                expect(track.title).toBe('Feel Good Inc');
+                expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+
+                expect(track.artist.id).toBe('1');
+                expect(track.artist.title).toBe('Gorillaz');
+
+                expect(track.album.id).toBe('2');
+                expect(track.album.title).toBe('Demon Days');
+
+                expect(track.album.artist.id).toBe('1');
+                expect(track.album.artist.title).toBe('Gorillaz');
             });
         });
     });
@@ -214,20 +287,71 @@ describe('Track', () => {
                     }
                 });
             });
-
-            it('with children', () => {
-
-            });
         });
 
         describe('plain object', () => {
             it('basic', () => {
                 let track = Track.create('alpha', {
-                    title: 'Feel Good Inc'
+                    id: '3',
+                    title: 'Feel Good Inc',
+
+                    genres: ['alternative rock', 'funk rock'],
+
+                    createdAt: 1000,
+                    updatedAt: 2000,
+
+                    artist,
+                    album
                 });
 
                 expect(track.toPlainObject()).toEqual({
-                    title: 'Feel Good Inc'
+                    id: '3',
+                    title: 'Feel Good Inc',
+
+                    createdAt: 1000,
+                    updatedAt: 2000,
+
+                    metadata: {
+                        alpha: {
+                            title: 'Feel Good Inc',
+                            updatedAt: 2000,
+
+                            genres: ['alternative rock', 'funk rock'],
+                        }
+                    },
+
+                    artist: {
+                        id: '1',
+                        title: 'Gorillaz',
+
+                        metadata: {
+                            alpha: {
+                                title: 'Gorillaz'
+                            }
+                        }
+                    },
+
+                    album: {
+                        id: '2',
+                        title: 'Demon Days',
+
+                        metadata: {
+                            alpha: {
+                                title: 'Demon Days'
+                            }
+                        },
+
+                        artist: {
+                            id: '1',
+                            title: 'Gorillaz',
+
+                            metadata: {
+                                alpha: {
+                                    title: 'Gorillaz'
+                                }
+                            }
+                        },
+                    }
                 });
             });
 
