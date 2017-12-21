@@ -240,6 +240,26 @@ export default class Item extends Model {
         return changed;
     }
 
+    matches(other) {
+        if(IsNil(other) || this.type !== other.type) {
+            return false;
+        }
+
+        if(!IsNil(this.id) && this.id === other.id) {
+            return true;
+        }
+
+        if(!this._matchesKeys(other.keys)) {
+            return false;
+        }
+
+        if(!this._matchesChildren(other)) {
+            return false;
+        }
+
+        return true;
+    }
+
     resolve(source) {
         if(IsNil(this._metadata[source])) {
             this._metadata[source] = {};
@@ -467,6 +487,44 @@ export default class Item extends Model {
                 return result;
             }, result),
         []);
+    }
+
+    _matchesChildren(other) {
+        for(let key in this.schema) {
+            if(!this.schema.hasOwnProperty(key) || !(this.schema[key] instanceof Model.Properties.Reference)) {
+                continue;
+            }
+
+            if(IsNil(this[key]) || IsNil(other[key])) {
+                return false;
+            }
+
+            if(!this[key].matches(other[key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    _matchesKeys(keys) {
+        for(let source in keys) {
+            if(!keys.hasOwnProperty(source) || IsNil(this.keys[source])) {
+                continue;
+            }
+
+            for(let name in keys[source]) {
+                if(!keys[source].hasOwnProperty(name) || IsNil(this.keys[source][name]) || IsNil(keys[source][name])) {
+                    continue;
+                }
+
+                if(this.keys[source][name] === keys[source][name]) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // endregion
