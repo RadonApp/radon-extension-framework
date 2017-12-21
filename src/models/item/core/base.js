@@ -11,6 +11,7 @@ import Without from 'lodash-es/without';
 
 import Log from 'neon-extension-framework/core/logger';
 import Model, {BaseModel} from 'neon-extension-framework/models/core/base';
+import {createSlug} from 'neon-extension-framework/core/helpers/metadata';
 import {product} from 'neon-extension-framework/core/helpers/value';
 
 
@@ -116,6 +117,20 @@ export default class Item extends Model {
 
     get updatedAt() {
         return this.get('updatedAt');
+    }
+
+    apply(source, options) {
+        if(IsNil(source.title)) {
+            return super.apply(source, options);
+        }
+
+        return super.apply(Merge({}, source, {
+            keys: {
+                item: {
+                    slug: createSlug(source.title)
+                }
+            }
+        }), options);
     }
 
     createSelectors(options) {
