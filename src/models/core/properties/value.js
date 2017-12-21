@@ -30,7 +30,7 @@ export default class ValueProperty extends Property {
         }
 
         // Update value
-        target[key] = this.update(target[key], value);
+        this.set(target, key, value);
 
         return true;
     }
@@ -85,6 +85,10 @@ export default class ValueProperty extends Property {
         }
 
         return value;
+    }
+
+    set(target, key, value) {
+        target[key] = this.update(target[key], value);
     }
 }
 
