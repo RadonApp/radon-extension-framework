@@ -20,7 +20,7 @@ export class TrackMetadata extends Metadata {
 
         title: new Item.Properties.Text({
             change: false,
-            reference: true
+            identifier: true
         }),
 
         number: new Item.Properties.Integer({
@@ -76,11 +76,11 @@ export default class Track extends Item {
         //
 
         artist: new Item.Properties.Reference('music/artist', {
-            reference: true
+            identifier: true
         }),
 
         album: new Item.Properties.Reference('music/album', {
-            reference: true
+            identifier: true
         })
     };
 

@@ -84,7 +84,7 @@ export default class Item extends Model {
         ...Model.Schema,
 
         keys: new Model.Properties.Index({
-            reference: true
+            identifier: true
         }),
 
         // Timestamps
@@ -355,7 +355,7 @@ export default class Item extends Model {
         // Copy reference values to `obj`
         this.copy(obj, {
             format: 'document',
-            reference: true
+            identifier: true
         });
 
         return obj;

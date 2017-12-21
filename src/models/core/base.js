@@ -97,6 +97,7 @@ export class BaseModel {
             format: 'plain',
 
             deferred: null,
+            identifier: null,
             reference: null,
 
             ...(options || {})
@@ -127,6 +128,11 @@ export class BaseModel {
                 return;
             }
 
+            // Apply identifier filter
+            if(!IsNil(options.identifier) && prop.identifier !== options.identifier) {
+                return;
+            }
+
             // Apply reference filter
             if(!IsNil(options.reference) && prop.reference !== options.reference) {
                 return;
@@ -147,6 +153,7 @@ export class BaseModel {
             format: 'plain',
 
             deferred: null,
+            identifier: null,
             reference: null,
 
             ...(options || {})
@@ -173,6 +180,11 @@ export class BaseModel {
 
             // Apply deferred filter
             if(!IsNil(options.deferred) && prop.deferred !== options.deferred) {
+                return;
+            }
+
+            // Apply identifier filter
+            if(!IsNil(options.identifier) && prop.identifier !== options.identifier) {
                 return;
             }
 
@@ -225,7 +237,7 @@ export default class Model extends BaseModel {
     static Schema = {
         id: new Properties.Text({
             change: false,
-            reference: true,
+            identifier: true,
 
             document: {
                 key: '_id',
@@ -235,7 +247,7 @@ export default class Model extends BaseModel {
 
         revision: new Properties.Text({
             change: true,
-            reference: true,
+            identifier: true,
 
             document: {
                 key: '_rev',
@@ -298,7 +310,9 @@ export default class Model extends BaseModel {
         let obj = {};
 
         // Copy reference values to `obj`
-        this.copy(obj, { reference: true });
+        this.copy(obj, {
+            identifier: true
+        });
 
         return obj;
     }

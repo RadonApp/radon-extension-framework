@@ -7,7 +7,7 @@ export class ArtistMetadata extends Metadata {
 
         title: new Item.Properties.Text({
             change: false,
-            reference: true
+            identifier: true
         })
     };
 

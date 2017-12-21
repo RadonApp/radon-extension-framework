@@ -17,7 +17,7 @@ export class AlbumMetadata extends Metadata {
 
         title: new Item.Properties.Text({
             change: false,
-            reference: true
+            identifier: true
         })
     };
 
@@ -39,7 +39,7 @@ export default class Album extends Item {
         //
 
         artist: new Item.Properties.Reference('music/artist', {
-            reference: true
+            identifier: true
         }),
     };
 

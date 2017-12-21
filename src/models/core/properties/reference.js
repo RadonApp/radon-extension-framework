@@ -11,6 +11,10 @@ export default class Reference extends ValueProperty {
         referenceFormats: ['document']
     };
 
+    get reference() {
+        return true;
+    }
+
     constructor(model, options) {
         super(options);
 

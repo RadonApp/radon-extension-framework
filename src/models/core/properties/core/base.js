@@ -7,7 +7,7 @@ export default class Property {
         key: null,
 
         deferred: false,
-        reference: false,
+        identifier: false,
         required: false,
 
         // Handlers
@@ -31,8 +31,12 @@ export default class Property {
         return this.options.deferred;
     }
 
+    get identifier() {
+        return this.options.identifier;
+    }
+
     get reference() {
-        return this.options.reference;
+        return false;
     }
 
     apply(source, target, key, options) {
