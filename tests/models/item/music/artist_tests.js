@@ -41,7 +41,7 @@ describe('Artist', () => {
     });
 
     describe('inherit', () => {
-        let base = new Artist({
+        let base = Artist.create('alpha', {
             id: '1',
             revision: '#1',
 
@@ -49,10 +49,6 @@ describe('Artist', () => {
 
             createdAt: 1000,
             updatedAt: 2000
-        }, {
-            alpha: {
-                title: 'Gorillaz'
-            }
         });
 
         describe('title', () => {
@@ -118,6 +114,48 @@ describe('Artist', () => {
 
                 // Metadata
                 expect(artist.resolve('alpha').updatedAt).toBe(2000);
+            });
+        });
+    });
+
+    describe('createSelectors', function() {
+        it('with identifier', function() {
+            let selectors = Artist.create('test', {
+                id: '1',
+                title: 'Gorillaz'
+            }).createSelectors();
+
+            // Check selector count
+            expect(selectors.length).toBe(1);
+
+            // Identifier Selector
+            expect(selectors[0]).toEqual({
+                '_id': '1'
+            });
+        });
+
+        it('with keys', function() {
+            let selectors = Artist.create('test', {
+                keys: {
+                    id: '1'
+                },
+
+                title: 'Gorillaz'
+            }).createSelectors();
+
+            // Check selector count
+            expect(selectors.length).toBe(2);
+
+            // Key Selector
+            expect(selectors[0]).toEqual({
+                'type': 'music/artist',
+                'keys.test.id': '1'
+            });
+
+            // Slug Selector
+            expect(selectors[1]).toEqual({
+                'type': 'music/artist',
+                'keys.item.slug': 'gorillaz'
             });
         });
     });

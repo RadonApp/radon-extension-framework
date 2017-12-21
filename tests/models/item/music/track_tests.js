@@ -3,6 +3,23 @@ import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
 
 
 describe('Track', () => {
+    let artist = Artist.create('test', {
+        keys: {
+            id: '1'
+        },
+
+        title: 'Gorillaz'
+    });
+
+    let album = Album.create('test', {
+        keys: {
+            id: '2'
+        },
+
+        title: 'Humanz',
+        artist
+    });
+
     describe('create', () => {
         it('instance', () => {
             let track = Track.create('alpha', {
@@ -46,7 +63,7 @@ describe('Track', () => {
 
             expect(track.resolve('alpha').createdAt).toBeUndefined();
             expect(track.resolve('alpha').updatedAt).toBe(2000);
-        })
+        });
 
         it('with children', () => {
             let artist = Artist.create('alpha', {
@@ -55,13 +72,11 @@ describe('Track', () => {
 
             let album = Album.create('alpha', {
                 title: 'Demon Days',
-
                 artist
             });
 
             let track = Track.create('alpha', {
                 title: 'Feel Good Inc',
-
                 artist,
                 album
             });
@@ -140,6 +155,12 @@ describe('Track', () => {
                 expect(track.values).toEqual({
                     id: '3',
                     revision: '#1',
+
+                    keys: {
+                        item: {
+                            slug: 'feel-good-inc'
+                        }
+                    },
 
                     title: 'Feel Good Inc'
                 });
@@ -289,8 +310,7 @@ describe('Track', () => {
             artist
         });
 
-        describe('document', () => {
-            it('basic', () => {
+        it('document', () => {
                 let track = Track.create('alpha', {
                     id: '3',
                     title: 'Feel Good Inc',
@@ -306,6 +326,13 @@ describe('Track', () => {
 
                 expect(track.toDocument()).toEqual({
                     _id: '3',
+
+                    keys: {
+                        item: {
+                            slug: 'feel-good-inc'
+                        }
+                    },
+
                     title: 'Feel Good Inc',
                     type: 'music/track',
 
@@ -320,24 +347,43 @@ describe('Track', () => {
 
                     artist: {
                         _id: '1',
+
+                        keys: {
+                            item: {
+                                slug: 'gorillaz'
+                            }
+                        },
+
                         title: 'Gorillaz'
                     },
 
                     album: {
                         _id: '2',
+
+                        keys: {
+                            item: {
+                                slug: 'demon-days'
+                            }
+                        },
+
                         title: 'Demon Days',
 
                         artist: {
                             _id: '1',
+
+                            keys: {
+                                item: {
+                                    slug: 'gorillaz'
+                                }
+                            },
+
                             title: 'Gorillaz'
                         },
                     }
                 });
             });
-        });
 
-        describe('plain object', () => {
-            it('basic', () => {
+        it('plain object', () => {
                 let track = Track.create('alpha', {
                     id: '3',
                     title: 'Feel Good Inc',
@@ -353,6 +399,13 @@ describe('Track', () => {
 
                 expect(track.toPlainObject()).toEqual({
                     id: '3',
+
+                    keys: {
+                        item: {
+                            slug: 'feel-good-inc'
+                        }
+                    },
+
                     title: 'Feel Good Inc',
                     type: 'music/track',
 
@@ -370,6 +423,13 @@ describe('Track', () => {
 
                     artist: {
                         id: '1',
+
+                        keys: {
+                            item: {
+                                slug: 'gorillaz'
+                            }
+                        },
+
                         title: 'Gorillaz',
                         type: 'music/artist',
 
@@ -382,6 +442,13 @@ describe('Track', () => {
 
                     album: {
                         id: '2',
+
+                        keys: {
+                            item: {
+                                slug: 'demon-days'
+                            }
+                        },
+
                         title: 'Demon Days',
                         type: 'music/album',
 
@@ -393,6 +460,13 @@ describe('Track', () => {
 
                         artist: {
                             id: '1',
+
+                            keys: {
+                                item: {
+                                    slug: 'gorillaz'
+                                }
+                            },
+
                             title: 'Gorillaz',
                             type: 'music/artist',
 
@@ -405,11 +479,6 @@ describe('Track', () => {
                     }
                 });
             });
-
-            it('with children', () => {
-
-            });
-        });
     });
 
     describe('inherit', () => {
@@ -514,6 +583,325 @@ describe('Track', () => {
                 // Metadata
                 expect(track.resolve('alpha').keys).toEqual({ id: 3 });
                 expect(track.resolve('alpha').title).toBe('Feel Good Inc');
+            });
+        });
+    });
+
+    describe('createSelectors', function() {
+        it('with identifier', function() {
+            let selectors = Track.create('test', {
+                id: '3',
+                title: 'Andromeda (feat. D.R.A.M.)',
+                artist,
+                album
+            }).createSelectors();
+
+            expect(selectors.length).toBe(1);
+
+            expect(selectors[0]).toEqual({
+                '_id': '3'
+            });
+        });
+
+        it('with artist identifier', function() {
+            let artist = new Artist({
+                id: '1',
+                title: 'Gorillaz'
+            });
+
+            let selectors = Track.create('test', {
+                keys: {
+                    id: '3'
+                },
+
+                title: 'Andromeda (feat. D.R.A.M.)',
+                artist,
+
+                // Album
+                album: Album.create('test', {
+                    keys: {
+                        id: '2'
+                    },
+
+                    title: 'Humanz',
+                    artist
+                })
+            }).createSelectors();
+
+            expect(selectors.length).toBe(4);
+
+            expect(selectors[0]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist._id': '1',
+
+                'album.keys.test.id': '2',
+                'album.artist._id': '1'
+            });
+
+            expect(selectors[1]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist._id': '1',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist._id': '1'
+            });
+
+            expect(selectors[2]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist._id': '1',
+
+                'album.keys.test.id': '2',
+                'album.artist._id': '1'
+            });
+
+            expect(selectors[3]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist._id': '1',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist._id': '1'
+            });
+        });
+
+        it('with album identifier', function() {
+            let artist = Artist.create('test', {
+                keys: {
+                    id: '1',
+                },
+
+                title: 'Gorillaz'
+            });
+
+            let selectors = Track.create('test', {
+                keys: {
+                    id: '3'
+                },
+
+                title: 'Andromeda (feat. D.R.A.M.)',
+                artist,
+
+                // Album
+                album: new Album({
+                    id: '2',
+                    title: 'Humanz',
+                    artist
+                })
+            }).createSelectors();
+
+            expect(selectors.length).toBe(4);
+
+            expect(selectors[0]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.test.id': '1',
+                'album._id': '2'
+            });
+
+            expect(selectors[1]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.item.slug': 'gorillaz',
+                'album._id': '2'
+            });
+
+            expect(selectors[2]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.test.id': '1',
+                'album._id': '2'
+            });
+
+            expect(selectors[3]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.item.slug': 'gorillaz',
+                'album._id': '2'
+            });
+        });
+
+        it('with keys', function() {
+            let selectors = Track.create('test', {
+                keys: {
+                    id: '3'
+                },
+
+                title: 'Andromeda (feat. D.R.A.M.)',
+                artist,
+                album
+            }).createSelectors();
+
+            expect(selectors.length).toBe(16);
+
+            expect(selectors[0]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[1]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[2]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[3]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[4]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[5]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[6]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[7]).toEqual({
+                'type': 'music/track',
+                'keys.test.id': '3',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[8]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[9]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[10]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[11]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.test.id': '1',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[12]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[13]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.test.id': '2',
+                'album.artist.keys.item.slug': 'gorillaz'
+            });
+
+            expect(selectors[14]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.test.id': '1'
+            });
+
+            expect(selectors[15]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.item.slug': 'gorillaz',
+
+                'album.keys.item.slug': 'humanz',
+                'album.artist.keys.item.slug': 'gorillaz'
             });
         });
     });
