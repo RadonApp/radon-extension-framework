@@ -439,7 +439,9 @@ export default class Item extends Model {
     _buildSourceKeys(source, keys) {
         let result = {};
 
-        result[source] = keys || {};
+        if(IsPlainObject(keys) && Object.keys(keys).length > 0) {
+            result[source] = keys || {};
+        }
 
         return result;
     }
