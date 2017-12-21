@@ -311,39 +311,62 @@ describe('Track', () => {
         });
 
         it('document', () => {
-                let track = Track.create('alpha', {
-                    id: '3',
-                    title: 'Feel Good Inc',
+            let track = Track.create('alpha', {
+                id: '3',
+                title: 'Feel Good Inc',
 
-                    genres: ['alternative rock', 'funk rock'],
+                genres: ['alternative rock', 'funk rock'],
 
-                    createdAt: 1000,
-                    updatedAt: 2000,
+                createdAt: 1000,
+                updatedAt: 2000,
 
-                    artist,
-                    album
-                });
+                artist,
+                album
+            });
 
-                expect(track.toDocument()).toEqual({
-                    _id: '3',
+            expect(track.toDocument()).toEqual({
+                _id: '3',
+
+                keys: {
+                    item: {
+                        slug: 'feel-good-inc'
+                    }
+                },
+
+                title: 'Feel Good Inc',
+                type: 'music/track',
+
+                createdAt: 1000,
+                updatedAt: 2000,
+
+                metadata: {
+                    alpha: {
+                        genres: ['alternative rock', 'funk rock'],
+                    }
+                },
+
+                artist: {
+                    _id: '1',
 
                     keys: {
                         item: {
-                            slug: 'feel-good-inc'
+                            slug: 'gorillaz'
                         }
                     },
 
-                    title: 'Feel Good Inc',
-                    type: 'music/track',
+                    title: 'Gorillaz'
+                },
 
-                    createdAt: 1000,
-                    updatedAt: 2000,
+                album: {
+                    _id: '2',
 
-                    metadata: {
-                        alpha: {
-                            genres: ['alternative rock', 'funk rock'],
+                    keys: {
+                        item: {
+                            slug: 'demon-days'
                         }
                     },
+
+                    title: 'Demon Days',
 
                     artist: {
                         _id: '1',
@@ -356,32 +379,9 @@ describe('Track', () => {
 
                         title: 'Gorillaz'
                     },
-
-                    album: {
-                        _id: '2',
-
-                        keys: {
-                            item: {
-                                slug: 'demon-days'
-                            }
-                        },
-
-                        title: 'Demon Days',
-
-                        artist: {
-                            _id: '1',
-
-                            keys: {
-                                item: {
-                                    slug: 'gorillaz'
-                                }
-                            },
-
-                            title: 'Gorillaz'
-                        },
-                    }
-                });
+                }
             });
+        });
 
         it('plain object', () => {
                 let track = Track.create('alpha', {
