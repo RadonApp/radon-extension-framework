@@ -153,7 +153,7 @@ export default class Item extends Model {
     createSelectors(options) {
         options = {
             prefix: null,
-            reference: false,
+            includeType: true,
 
             ...(options || {})
         };
@@ -170,7 +170,7 @@ export default class Item extends Model {
         // Create base selector
         let base = {};
 
-        if(!options.reference) {
+        if(options.includeType) {
             base[(options.prefix || '') + 'type'] = this.type;
         }
 
@@ -195,7 +195,7 @@ export default class Item extends Model {
             try {
                 selectors.push(child.createSelectors({
                     prefix: (options.prefix || '') + key + '.',
-                    reference: true
+                    includeType: false
                 }));
             } catch(e) {
                 Log.debug('Unable to create "' + key + '" selectors: ' + (e && e.message ? e.message : e));
