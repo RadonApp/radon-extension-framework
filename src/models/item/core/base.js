@@ -319,13 +319,17 @@ export default class Item extends Model {
         return obj;
     }
 
-    update(source, values) {
+    update(source, values = null) {
         if(!IsString(source)) {
-            throw new Error('Invalid value provided for the "source" parameter');
+            throw new Error('Invalid value provided for the "source" parameter (expected string)');
+        }
+
+        if(IsNil(values)) {
+            return false;
         }
 
         if(!IsPlainObject(values)) {
-            throw new Error('Invalid value provided for the "values" parameter');
+            throw new Error('Invalid value provided for the "values" parameter (expected plain object)');
         }
 
         let changed = false;
