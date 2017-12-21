@@ -159,4 +159,43 @@ describe('Artist', () => {
             });
         });
     });
+
+    describe('matches', function() {
+        let base = Artist.create('alpha', {
+            id: '1',
+            revision: '#1',
+
+            keys: {
+                id: 1
+            },
+
+            title: 'Gorillaz'
+        });
+
+        it('matches identifier', function() {
+            let artist = Artist.create('alpha', {
+                id: '1'
+            });
+
+            expect(base.matches(artist)).toBe(true);
+        });
+
+        it('matches slug', function() {
+            let artist = Artist.create('alpha', {
+                title: 'Gorillaz'
+            });
+
+            expect(base.matches(artist)).toBe(true);
+        });
+
+        it('matches key', function() {
+            let artist = Artist.create('alpha', {
+                keys: {
+                    id: 1
+                }
+            });
+
+            expect(base.matches(artist)).toBe(true);
+        });
+    });
 });

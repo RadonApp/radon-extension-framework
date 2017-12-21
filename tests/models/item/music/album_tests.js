@@ -188,4 +188,67 @@ describe('Album', () => {
             });
         });
     });
+
+    describe('matches', function() {
+        let base = Album.create('alpha', {
+            id: '2',
+            revision: '#1',
+
+            keys: {
+                id: 2
+            },
+
+            title: 'Demon Days',
+
+            // Artist
+            artist: Artist.create('alpha', {
+                id: '1',
+                revision: '#1',
+
+                keys: {
+                    id: 1
+                },
+
+                title: 'Gorillaz'
+            })
+        });
+
+        it('matches identifier', function() {
+            let album = Album.create('alpha', {
+                id: '2'
+            });
+
+            expect(base.matches(album)).toBe(true);
+        });
+
+        it('matches slug', function() {
+            let album = Album.create('alpha', {
+                title: 'Demon Days',
+
+                // Artist
+                artist: Artist.create('alpha', {
+                    title: 'Gorillaz'
+                })
+            });
+
+            expect(base.matches(album)).toBe(true);
+        });
+
+        it('matches key', function() {
+            let album = Album.create('alpha', {
+                keys: {
+                    id: 2
+                },
+
+                // Artist
+                artist: Artist.create('alpha', {
+                    keys: {
+                        id: 1
+                    }
+                })
+            });
+
+            expect(base.matches(album)).toBe(true);
+        });
+    });
 });
