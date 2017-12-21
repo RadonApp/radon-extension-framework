@@ -208,6 +208,7 @@ export default class Item extends Model {
         );
     }
 
+    // TODO Item.inherit: determine how references should be inherited
     inherit(item) {
         if(!(item instanceof Model)) {
             throw new Error('Invalid value provided for the "item" parameter');
@@ -225,14 +226,16 @@ export default class Item extends Model {
 
         // Apply values
         changed = this.apply(this.extract(values, {
-            deferred: false
+            deferred: false,
+            reference: false
         })) || changed;
 
         ForEach(metadata, (values, name) => {
             let source = this.resolve(name);
 
             changed = source.apply(source.extract(values, {
-                deferred: false
+                deferred: false,
+                reference: false
             })) || changed;
         });
 
@@ -243,14 +246,16 @@ export default class Item extends Model {
 
         // Apply deferred values
         this.apply(this.extract(values, {
-            deferred: true
+            deferred: true,
+            reference: false
         }));
 
         ForEach(metadata, (values, name) => {
             let source = this.resolve(name);
 
             source.apply(source.extract(values, {
-                deferred: true
+                deferred: true,
+                reference: false
             }));
         });
 
