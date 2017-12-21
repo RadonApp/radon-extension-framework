@@ -133,6 +133,23 @@ export default class Item extends Model {
         }), options);
     }
 
+    assign(item) {
+        if(!(item instanceof Model)) {
+            throw new Error('Invalid value provided for the "item" parameter');
+        }
+
+        let changed = false;
+
+        // Apply values
+        changed = this.apply(item.values) || changed;
+
+        ForEach(item.metadata, (values, name) => {
+            changed = this.resolve(name).apply(values) || changed;
+        });
+
+        return changed;
+    }
+
     createSelectors(options) {
         options = {
             prefix: null,
