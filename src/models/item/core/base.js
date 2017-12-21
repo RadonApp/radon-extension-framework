@@ -3,9 +3,15 @@ import ForEach from 'lodash-es/forEach';
 import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
+import Map from 'lodash-es/map';
+import Merge from 'lodash-es/merge';
 import OmitBy from 'lodash-es/omitBy';
+import Reduce from 'lodash-es/reduce';
+import Without from 'lodash-es/without';
 
-import Model, {BaseModel} from '../../core/base';
+import Log from 'neon-extension-framework/core/logger';
+import Model, {BaseModel} from 'neon-extension-framework/models/core/base';
+import {product} from 'neon-extension-framework/core/helpers/value';
 
 
 export class Metadata extends BaseModel {
@@ -110,6 +116,64 @@ export default class Item extends Model {
 
     get updatedAt() {
         return this.get('updatedAt');
+    }
+
+    createSelectors(options) {
+        options = {
+            prefix: null,
+            reference: false,
+
+            ...(options || {})
+        };
+
+        // Identifier Selector
+        if(!IsNil(this.id)) {
+            let selector = {};
+
+            selector[(options.prefix || '') + '_id'] = this.id;
+
+            return [selector];
+        }
+
+        // Create base selector
+        let base = {};
+
+        if(!options.reference) {
+            base[(options.prefix || '') + 'type'] = this.type;
+        }
+
+        // Create selectors
+        let selectors = [Map(this._getOrderedKeys({ prefix: options.prefix }), (selector) => ({
+            ...base,
+            ...selector
+        }))];
+
+        ForEach(this.schema, (prop, key) => {
+            if(!(prop instanceof Model.Properties.Reference)) {
+                return;
+            }
+
+            let child = prop.get(this.values, key);
+
+            if(IsNil(child)) {
+                Log.debug('No "' + key + '" has been defined');
+                return;
+            }
+
+            try {
+                selectors.push(child.createSelectors({
+                    prefix: (options.prefix || '') + key + '.',
+                    reference: true
+                }));
+            } catch(e) {
+                Log.debug('Unable to create "' + key + '" selectors: ' + (e && e.message ? e.message : e));
+            }
+        });
+
+        // Merge selectors
+        return Map(product(...selectors), (selectors) =>
+            Merge({}, ...selectors)
+        );
     }
 
     inherit(item) {
@@ -264,7 +328,9 @@ export default class Item extends Model {
         return changed;
     }
 
-    static create(source, values) {
+    // region Static Methods
+
+    static create(source, values = null) {
         let item = new this();
 
         // Update `item` with source `values`
@@ -347,6 +413,10 @@ export default class Item extends Model {
         return item;
     }
 
+    // endregion
+
+    // region Private Methods
+
     _buildSourceKeys(source, keys) {
         let result = {};
 
@@ -354,4 +424,29 @@ export default class Item extends Model {
 
         return result;
     }
+
+    _getOrderedKeys(options) {
+        options = {
+            prefix: null,
+
+            ...(options || {})
+        };
+
+        // Build array of sources
+        let sources = Without(Object.keys(this.keys), 'item').concat(['item']);
+
+        // Build array of keys
+        return Reduce(sources, (result, source) =>
+            Reduce(this.keys[source], (result, value, name) => {
+                let item = {};
+
+                item[(options.prefix || '') + 'keys.' + source + '.' + name] = value;
+
+                result.push(item);
+                return result;
+            }, result),
+        []);
+    }
+
+    // endregion
 }
