@@ -287,9 +287,10 @@ export default class Item extends Model {
 
             // Update child
             if(!IsNil(current)) {
-                current.inherit(value);
+                changed = current.inherit(value) || changed;
             } else {
                 prop.set(this.values, key, value);
+                changed = true;
             }
         });
 
