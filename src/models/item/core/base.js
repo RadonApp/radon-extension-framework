@@ -111,6 +111,14 @@ export default class Item extends Model {
         return this.get('keys');
     }
 
+    get slug() {
+        if(IsNil(this.keys['item'])) {
+            return null;
+        }
+
+        return this.keys['item']['slug'] || null;
+    }
+
     get createdAt() {
         return this.get('createdAt');
     }
