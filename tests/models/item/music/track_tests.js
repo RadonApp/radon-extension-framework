@@ -300,12 +300,18 @@ describe('Track', () => {
     describe('encode', () => {
         let artist = Artist.create('alpha', {
             id: '1',
-            title: 'Gorillaz'
+            title: 'Gorillaz',
+
+            createdAt: 1000,
+            updatedAt: 2000
         });
 
         let album = Album.create('alpha', {
             id: '2',
             title: 'Demon Days',
+
+            createdAt: 1000,
+            updatedAt: 2000,
 
             artist
         });
@@ -342,6 +348,7 @@ describe('Track', () => {
                 metadata: {
                     alpha: {
                         genres: ['alternative rock', 'funk rock'],
+                        updatedAt: 2000
                     }
                 },
 
@@ -384,40 +391,85 @@ describe('Track', () => {
         });
 
         it('plain object', () => {
-                let track = Track.create('alpha', {
-                    id: '3',
-                    title: 'Feel Good Inc',
+            let track = Track.create('alpha', {
+                id: '3',
+                title: 'Feel Good Inc',
 
-                    genres: ['alternative rock', 'funk rock'],
+                genres: ['alternative rock', 'funk rock'],
 
-                    createdAt: 1000,
-                    updatedAt: 2000,
+                createdAt: 1000,
+                updatedAt: 2000,
 
-                    artist,
-                    album
-                });
+                artist,
+                album
+            });
 
-                expect(track.toPlainObject()).toEqual({
-                    id: '3',
+            expect(track.toPlainObject()).toEqual({
+                id: '3',
+
+                keys: {
+                    item: {
+                        slug: 'feel-good-inc'
+                    }
+                },
+
+                title: 'Feel Good Inc',
+                type: 'music/track',
+
+                createdAt: 1000,
+                updatedAt: 2000,
+
+                metadata: {
+                    alpha: {
+                        title: 'Feel Good Inc',
+                        updatedAt: 2000,
+
+                        genres: ['alternative rock', 'funk rock'],
+                    }
+                },
+
+                artist: {
+                    id: '1',
 
                     keys: {
                         item: {
-                            slug: 'feel-good-inc'
+                            slug: 'gorillaz'
                         }
                     },
 
-                    title: 'Feel Good Inc',
-                    type: 'music/track',
+                    title: 'Gorillaz',
+                    type: 'music/artist',
 
                     createdAt: 1000,
                     updatedAt: 2000,
 
                     metadata: {
                         alpha: {
-                            title: 'Feel Good Inc',
-                            updatedAt: 2000,
+                            title: 'Gorillaz',
+                            updatedAt: 2000
+                        }
+                    }
+                },
 
-                            genres: ['alternative rock', 'funk rock'],
+                album: {
+                    id: '2',
+
+                    keys: {
+                        item: {
+                            slug: 'demon-days'
+                        }
+                    },
+
+                    title: 'Demon Days',
+                    type: 'music/album',
+
+                    createdAt: 1000,
+                    updatedAt: 2000,
+
+                    metadata: {
+                        alpha: {
+                            title: 'Demon Days',
+                            updatedAt: 2000
                         }
                     },
 
@@ -433,52 +485,19 @@ describe('Track', () => {
                         title: 'Gorillaz',
                         type: 'music/artist',
 
+                        createdAt: 1000,
+                        updatedAt: 2000,
+
                         metadata: {
                             alpha: {
-                                title: 'Gorillaz'
+                                title: 'Gorillaz',
+                                updatedAt: 2000
                             }
                         }
                     },
-
-                    album: {
-                        id: '2',
-
-                        keys: {
-                            item: {
-                                slug: 'demon-days'
-                            }
-                        },
-
-                        title: 'Demon Days',
-                        type: 'music/album',
-
-                        metadata: {
-                            alpha: {
-                                title: 'Demon Days'
-                            }
-                        },
-
-                        artist: {
-                            id: '1',
-
-                            keys: {
-                                item: {
-                                    slug: 'gorillaz'
-                                }
-                            },
-
-                            title: 'Gorillaz',
-                            type: 'music/artist',
-
-                            metadata: {
-                                alpha: {
-                                    title: 'Gorillaz'
-                                }
-                            }
-                        },
-                    }
-                });
+                }
             });
+        });
     });
 
     describe('inherit', () => {
