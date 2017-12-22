@@ -247,7 +247,6 @@ export default class Model extends BaseModel {
 
         revision: new Properties.Text({
             change: true,
-            identifier: true,
 
             document: {
                 key: '_rev',
