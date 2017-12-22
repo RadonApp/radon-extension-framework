@@ -38,7 +38,7 @@ export default class Reference extends ValueProperty {
     }
 
     decode(value, options) {
-        if(value instanceof BaseModel) {
+        if(IsNil(value) || value instanceof BaseModel) {
             return value;
         }
 
