@@ -40,84 +40,6 @@ describe('Artist', () => {
         })
     });
 
-    describe('inherit', () => {
-        let base = Artist.create('alpha', {
-            id: '1',
-            revision: '#1',
-
-            title: 'Gorillaz',
-
-            createdAt: 1000,
-            updatedAt: 2000
-        });
-
-        describe('title', () => {
-            it('can\'t be updated', () => {
-                let artist = Artist.create('alpha', {
-                    keys: {
-                        id: 1
-                    },
-
-                    title: 'gorillaz',
-                });
-
-                expect(artist.inherit(base)).toBe(true);
-
-                // Item
-                expect(artist.keys['alpha']).toEqual({id: 1});
-                expect(artist.title).toBe('Gorillaz');
-
-                // Metadata
-                expect(artist.resolve('alpha').keys).toEqual({id: 1});
-                expect(artist.resolve('alpha').title).toBe('Gorillaz');
-            });
-        });
-
-        describe('updatedAt', () => {
-            it('changes can be applied', () => {
-                let artist = Artist.create('alpha', {
-                    keys: {
-                        id: 1
-                    },
-
-                    updatedAt: 2001
-                });
-
-                expect(artist.inherit(base)).toBe(true);
-
-                // Item
-                expect(artist.keys['alpha']).toEqual({id: 1});
-                expect(artist.title).toBe('Gorillaz');
-
-                expect(artist.updatedAt).toBe(2001);
-
-                // Metadata
-                expect(artist.resolve('alpha').keys).toEqual({id: 1});
-                expect(artist.resolve('alpha').title).toBe('Gorillaz');
-
-                expect(artist.resolve('alpha').updatedAt).toBe(2001);
-            });
-
-            it('changes are deferred', () => {
-                let artist = Artist.create('alpha', {
-                    title: 'gorillaz',
-
-                    updatedAt: 2001
-                });
-
-                expect(artist.inherit(base)).toBe(false);
-
-                // Item
-                expect(artist.title).toBe('Gorillaz');
-
-                expect(artist.updatedAt).toBe(2000);
-
-                // Metadata
-                expect(artist.resolve('alpha').updatedAt).toBe(2000);
-            });
-        });
-    });
-
     describe('createSelectors', function() {
         it('with identifier', function() {
             let selectors = Artist.create('test', {
@@ -156,6 +78,150 @@ describe('Artist', () => {
             expect(selectors[1]).toEqual({
                 'type': 'music/artist',
                 'keys.item.slug': 'gorillaz'
+            });
+        });
+    });
+
+    describe('assign', () => {
+        describe('updatedAt', () => {
+            it('tracks updatedAt', () => {
+                let artist = Artist.create('alpha', {
+                    title: 'Gorillaz',
+
+                    createdAt: 2000,
+                    updatedAt: 2000
+                });
+
+                // Assign values
+                artist.assign(Artist.create('beta', {
+                    title: 'gorillaz',
+
+                    createdAt: 2001,
+                    updatedAt: 2001
+                }));
+
+                // Check values
+                expect(artist.title).toBe('Gorillaz');
+                expect(artist.createdAt).toBe(2000);
+                expect(artist.updatedAt).toBe(2001);
+
+                expect(artist.resolve('alpha').title).toBe('Gorillaz');
+                expect(artist.resolve('alpha').updatedAt).toBe(2000);
+
+                expect(artist.resolve('beta').title).toBe('gorillaz');
+                expect(artist.resolve('beta').updatedAt).toBe(2001);
+            });
+
+            it('tracks updatedAt across decodes', () => {
+                let artist = Artist.fromDocument(
+                    Artist.create('alpha', {
+                        title: 'Gorillaz',
+
+                        createdAt: 2000,
+                        updatedAt: 2000
+                    }).toDocument()
+                );
+
+                // Assign values
+                artist.assign(Artist.create('beta', {
+                    title: 'gorillaz',
+
+                    createdAt: 2001,
+                    updatedAt: 2001
+                }));
+
+                // Check values
+                expect(artist.title).toBe('Gorillaz');
+                expect(artist.createdAt).toBe(2000);
+                expect(artist.updatedAt).toBe(2001);
+
+                expect(artist.resolve('alpha').title).toBe('Gorillaz');
+                expect(artist.resolve('alpha').updatedAt).toBe(2000);
+
+                expect(artist.resolve('beta').title).toBe('gorillaz');
+                expect(artist.resolve('beta').updatedAt).toBe(2001);
+            });
+        });
+    });
+
+    describe('inherit', () => {
+        let base = Artist.create('alpha', {
+            id: '1',
+            revision: '#1',
+
+            title: 'Gorillaz',
+
+            createdAt: 1000,
+            updatedAt: 2000
+        });
+
+        describe('title', () => {
+            it('can\'t be updated', () => {
+                let artist = Artist.create('alpha', {
+                    keys: {
+                        id: 1
+                    },
+
+                    title: 'gorillaz',
+                });
+
+                expect(artist.inherit(base)).toBe(true);
+
+                // Item
+                expect(artist.keys['alpha']).toEqual({id: 1});
+                expect(artist.title).toBe('Gorillaz');
+
+                // Metadata
+                expect(artist.resolve('alpha').keys).toEqual({id: 1});
+                expect(artist.resolve('alpha').title).toBe('Gorillaz');
+            });
+        });
+
+        describe('updatedAt', () => {
+            it('changes can be applied', () => {
+                let artist = Artist.create('beta', {
+                    keys: {
+                        id: 1
+                    },
+
+                    title: 'gorillaz',
+                    updatedAt: 2001
+                });
+
+                expect(artist.inherit(base)).toBe(true);
+
+                // Item
+                expect(artist.title).toBe('Gorillaz');
+                expect(artist.updatedAt).toBe(2001);
+
+                // Alpha
+                expect(artist.resolve('alpha').keys).toBeUndefined();
+                expect(artist.resolve('alpha').title).toBe('Gorillaz');
+                expect(artist.resolve('alpha').updatedAt).toBe(2000);
+
+                // Beta
+                expect(artist.keys['beta']).toEqual({ id: 1 });
+
+                expect(artist.resolve('beta').keys).toEqual({ id: 1 });
+                expect(artist.resolve('beta').title).toBe('gorillaz');
+                expect(artist.resolve('beta').updatedAt).toBe(2001);
+            });
+
+            it('changes are deferred', () => {
+                let artist = Artist.create('alpha', {
+                    title: 'gorillaz',
+                    updatedAt: 2001
+                });
+
+                expect(artist.inherit(base)).toBe(false);
+
+                // Item
+                expect(artist.title).toBe('Gorillaz');
+
+                expect(artist.updatedAt).toBe(2000);
+
+                // Metadata
+                expect(artist.resolve('alpha').updatedAt).toBe(2000);
             });
         });
     });
