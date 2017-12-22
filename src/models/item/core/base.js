@@ -216,7 +216,6 @@ export default class Item extends Model {
         );
     }
 
-    // TODO Item.inherit: determine how references should be inherited
     inherit(item) {
         if(!(item instanceof Model)) {
             throw new Error('Invalid value provided for the "item" parameter');
@@ -245,6 +244,29 @@ export default class Item extends Model {
                 deferred: false,
                 reference: false
             })) || changed;
+        });
+
+        // Inherit children
+        ForEach(this.schema, (prop, key) => {
+            if(!prop.reference) {
+                return;
+            }
+
+            let current = prop.get(this.values, key);
+
+            // Retrieve value
+            let value = prop.get(values, key);
+
+            if(IsNil(value)) {
+                return;
+            }
+
+            // Update child
+            if(!IsNil(current)) {
+                current.inherit(value);
+            } else {
+                prop.set(this.values, key, value);
+            }
         });
 
         // Ignore deferred values (if no other changes)
