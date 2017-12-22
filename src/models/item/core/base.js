@@ -447,10 +447,25 @@ export default class Item extends Model {
     // region Static Methods
 
     static create(source, values = null) {
+        if(!IsString(source)) {
+            throw new Error('Invalid value provided for the "source" parameter (expected string)');
+        }
+
+        if(!IsNil(values) && !IsPlainObject(values)) {
+            throw new Error('Invalid value provided for the "values" parameter (expected plain object)');
+        }
+
+        let now = Date.now();
+
+        // Create `item` with source `values`
         let item = new this();
 
-        // Update `item` with source `values`
-        item.update(source, values);
+        item.update(source, {
+            createdAt: now,
+            updatedAt: now,
+
+            ...(values || {})
+        });
 
         return item;
     }
