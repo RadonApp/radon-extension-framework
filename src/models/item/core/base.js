@@ -155,6 +155,30 @@ export default class Item extends Model {
             changed = this.resolve(name).apply(values) || changed;
         });
 
+        // Assign children
+        ForEach(this.schema, (prop, key) => {
+            if(!prop.reference) {
+                return;
+            }
+
+            let current = prop.get(this.values, key);
+
+            // Retrieve value
+            let value = prop.get(item.values, key);
+
+            if(IsNil(value)) {
+                return;
+            }
+
+            // Update child
+            if(!IsNil(current)) {
+                changed = current.assign(value) || changed;
+            } else {
+                prop.set(this.values, key, value);
+                changed = true;
+            }
+        });
+
         return changed;
     }
 
