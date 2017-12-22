@@ -354,21 +354,21 @@ export default class Item extends Model {
         // Copy metadata values to `document`
         let metadata = {};
 
-        ForEach(this.metadata, (values, source) => {
+        ForEach(this.metadata, (values, name) => {
             let data = {};
 
             // Copy source metadata values to `data`
-            this.resolve(source).copy(data, { format: 'document' });
+            this.resolve(name).copy(data, { format: 'document' });
 
             // Omit duplicate values
-            data = OmitBy(data, (value, key) =>
+            // TODO Move to a property option
+            data = OmitBy(data, (value, key) => (
+                key !== 'updatedAt' &&
                 doc[key] === value
-            );
+            ));
 
-            // Add source metadata (if at least one property exists)
-            if(Object.keys(data).length > 0) {
-                metadata[source] = data;
-            }
+            // Add source metadata
+            metadata[name] = data;
         });
 
         // Include metadata (if at least one source exists)
