@@ -446,13 +446,17 @@ export default class Item extends Model {
 
     // region Static Methods
 
-    static create(source, values = null) {
+    static create(source, values = null, ...args) {
         if(!IsString(source)) {
             throw new Error('Invalid value provided for the "source" parameter (expected string)');
         }
 
         if(!IsNil(values) && !IsPlainObject(values)) {
             throw new Error('Invalid value provided for the "values" parameter (expected plain object)');
+        }
+
+        if(args && args.length > 0) {
+            throw new Error('Only a maximum of two arguments are supported');
         }
 
         let now = Date.now();
