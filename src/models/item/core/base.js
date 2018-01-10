@@ -400,8 +400,8 @@ export default class Item extends Model {
         return {
             ...super.toPlainObject(),
             type: this.type,
-            metadata,
-        }
+            metadata
+        };
     }
 
     toReference() {

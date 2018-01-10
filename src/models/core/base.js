@@ -269,7 +269,7 @@ export default class Model extends BaseModel {
         return this.get('id');
     }
 
-    get revision(){
+    get revision() {
         return this.get('revision');
     }
 

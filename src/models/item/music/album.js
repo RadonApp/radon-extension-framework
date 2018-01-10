@@ -40,7 +40,7 @@ export default class Album extends Item {
 
         artist: new Item.Properties.Reference('music/artist', {
             identifier: true
-        }),
+        })
     };
 
     get artist() {
