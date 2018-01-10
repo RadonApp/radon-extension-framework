@@ -240,10 +240,20 @@ export default class Item extends Model {
         );
     }
 
-    inherit(item) {
+    inherit(item, options) {
         if(!(item instanceof Model)) {
             throw new Error('Invalid value provided for the "item" parameter');
         }
+
+        options = {
+            ...(options || {}),
+
+            changes: {
+                identifier: null,
+
+                ...((options || {}).changes || {})
+            }
+        };
 
         let metadata = this._metadata;
         let values = this._values;
@@ -259,15 +269,25 @@ export default class Item extends Model {
         changed = this.apply(this.extract(values, {
             deferred: false,
             reference: false
-        })) || changed;
+        }), options || {}) || changed;
 
         ForEach(metadata, (values, name) => {
             let source = this.resolve(name);
 
-            changed = source.apply(source.extract(values, {
+            let metadataChanged = source.apply(source.extract(values, {
                 deferred: false,
                 reference: false
-            })) || changed;
+            }), options || {}) || changed;
+
+            // Apply `changes.identifier` filter
+            if(!IsNil(options.changes.identifier) && options.changes.identifier === true) {
+                return;
+            }
+
+            // Update `changed` value
+            if(metadataChanged) {
+                changed = true;
+            }
         });
 
         // Inherit children
@@ -287,7 +307,13 @@ export default class Item extends Model {
 
             // Update child
             if(!IsNil(current)) {
-                changed = current.inherit(value) || changed;
+                changed = current.inherit(value, {
+                    ...(options || {}),
+
+                    changes: {
+                        identifier: true
+                    }
+                }) || changed;
             } else {
                 prop.set(this.values, key, value);
                 changed = true;
@@ -303,7 +329,7 @@ export default class Item extends Model {
         this.apply(this.extract(values, {
             deferred: true,
             reference: false
-        }));
+        }), options || {});
 
         ForEach(metadata, (values, name) => {
             let source = this.resolve(name);
@@ -311,7 +337,7 @@ export default class Item extends Model {
             source.apply(source.extract(values, {
                 deferred: true,
                 reference: false
-            }));
+            }), options || {});
         });
 
         return changed;

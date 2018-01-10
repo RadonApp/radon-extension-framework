@@ -59,7 +59,13 @@ export class BaseModel {
         options = {
             format: 'plain',
 
-            ...(options || {})
+            ...(options || {}),
+
+            changes: {
+                identifier: null,
+
+                ...((options || {}).changes || {})
+            }
         };
 
         let schema = this.getFormatSchema(options.format);
@@ -83,10 +89,20 @@ export class BaseModel {
             }
 
             // Apply value to property
-            changed = prop.apply(source, this.values, key, {
+            let propChanged = prop.apply(source, this.values, key, {
                 ...options,
                 item: this
-            }) || changed;
+            });
+
+            // Apply `changes.identifier` filter
+            if(!IsNil(options.changes.identifier) && prop.identifier !== options.changes.identifier) {
+                return;
+            }
+
+            // Update `changed` value
+            if(propChanged) {
+                changed = true;
+            }
         });
 
         return changed;
