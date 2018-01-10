@@ -42,7 +42,7 @@ export default class ValueProperty extends Property {
     copy(source, target, key, options) {
         let value = source[key];
 
-        if(!this.shouldCopyValue(value)) {
+        if(!this.shouldCopyValue(value, options)) {
             return false;
         }
 
@@ -67,7 +67,7 @@ export default class ValueProperty extends Property {
         return a === b;
     }
 
-    shouldCopyValue(value) {
+    shouldCopyValue(value, options) {
         return !IsNil(value);
     }
 

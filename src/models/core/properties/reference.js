@@ -63,10 +63,15 @@ export default class Reference extends ValueProperty {
         throw new Error('Unsupported format: ' + options.format);
     }
 
-    shouldCopyValue(item) {
-        return (
-            !IsNil(item) &&
-            !IsNil(item.id)
-        );
+    shouldCopyValue(item, options) {
+        if(IsNil(item)) {
+            return false;
+        }
+
+        if(options.format === 'document' && IsNil(item.id)) {
+            return false;
+        }
+
+        return true;
     }
 }
