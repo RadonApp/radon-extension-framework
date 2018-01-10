@@ -298,25 +298,24 @@ describe('Track', () => {
     });
 
     describe('encode', () => {
-        let artist = Artist.create('alpha', {
-            id: '1',
-            title: 'Gorillaz',
-
-            createdAt: 1000,
-            updatedAt: 2000
-        });
-
-        let album = Album.create('alpha', {
-            id: '2',
-            title: 'Demon Days',
-
-            createdAt: 1000,
-            updatedAt: 2000,
-
-            artist
-        });
-
         it('document', () => {
+            let artist = Artist.create('alpha', {
+                title: 'Gorillaz',
+
+                createdAt: 1000,
+                updatedAt: 2000
+            });
+
+            let album = Album.create('alpha', {
+                id: '2',
+                title: 'Demon Days',
+
+                createdAt: 1000,
+                updatedAt: 2000,
+
+                artist
+            });
+
             let track = Track.create('alpha', {
                 id: '3',
                 title: 'Feel Good Inc',
@@ -352,18 +351,6 @@ describe('Track', () => {
                     }
                 },
 
-                artist: {
-                    _id: '1',
-
-                    keys: {
-                        item: {
-                            slug: 'gorillaz'
-                        }
-                    },
-
-                    title: 'Gorillaz'
-                },
-
                 album: {
                     _id: '2',
 
@@ -373,26 +360,29 @@ describe('Track', () => {
                         }
                     },
 
-                    title: 'Demon Days',
-
-                    artist: {
-                        _id: '1',
-
-                        keys: {
-                            item: {
-                                slug: 'gorillaz'
-                            }
-                        },
-
-                        title: 'Gorillaz'
-                    },
+                    title: 'Demon Days'
                 }
             });
         });
 
         it('plain object', () => {
+            let artist = Artist.create('alpha', {
+                title: 'Gorillaz',
+
+                createdAt: 1000,
+                updatedAt: 2000
+            });
+
+            let album = Album.create('alpha', {
+                title: 'Demon Days',
+
+                createdAt: 1000,
+                updatedAt: 2000,
+
+                artist
+            });
+
             let track = Track.create('alpha', {
-                id: '3',
                 title: 'Feel Good Inc',
 
                 genres: ['alternative rock', 'funk rock'],
@@ -405,8 +395,6 @@ describe('Track', () => {
             });
 
             expect(track.toPlainObject()).toEqual({
-                id: '3',
-
                 keys: {
                     item: {
                         slug: 'feel-good-inc'
@@ -429,8 +417,6 @@ describe('Track', () => {
                 },
 
                 artist: {
-                    id: '1',
-
                     keys: {
                         item: {
                             slug: 'gorillaz'
@@ -452,8 +438,6 @@ describe('Track', () => {
                 },
 
                 album: {
-                    id: '2',
-
                     keys: {
                         item: {
                             slug: 'demon-days'
@@ -474,8 +458,6 @@ describe('Track', () => {
                     },
 
                     artist: {
-                        id: '1',
-
                         keys: {
                             item: {
                                 slug: 'gorillaz'
