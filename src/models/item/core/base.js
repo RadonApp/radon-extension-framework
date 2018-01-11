@@ -1,5 +1,6 @@
 import CloneDeep from 'lodash-es/cloneDeep';
 import ForEach from 'lodash-es/forEach';
+import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
@@ -152,18 +153,26 @@ export default class Item extends Model {
         }), options);
     }
 
-    assign(item) {
+    assign(item, options) {
         if(!(item instanceof Model)) {
             throw new Error('Invalid value provided for the "item" parameter');
         }
 
-        let changed = false;
+        let current = this.toDocument();
 
         // Apply values
-        changed = this.apply(item.values) || changed;
+        this.apply(this.extract(item.values, {
+            deferred: false,
+            reference: false
+        }), options || {});
 
         ForEach(item.metadata, (values, name) => {
-            changed = this.resolve(name).apply(values) || changed;
+            let source = this.resolve(name);
+
+            source.apply(source.extract(values, {
+                deferred: false,
+                reference: false
+            }), options || {});
         });
 
         // Assign children
@@ -183,14 +192,36 @@ export default class Item extends Model {
 
             // Update child
             if(!IsNil(current)) {
-                changed = current.assign(value) || changed;
+                current.assign(value);
             } else {
                 prop.set(this.values, key, value);
-                changed = true;
             }
         });
 
-        return changed;
+        // Determine if item has changed
+        let changed = !IsEqual(current, this.toDocument());
+
+        // Ignore deferred values (if no other changes)
+        if(!changed) {
+            return false;
+        }
+
+        // Apply deferred values
+        this.apply(this.extract(item.values, {
+            deferred: true,
+            reference: false
+        }), options || {});
+
+        ForEach(item.metadata, (values, name) => {
+            let source = this.resolve(name);
+
+            source.apply(source.extract(values, {
+                deferred: true,
+                reference: false
+            }), options || {});
+        });
+
+        return true;
     }
 
     createSelectors(options) {
@@ -256,15 +287,7 @@ export default class Item extends Model {
             throw new Error('Invalid value provided for the "item" parameter');
         }
 
-        options = {
-            ...(options || {}),
-
-            changes: {
-                identifier: null,
-
-                ...((options || {}).changes || {})
-            }
-        };
+        let current = item.toDocument();
 
         let metadata = this._metadata;
         let values = this._values;
@@ -273,32 +296,19 @@ export default class Item extends Model {
         this._metadata = CloneDeep(item.metadata);
         this._values = CloneDeep(item.values);
 
-        // Update item
-        let changed = false;
-
         // Apply values
-        changed = this.apply(this.extract(values, {
+        this.apply(this.extract(values, {
             deferred: false,
             reference: false
-        }), options || {}) || changed;
+        }), options || {});
 
         ForEach(metadata, (values, name) => {
             let source = this.resolve(name);
 
-            let metadataChanged = source.apply(source.extract(values, {
+            source.apply(source.extract(values, {
                 deferred: false,
                 reference: false
-            }), options || {}) || changed;
-
-            // Apply `changes.identifier` filter
-            if(!IsNil(options.changes.identifier) && options.changes.identifier === true) {
-                return;
-            }
-
-            // Update `changed` value
-            if(metadataChanged) {
-                changed = true;
-            }
+            }), options || {});
         });
 
         // Inherit children
@@ -318,18 +328,20 @@ export default class Item extends Model {
 
             // Update child
             if(!IsNil(current)) {
-                changed = current.inherit(value, {
+                current.inherit(value, {
                     ...(options || {}),
 
                     changes: {
                         identifier: true
                     }
-                }) || changed;
+                });
             } else {
                 prop.set(this.values, key, value);
-                changed = true;
             }
         });
+
+        // Determine if item has changed
+        let changed = !IsEqual(current, this.toDocument());
 
         // Ignore deferred values (if no other changes)
         if(!changed) {
@@ -351,7 +363,7 @@ export default class Item extends Model {
             }), options || {});
         });
 
-        return changed;
+        return true;
     }
 
     matches(other) {
