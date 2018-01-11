@@ -906,4 +906,103 @@ describe('Track', () => {
             });
         });
     });
+
+    describe('matches', function() {
+        let base = Track.create('alpha', {
+            id: '3',
+            revision: '#1',
+
+            keys: {
+                id: 3
+            },
+
+            title: 'Broken People',
+
+            // Album
+            album: Album.create('alpha', {
+                id: '2',
+                revision: '#1',
+
+                keys: {
+                    id: 2
+                },
+
+                title: 'Bright: The Album',
+
+                // Artist
+                artist: Artist.create('alpha', {
+                    id: '1',
+                    revision: '#1',
+
+                    keys: {
+                        id: 1
+                    },
+
+                    title: 'Various Artists'
+                })
+            }),
+
+            // Artist
+            artist: Artist.create('alpha', {
+                id: '1',
+                revision: '#1',
+
+                keys: {
+                    id: 1
+                },
+
+                title: 'Logic'
+            })
+        });
+
+        it('matches identifier', function() {
+            let track = Track.create('alpha', {
+                id: '3'
+            });
+
+            expect(track.matches(base)).toBe(true);
+        });
+
+        it('matches slug', function() {
+            let track = Track.create('alpha', {
+                title: 'Broken People',
+
+                // Album
+                album: Album.create('alpha', {
+                    title: 'Bright: The Album'
+                }),
+
+                // Artist
+                artist: Artist.create('alpha', {
+                    title: 'Logic'
+                })
+            });
+
+            expect(track.matches(base)).toBe(true);
+        });
+
+        it('matches key', function() {
+            let track = Track.create('alpha', {
+                keys: {
+                    id: 3
+                },
+
+                // Album
+                album: Album.create('alpha', {
+                    keys: {
+                        id: 2
+                    },
+                }),
+
+                // Artist
+                artist: Artist.create('alpha', {
+                    keys: {
+                        id: 1
+                    }
+                })
+            });
+
+            expect(track.matches(base)).toBe(true);
+        });
+    });
 });
