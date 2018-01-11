@@ -525,7 +525,13 @@ export default class ActivityEngine {
     }
 
     _detectState(time) {
-        if(IsNil(this._currentSession.time)) {
+        // Ensure session and time is available
+        if(IsNil(this._currentSession) || IsNil(this._currentSession.time)) {
+            return null;
+        }
+
+        // Ensure item metadata and duration is available
+        if(IsNil(this._currentSession.item) || IsNil(this._currentSession.item.duration)) {
             return null;
         }
 
