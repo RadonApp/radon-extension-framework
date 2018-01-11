@@ -71,11 +71,11 @@ export class Metadata extends BaseModel {
     }
 
     get values() {
-        return this.parent.metadata[this.source];
+        return this.parent.metadata[this.source] || {};
     }
 
     get keys() {
-        return this._parent.get('keys')[this.source];
+        return this._parent.get('keys', {})[this.source] || {};
     }
 
     get updatedAt() {
@@ -617,6 +617,9 @@ export default class Item extends Model {
     // region Private Methods
 
     _buildSourceKeys(source, keys) {
+        keys = OmitBy(keys, IsNil);
+
+        // Build source keys
         let result = {};
 
         if(IsPlainObject(keys) && Object.keys(keys).length > 0) {
