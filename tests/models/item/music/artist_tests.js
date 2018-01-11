@@ -195,7 +195,7 @@ describe('Artist', () => {
                 expect(artist.updatedAt).toBe(2001);
 
                 // Alpha
-                expect(artist.resolve('alpha').keys).toBeUndefined();
+                expect(artist.resolve('alpha').keys).toEqual({});
                 expect(artist.resolve('alpha').title).toBe('Gorillaz');
                 expect(artist.resolve('alpha').updatedAt).toBe(2000);
 
