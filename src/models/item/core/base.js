@@ -226,8 +226,9 @@ export default class Item extends Model {
 
     createSelectors(options) {
         options = {
-            prefix: null,
+            children: null,
             includeType: true,
+            prefix: null,
 
             ...(options || {})
         };
@@ -259,20 +260,34 @@ export default class Item extends Model {
                 return;
             }
 
+            let required = !IsNil(options.children) && options.children[(options.prefix || '') + key];
+
+            // Retrieve child
             let child = prop.get(this.values, key);
 
             if(IsNil(child)) {
-                Log.debug('No "' + key + '" has been defined');
+                if(required) {
+                    throw new Error('No "' + (options.prefix || '') + key + '" has been defined');
+                }
+
+                Log.trace('No "' + (options.prefix || '') + key + '" has been defined');
                 return;
             }
 
-            try {
-                selectors.push(child.createSelectors({
-                    prefix: (options.prefix || '') + key + '.',
-                    includeType: false
-                }));
-            } catch(e) {
-                Log.debug('Unable to create "' + key + '" selectors: ' + (e && e.message ? e.message : e));
+            // Try create selectors for child
+            let result = child.createSelectors({
+                children: options.children,
+                includeType: false,
+                prefix: (options.prefix || '') + key + '.'
+            });
+
+            // Include selectors
+            if(!IsNil(result) && result.length > 0) {
+                selectors.push(result);
+            } else if(required) {
+                throw new Error('No "' + (options.prefix || '') + key + '" keys available');
+            } else {
+                Log.trace('No "' + (options.prefix || '') + key + '" keys available');
             }
         });
 

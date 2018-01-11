@@ -69,4 +69,14 @@ export default class Album extends Item {
     set title(value) {
         this.set('title', value);
     }
+
+    createSelectors(options) {
+        return super.createSelectors({
+            children: {
+                'artist': true
+            },
+
+            ...(options || {})
+        })
+    }
 }

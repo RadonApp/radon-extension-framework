@@ -142,4 +142,14 @@ export default class Track extends Item {
     set number(value) {
         this.set('number', value);
     }
+
+    createSelectors(options) {
+        return super.createSelectors({
+            children: {
+                'artist': true
+            },
+
+            ...(options || {})
+        })
+    }
 }
