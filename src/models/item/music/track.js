@@ -1,22 +1,11 @@
 import IsNil from 'lodash-es/isNil';
 
-import Item, {Metadata} from '../core/base';
+import Item, {Common, Metadata} from '../core/base';
 
 
-export class TrackMetadata extends Metadata {
-    static Apply = {
-        ...Metadata.Apply,
-
-        exclude: [
-            ...Metadata.Apply.exclude,
-
-            'artist',
-            'album'
-        ]
-    };
-
+export class TrackCommon extends Common {
     static Schema = {
-        ...Metadata.Schema,
+        ...Common.Schema,
 
         title: new Item.Properties.Text({
             change: false,
@@ -49,6 +38,24 @@ export class TrackMetadata extends Metadata {
             }
         })
     };
+}
+
+export class TrackMetadata extends Metadata {
+    static Apply = {
+        ...Metadata.Apply,
+
+        exclude: [
+            ...Metadata.Apply.exclude,
+
+            'artist',
+            'album'
+        ]
+    };
+
+    static Schema = {
+        ...Metadata.Schema,
+        ...TrackCommon.Schema
+    };
 
     get title() {
         return this.get('title');
@@ -69,7 +76,7 @@ export default class Track extends Item {
 
     static Schema = {
         ...Item.Schema,
-        ...TrackMetadata.Schema,
+        ...TrackCommon.Schema,
 
         //
         // Children

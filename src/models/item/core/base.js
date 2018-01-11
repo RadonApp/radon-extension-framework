@@ -15,6 +15,14 @@ import {createSlug} from 'neon-extension-framework/core/helpers/metadata';
 import {product} from 'neon-extension-framework/core/helpers/value';
 
 
+export class Common {
+    static Schema = {
+        updatedAt: new Model.Properties.Integer({
+            deferred: true
+        })
+    };
+}
+
 export class Metadata extends BaseModel {
     static Apply = {
         exclude: [
@@ -39,7 +47,9 @@ export class Metadata extends BaseModel {
     };
 
     static Schema = {
-        updatedAt: new Model.Properties.Integer({
+        ...Common.Schema,
+
+        fetchedAt: new Item.Properties.Integer({
             deferred: true
         })
     };
@@ -81,6 +91,7 @@ export default class Item extends Model {
     static Type = null;
 
     static Schema = {
+        ...Common.Schema,
         ...Model.Schema,
 
         keys: new Model.Properties.Index({

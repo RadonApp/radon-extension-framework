@@ -1,14 +1,21 @@
-import Item, {Metadata} from '../core/base';
+import Item, {Common, Metadata} from '../core/base';
 
 
-export class ArtistMetadata extends Metadata {
+export class ArtistCommon extends Common {
     static Schema = {
-        ...Metadata.Schema,
+        ...Common.Schema,
 
         title: new Item.Properties.Text({
             change: false,
             identifier: true
         })
+    };
+}
+
+export class ArtistMetadata extends Metadata {
+    static Schema = {
+        ...Metadata.Schema,
+        ...ArtistCommon.Schema
     };
 
     get title() {
@@ -22,7 +29,7 @@ export default class Artist extends Item {
 
     static Schema = {
         ...Item.Schema,
-        ...ArtistMetadata.Schema
+        ...ArtistCommon.Schema
     };
 
     get title() {

@@ -1,5 +1,16 @@
-import Item, {Metadata} from '../core/base';
+import Item, {Common, Metadata} from '../core/base';
 
+
+export class AlbumCommon extends Common {
+    static Schema = {
+        ...Common.Schema,
+
+        title: new Item.Properties.Text({
+            change: false,
+            identifier: true
+        })
+    };
+}
 
 export class AlbumMetadata extends Metadata {
     static Apply = {
@@ -14,11 +25,7 @@ export class AlbumMetadata extends Metadata {
 
     static Schema = {
         ...Metadata.Schema,
-
-        title: new Item.Properties.Text({
-            change: false,
-            identifier: true
-        })
+        ...AlbumCommon.Schema
     };
 
     get title() {
@@ -32,7 +39,7 @@ export default class Album extends Item {
 
     static Schema = {
         ...Item.Schema,
-        ...AlbumMetadata.Schema,
+        ...AlbumCommon.Schema,
 
         //
         // Children
