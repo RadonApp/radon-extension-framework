@@ -50,7 +50,7 @@ export class Metadata extends BaseModel {
     static Schema = {
         ...Common.Schema,
 
-        fetchedAt: new Item.Properties.Integer({
+        fetchedAt: new Model.Properties.Integer({
             deferred: true
         })
     };
