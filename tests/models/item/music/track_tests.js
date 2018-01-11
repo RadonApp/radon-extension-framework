@@ -732,6 +732,44 @@ describe('Track', () => {
             });
         });
 
+        it('without album', function() {
+            let artist = Artist.create('test', {
+                keys: {
+                    id: '1',
+                },
+
+                title: 'Gorillaz'
+            });
+
+            let selectors = Track.create('test', {
+                title: 'Andromeda (feat. D.R.A.M.)',
+                artist,
+
+                // Album
+                album: Album.create('test', {
+                    keys: {
+                        id: null,
+                    }
+                })
+            }).createSelectors();
+
+            expect(selectors.length).toBe(2);
+
+            expect(selectors[0]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.test.id': '1'
+            });
+
+            expect(selectors[1]).toEqual({
+                'type': 'music/track',
+                'keys.item.slug': 'andromeda-feat-dram',
+
+                'artist.keys.item.slug': 'gorillaz'
+            });
+        });
+
         it('with keys', function() {
             let selectors = Track.create('test', {
                 keys: {
