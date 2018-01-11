@@ -566,7 +566,7 @@ export default class ActivityEngine {
             return Promise.resolve();
         }
 
-        let fetchedAt = item.get(this.plugin.id).fetchedAt;
+        let fetchedAt = item.resolve(this.plugin.id).get('fetchedAt');
         let fetchedAgo;
 
         if(!IsNil(fetchedAt)) {
