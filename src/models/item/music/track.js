@@ -61,12 +61,24 @@ export class TrackMetadata extends Metadata {
         return this.get('title');
     }
 
+    set title(value) {
+        this.set('title', value);
+    }
+
     get duration() {
         return this.get('duration');
     }
 
+    set duration(value) {
+        this.set('duration', value);
+    }
+
     get number() {
         return this.get('number');
+    }
+
+    set number(value) {
+        this.set('number', value);
     }
 }
 
@@ -95,19 +107,39 @@ export default class Track extends Item {
         return this.get('artist');
     }
 
+    set artist(value) {
+        this.set('artist', value);
+    }
+
     get album() {
         return this.get('album');
+    }
+
+    set album(value) {
+        this.set('album', value);
     }
 
     get title() {
         return this.get('title');
     }
 
+    set title(value) {
+        this.set('title', value);
+    }
+
     get duration() {
         return this.get('duration');
     }
 
+    set duration(value) {
+        this.set('duration', value);
+    }
+
     get number() {
         return this.get('number');
+    }
+
+    set number(value) {
+        this.set('number', value);
     }
 }

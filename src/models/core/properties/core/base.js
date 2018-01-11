@@ -51,6 +51,10 @@ export default class Property {
         throw new Error(this.constructor.name + '.get(target, key): Not Implemented');
     }
 
+    set(target, key, value) {
+        throw new Error(this.constructor.name + '.set(target, key, value): Not Implemented');
+    }
+
     encode(value, options) {
         return value;
     }

@@ -242,6 +242,16 @@ export class BaseModel {
         return this.schemaByFormat[format];
     }
 
+    set(key, value) {
+        let prop = this.schema[key];
+
+        if(!IsNil(prop)) {
+            prop.set(this.values, key, value);
+        } else {
+            this.values[key] = value;
+        }
+    }
+
     update(values) {
         throw new Error('BaseModel.update(values): Not Implemented');
     }

@@ -31,6 +31,10 @@ export class AlbumMetadata extends Metadata {
     get title() {
         return this.get('title');
     }
+
+    set title(value) {
+        this.set('title', value);
+    }
 }
 
 export default class Album extends Item {
@@ -54,7 +58,15 @@ export default class Album extends Item {
         return this.get('artist');
     }
 
+    set artist(value) {
+        this.set('artist', value);
+    }
+
     get title() {
         return this.get('title');
+    }
+
+    set title(value) {
+        this.set('title', value);
     }
 }
