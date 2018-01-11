@@ -640,7 +640,11 @@ export default class Item extends Model {
                 continue;
             }
 
-            if(IsNil(this[key]) || IsNil(other[key])) {
+            if(IsNil(this[key])) {
+                continue;
+            }
+
+            if(IsNil(other[key])) {
                 return false;
             }
 
