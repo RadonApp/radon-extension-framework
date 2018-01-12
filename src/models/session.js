@@ -65,7 +65,9 @@ export default class Session {
         };
 
         if(!IsNil(this.item)) {
-            document['item'] = this.item.toReference();
+            document['item'] = this.item.toReference({
+                include: ['_id', 'type']
+            });
         }
 
         if(!IsNil(this.clientId)) {
