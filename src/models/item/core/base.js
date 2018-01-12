@@ -6,7 +6,9 @@ import IsPlainObject from 'lodash-es/isPlainObject';
 import IsString from 'lodash-es/isString';
 import Map from 'lodash-es/map';
 import Merge from 'lodash-es/merge';
+import Omit from 'lodash-es/omit';
 import OmitBy from 'lodash-es/omitBy';
+import Pick from 'lodash-es/pick';
 import Reduce from 'lodash-es/reduce';
 import Without from 'lodash-es/without';
 
@@ -468,7 +470,14 @@ export default class Item extends Model {
         };
     }
 
-    toReference() {
+    toReference(options) {
+        options = {
+            include: null,
+            exclude: null,
+
+            ...(options || {})
+        };
+
         let obj = {};
 
         // Copy reference values to `obj`
@@ -477,6 +486,17 @@ export default class Item extends Model {
             identifier: true
         });
 
+        // Apply `include` filter
+        if(!IsNil(options.include)) {
+            return Pick(obj, options.include);
+        }
+
+        // Apply `exclude` filter
+        if(!IsNil(options.exclude)) {
+            return Omit(obj, options.exclude);
+        }
+
+        // Return entire reference
         return obj;
     }
 
