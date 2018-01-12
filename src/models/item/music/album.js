@@ -77,6 +77,6 @@ export default class Album extends Item {
             },
 
             ...(options || {})
-        })
+        });
     }
 }

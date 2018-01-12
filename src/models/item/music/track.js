@@ -150,6 +150,6 @@ export default class Track extends Item {
             },
 
             ...(options || {})
-        })
+        });
     }
 }
