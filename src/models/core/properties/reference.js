@@ -23,7 +23,9 @@ export default class Reference extends ValueProperty {
 
     encode(value, options) {
         if(this.options.referenceFormats.indexOf(options.format) >= 0) {
-            return value.toReference();
+            return value.toReference({
+                exclude: ['type']
+            });
         }
 
         if(options.format === 'document') {

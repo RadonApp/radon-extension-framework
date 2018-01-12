@@ -478,7 +478,9 @@ export default class Item extends Model {
             ...(options || {})
         };
 
-        let obj = {};
+        let obj = {
+            type: this.type
+        };
 
         // Copy reference values to `obj`
         this.copy(obj, {
