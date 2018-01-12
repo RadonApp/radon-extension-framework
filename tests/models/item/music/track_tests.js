@@ -1042,5 +1042,23 @@ describe('Track', () => {
 
             expect(track.matches(base)).toBe(true);
         });
+
+        it('without album', function() {
+            let track = Track.create('alpha', {
+                title: 'Broken People',
+
+                // Album
+                album: Album.create('alpha'),
+
+                // Artist
+                artist: Artist.create('alpha', {
+                    keys: {
+                        id: 1
+                    }
+                })
+            });
+
+            expect(track.matches(base)).toBe(true);
+        });
     });
 });

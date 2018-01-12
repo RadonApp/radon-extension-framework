@@ -120,7 +120,7 @@ export default class Item extends Model {
     }
 
     get keys() {
-        return this.get('keys');
+        return this.get('keys', {});
     }
 
     get slug() {
@@ -675,6 +675,8 @@ export default class Item extends Model {
     }
 
     _matchesKeys(keys) {
+        let valid;
+
         for(let source in keys) {
             if(!keys.hasOwnProperty(source) || IsNil(this.keys[source])) {
                 continue;
@@ -685,13 +687,17 @@ export default class Item extends Model {
                     continue;
                 }
 
+                // Mark as valid
+                valid = true;
+
+                // Check for matching key
                 if(this.keys[source][name] === keys[source][name]) {
                     return true;
                 }
             }
         }
 
-        return false;
+        return !valid;
     }
 
     // endregion
