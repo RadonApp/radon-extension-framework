@@ -1,14 +1,26 @@
 import IsNil from 'lodash-es/isNil';
+import IsString from 'lodash-es/isString';
 
 
 export class PreferencesContext {
-    constructor(preferences, name) {
+    constructor(preferences, name, bucket) {
         this._preferences = preferences;
         this._name = name;
+        this._bucket = bucket;
 
-        if(IsNil(this._name)) {
+        // Validate "name" parameter
+        if(IsNil(this._name) || !IsString(this._name)) {
             throw new Error('Invalid value provided for the "name" parameter');
         }
+
+        // Validate "bucket" parameter
+        if(IsNil(this._bucket) || IsString(this._bucket)) {
+            throw new Error('Invalid value provided for the "bucket" parameter');
+        }
+    }
+
+    get bucket() {
+        return this._bucket;
     }
 
     get name() {
@@ -16,49 +28,91 @@ export class PreferencesContext {
     }
 
     context(name) {
-        return new PreferencesContext(this._preferences, this.key(name));
+        return new PreferencesContext(this._preferences, this._name + ':' + name, this.bucket.context(name));
+    }
+
+    key(key) {
+        return this._name + ':' + encodeURIComponent(key);
     }
 
     exists(key) {
         return this._preferences.exists(this.key(key));
     }
 
-    key(key) {
-        return this._name + ':' + key;
-    }
-
-    onChanged(key, callback) {
-        return this._preferences.onChanged(this.key(key), callback);
+    onChanged(key, callback, options) {
+        return this.bucket.onChanged(key, callback);
     }
 
     remove(key) {
-        return this._preferences.remove(this.key(key));
+        return this.bucket.remove(key);
     }
 
     // region Get
 
     get(key) {
-        return this._preferences.get(this.key(key));
+        // Retrieve preference value from storage
+        return this.bucket.get(key).then((value) => {
+            if(value === null) {
+                return this._preferences.getDefaultValue(this.key(key));
+            }
+
+            return value;
+        });
     }
 
     getBoolean(key) {
-        return this._preferences.getBoolean(this.key(key));
+        // Retrieve preference value from storage
+        return this.bucket.getBoolean(key).then((value) => {
+            if(value === null) {
+                return this._preferences.getDefaultValue(this.key(key));
+            }
+
+            return value;
+        });
     }
 
     getFloat(key) {
-        return this._preferences.getFloat(this.key(key));
+        // Retrieve preference value from storage
+        return this.bucket.getFloat(key).then((value) => {
+            if(value === null) {
+                return this._preferences.getDefaultValue(this.key(key));
+            }
+
+            return value;
+        });
     }
 
     getInteger(key) {
-        return this._preferences.getInteger(this.key(key));
+        // Retrieve preference value from storage
+        return this.bucket.getInteger(key).then((value) => {
+            if(value === null) {
+                return this._preferences.getDefaultValue(this.key(key));
+            }
+
+            return value;
+        });
     }
 
     getObject(key) {
-        return this._preferences.getObject(this.key(key));
+        // Retrieve preference value from storage
+        return this.bucket.getObject(key).then((value) => {
+            if(value === null) {
+                return this._preferences.getDefaultValue(this.key(key));
+            }
+
+            return value;
+        });
     }
 
     getString(key) {
-        return this._preferences.getString(this.key(key));
+        // Retrieve preference value from storage
+        return this.bucket.getString(key).then((value) => {
+            if(value === null) {
+                return this._preferences.getDefaultValue(this.key(key));
+            }
+
+            return value;
+        });
     }
 
     // endregion
@@ -66,27 +120,27 @@ export class PreferencesContext {
     // region Put
 
     put(key, value) {
-        return this._preferences.put(this.key(key), value);
+        return this.bucket.put(key, value);
     }
 
     putBoolean(key, value) {
-        return this._preferences.putBoolean(this.key(key), value);
+        return this.bucket.putBoolean(key, value);
     }
 
     putFloat(key, value) {
-        return this._preferences.putFloat(this.key(key), value);
+        return this.bucket.putFloat(key, value);
     }
 
     putInteger(key, value) {
-        return this._preferences.putInteger(this.key(key), value);
+        return this.bucket.putInteger(key, value);
     }
 
     putObject(key, value) {
-        return this._preferences.putObject(this.key(key), value);
+        return this.bucket.putObject(key, value);
     }
 
     putString(key, value) {
-        return this._preferences.putString(this.key(key), value);
+        return this.bucket.putString(key, value);
     }
 
     // endregion

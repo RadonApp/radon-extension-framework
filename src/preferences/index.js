@@ -26,19 +26,42 @@ export class Preferences {
     }
 
     context(name) {
-        return new PreferencesContext(this, name);
+        return new PreferencesContext(this, name, this.bucket.context(name));
     }
 
     exists(key) {
         return !IsNil(this._definitions[key]);
     }
 
-    onChanged(key, callback) {
-        return this.bucket.onChanged(key, callback);
-    }
+    getDefaultValue(key, options) {
+        options = Merge({
+            timeout: 5000
+        }, options);
 
-    remove(key) {
-        return this.bucket.remove(key);
+        return new Promise((resolve, reject) => {
+            let deferred = false;
+
+            let get = () => {
+                let definition = this._definitions[key];
+
+                if(!IsNil(definition)) {
+                    resolve(definition.options.default);
+                    return;
+                }
+
+                if(deferred) {
+                    reject(new Error('Unable to find preference definition for: "' + key + '"'));
+                    return;
+                }
+
+                // Try retrieve definition again in `options.timeout` milliseconds
+                deferred = true;
+                setTimeout(get, options.timeout);
+            };
+
+            // Get default value
+            get();
+        });
     }
 
     // region Register
@@ -99,139 +122,6 @@ export class Preferences {
         }
 
         return true;
-    }
-
-    // endregion
-
-    // region Get
-
-    get(key) {
-        // Retrieve preference value from storage
-        return this.bucket.get(key).then((value) => {
-            if(value === null) {
-                return this._getDefault(key);
-            }
-
-            return value;
-        });
-    }
-
-    getBoolean(key) {
-        // Retrieve preference value from storage
-        return this.bucket.getBoolean(key).then((value) => {
-            if(value === null) {
-                return this._getDefault(key);
-            }
-
-            return value;
-        });
-    }
-
-    getFloat(key) {
-        // Retrieve preference value from storage
-        return this.bucket.getFloat(key).then((value) => {
-            if(value === null) {
-                return this._getDefault(key);
-            }
-
-            return value;
-        });
-    }
-
-    getInteger(key) {
-        // Retrieve preference value from storage
-        return this.bucket.getInteger(key).then((value) => {
-            if(value === null) {
-                return this._getDefault(key);
-            }
-
-            return value;
-        });
-    }
-
-    getObject(key) {
-        // Retrieve preference value from storage
-        return this.bucket.getObject(key).then((value) => {
-            if(value === null) {
-                return this._getDefault(key);
-            }
-
-            return value;
-        });
-    }
-
-    getString(key) {
-        // Retrieve preference value from storage
-        return this.bucket.getString(key).then((value) => {
-            if(value === null) {
-                return this._getDefault(key);
-            }
-
-            return value;
-        });
-    }
-
-    // endregion
-
-    // region Put
-
-    put(key, value) {
-        return this.bucket.put(key, value);
-    }
-
-    putBoolean(key, value) {
-        return this.bucket.putBoolean(key, value);
-    }
-
-    putFloat(key, value) {
-        return this.bucket.putFloat(key, value);
-    }
-
-    putInteger(key, value) {
-        return this.bucket.putInteger(key, value);
-    }
-
-    putObject(key, value) {
-        return this.bucket.putObject(key, value);
-    }
-
-    putString(key, value) {
-        return this.bucket.putString(key, value);
-    }
-
-    // endregion
-
-    // region Private methods
-
-    _getDefault(key, options) {
-        options = Merge({
-            timeout: 5000
-        }, options);
-
-        return new Promise((resolve, reject) => {
-            let deferred = false;
-
-            let get = () => {
-                let definition = this._definitions[key];
-
-                if(!IsNil(definition)) {
-                    resolve(definition.options.default);
-                    return;
-                }
-
-                if(deferred) {
-                    reject(new Error('Unable to find preference definition for: "' + key + '"'));
-                    return;
-                }
-
-                // Try retrieve definition again in `options.timeout` milliseconds
-                deferred = true;
-                setTimeout(get, options.timeout);
-            };
-
-            // Get default value
-            get();
-        });
     }
 
     // endregion
