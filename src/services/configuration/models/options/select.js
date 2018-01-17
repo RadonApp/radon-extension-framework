@@ -1,16 +1,14 @@
-import Preferences from 'neon-extension-framework/preferences';
-
 import {Option} from './core/base';
 
 
 export default class SelectOption extends Option {
-    constructor(plugin, key, label, choices, options) {
-        super(plugin, 'select', key, label, options);
+    constructor(plugin, name, label, choices, options) {
+        super(plugin, 'select', name, label, options);
 
         this.options.choices = choices;
     }
 
     get() {
-        return Preferences.getString(this.id);
+        return this.preferences.getString(this.name);
     }
 }

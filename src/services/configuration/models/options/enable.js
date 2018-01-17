@@ -1,18 +1,16 @@
 import Merge from 'lodash-es/merge';
 
-import Preferences from 'neon-extension-framework/preferences';
-
 import {Option} from './core/base';
 import {getProperty} from './core/helpers';
 
 
 export default class EnableOption extends Option {
-    constructor(plugin, key, label, options) {
-        super(plugin, 'enable', key, label, options);
+    constructor(plugin, name, label, options) {
+        super(plugin, 'enable', name, label, options);
     }
 
     isEnabled() {
-        return Preferences.getBoolean(this.id);
+        return this.preferences.getBoolean(this.name);
     }
 
     _parseOptions(options) {

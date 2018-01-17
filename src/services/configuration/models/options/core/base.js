@@ -5,13 +5,35 @@ import {getProperty} from './helpers';
 
 
 export class Option extends Model {
-    constructor(plugin, type, key, label, options) {
-        super(plugin, type, key);
+    constructor(plugin, type, name, label, options) {
+        super(plugin, type, name);
 
         this.label = label;
 
+        this.parent = null;
+
         // Parse options
         this.options = this._parseOptions(options || {});
+    }
+
+    get id() {
+        if(IsNil(this.parent)) {
+            throw new Error('Option hasn\'t been bound');
+        }
+
+        return this.parent.id + ':' + this.name;
+    }
+
+    get preferences() {
+        if(IsNil(this.parent)) {
+            throw new Error('Option hasn\'t been bound');
+        }
+
+        return this.parent.preferences;
+    }
+
+    bind(parent) {
+        this.parent = parent;
     }
 
     _parseOptions(options) {
