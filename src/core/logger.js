@@ -222,5 +222,5 @@ export class Logger {
 
 // Construct core/framework logger
 export default Logger.create('neon-extension', (preferences) =>
-    preferences.context('neon-extension').key('general.debugging.log_level')
+    preferences.context('neon-extension:general:debugging')
 );
