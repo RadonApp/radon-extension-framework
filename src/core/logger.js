@@ -22,12 +22,12 @@ const LevelKeys = {
 
 
 export class Logger {
-    constructor(getOptionKey) {
-        if(IsNil(getOptionKey)) {
+    constructor(getPreferenceContext) {
+        if(IsNil(getPreferenceContext)) {
             throw new Error('Missing required "resolver" parameter');
         }
 
-        this._getOptionKey = getOptionKey;
+        this._getPreferenceContext = getPreferenceContext;
 
         this._level = null;
         this._queue = [];
@@ -113,21 +113,21 @@ export class Logger {
             return;
         }
 
-        // Retrieve option key
-        let optionKey = this._getOptionKey(this.preferences);
+        // Retrieve preference context
+        let context = this._getPreferenceContext(this.preferences);
 
-        if(IsNil(optionKey)) {
+        if(IsNil(context) || !context.exists('log_level')) {
             this._setLevel(Levels.Trace);
             return;
         }
 
         // Subscribe to log level changes
-        this.preferences.onChanged(optionKey, ({value}) => {
+        context.onChanged('log_level', ({value}) => {
             this._setLevel(value);
         });
 
         // Retrieve current log level
-        this.preferences.getString(optionKey).then(
+        context.getString('log_level').then(
             (level) => this._setLevel(level),
             () => retry()
         );
