@@ -99,6 +99,7 @@ export default class Plugin {
 
     isContentScriptsRegistered() {
         if(!DeclarativeContent.supported) {
+            Log.debug('Ignoring content script registration check, declarativeContent is not supported');
             return Promise.resolve(true);
         }
 
@@ -151,6 +152,7 @@ export default class Plugin {
 
     registerContentScripts() {
         if(!DeclarativeContent.supported) {
+            Log.debug('Ignoring content script registration, declarativeContent is not supported');
             return Promise.resolve();
         }
 
@@ -173,6 +175,7 @@ export default class Plugin {
 
     removeContentScripts() {
         if(!DeclarativeContent.supported) {
+            Log.debug('Ignoring content script removal, declarativeContent is not supported');
             return Promise.resolve();
         }
 
