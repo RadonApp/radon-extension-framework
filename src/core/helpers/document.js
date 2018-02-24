@@ -4,18 +4,27 @@ import IsNil from 'lodash-es/isNil';
 export function awaitBody() {
     return new Promise((resolve, reject) => {
         if(!IsNil(document.body)) {
+            // Resolve promise
             resolve(document.body);
             return;
         }
 
-        // Wait for the "DOMContentLoaded" event to be fired
-        document.addEventListener('DOMContentLoaded', () => {
-            if(!IsNil(document.body)) {
-                resolve(document.body);
-            } else {
+        function listener() {
+            // Unbind from the "DOMContentLoaded" event
+            document.removeEventListener('DOMContentLoaded', listener);
+
+            // Reject promise if body is not defined
+            if(IsNil(document.body)) {
                 reject(new Error('Body wasn\'t found after the "DOMContentLoaded" event'));
+                return;
             }
-        });
+
+            // Resolve promise
+            resolve(document.body);
+        }
+
+        // Bind to the "DOMContentLoaded" event
+        document.addEventListener('DOMContentLoaded', listener);
     });
 }
 
@@ -30,7 +39,6 @@ export function awaitElement(container, selector) {
 
             // Resolve promise
             resolve(element);
-
             return true;
         }
 
