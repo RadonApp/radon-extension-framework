@@ -120,13 +120,15 @@ export default class MessageClientChannel extends EventEmitter {
             this.joined = true;
             this.joining = null;
         }, (err) => {
-            Log.warn('[%s] Unable to join the "%s" channel: %s', this.client.id, this.name, err.message);
+            Log.warn('[%s] Unable to join the "%s" channel: %s', this.client.id, this.name, err && err.message);
 
             // Update state
             this.joining = null;
 
             // Reject promise with error
-            return Promise.reject(new Error('Unable to join the "' + this.name + '" channel: ' + err.message));
+            return Promise.reject(new Error(
+                'Unable to join the "' + this.name + '" channel: ' + (err && err.message)
+            ));
         });
     }
 
@@ -142,10 +144,12 @@ export default class MessageClientChannel extends EventEmitter {
             // Update state
             this.joined = false;
         }, (err) => {
-            Log.warn('[%s] Unable to leave the "%s" channel: %s', this.client.id, this.name, err.message);
+            Log.warn('[%s] Unable to leave the "%s" channel: %s', this.client.id, this.name, err && err.message);
 
             // Reject promise with error
-            return Promise.reject(new Error('Unable to leave the "' + this.name + '" channel: ' + err.message));
+            return Promise.reject(new Error(
+                'Unable to leave the "' + this.name + '" channel: ' + (err && err.message)
+            ));
         });
     }
 
