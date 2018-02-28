@@ -23,9 +23,9 @@ export class MessageClient extends EventEmitter {
         this._port = null;
 
         this._connecting = null;
+        this._connectAttempts = 0;
 
         this._reconnecting = null;
-        this._reconnectAttempts = 0;
 
         // Create response handler
         this.responses = new EventEmitter();
@@ -35,7 +35,7 @@ export class MessageClient extends EventEmitter {
 
         // Parse options (and set defaults)
         this.options = Merge({
-            reconnect: {
+            connect: {
                 attempts: 10,
                 interval: 2500
             },
@@ -89,7 +89,7 @@ export class MessageClient extends EventEmitter {
         // Connect to broker
         Log.trace('[%s] Connecting...', this.id);
 
-        let promise = this._connecting = this._connect().then(() => {
+        let promise = this._connecting = this._connectRetry().then(() => {
             Log.debug('[%s] Connected', this.id);
 
             // Reset state
@@ -116,8 +116,11 @@ export class MessageClient extends EventEmitter {
         // Connect to broker
         Log.trace('[%s] Reconnecting...', this.id);
 
-        let promise = this._reconnecting = this._reconnect().then(() => {
+        let promise = this._reconnecting = this._connectRetry().then(() => {
             Log.debug('[%s] Reconnected', this.id);
+
+            // Emit event
+            self.emit('reconnect', self);
 
             // Reset state
             this._reconnecting = null;
@@ -200,8 +203,8 @@ export class MessageClient extends EventEmitter {
 
     // region Private Methods
 
-    _reconnect() {
-        if(IsNil(this.options.reconnect) || !IsNil(this._broker)) {
+    _connectRetry() {
+        if(IsNil(this.options.connect) || !IsNil(this._broker)) {
             return Promise.reject();
         }
 
@@ -209,39 +212,38 @@ export class MessageClient extends EventEmitter {
 
         return new Promise(function(resolve, reject) {
             // Reset state
-            self._reconnectAttempts = 0;
+            self._connectAttempts = 0;
 
             // Reconnect function
-            function reconnect() {
-                if(self._reconnectAttempts > self.options.reconnect.attempts) {
+            function connect() {
+                if(self._connectAttempts >= self.options.connect.attempts) {
                     // Reject promise with error
-                    reject(new Error('Unable to connect (after ' + self._reconnectAttempts + ' attempts)'));
+                    reject(new Error('Unable to connect (after ' + self._connectAttempts + ' attempts)'));
                     return;
                 }
 
                 // Increment attempts
-                self._reconnectAttempts += 1;
+                self._connectAttempts += 1;
 
                 // Connect to broker
                 self._connect().then(function() {
-                    // Emit event
-                    self.emit('reconnect', self);
-
                     // Resolve promise
                     resolve();
-                }, () => {
+                }, (err) => {
                     Log.trace(
-                        '[%s] Connection failed, will retry in %dms',
-                        self.id, self.options.reconnect.interval
+                        '[%s] Connection failed: %s (will retry in %dms)',
+                        self.id,
+                        err && err.message,
+                        self.options.connect.interval
                     );
 
-                    // Schedule next reconnection attempt
-                    setTimeout(reconnect, self.options.reconnect.interval);
+                    // Schedule next connection attempt
+                    setTimeout(connect, self.options.connect.interval);
                 });
             }
 
             // Reconnect to broker
-            reconnect();
+            connect();
         });
     }
 
@@ -255,14 +257,14 @@ export class MessageClient extends EventEmitter {
                 name: this.id
             });
         } catch(e) {
-            return Promise.reject();
+            return Promise.reject(e);
         }
 
         // Wait 250ms to ensure connection was successful
         return new Promise(function(resolve, reject) {
             setTimeout(function() {
                 if(!port.connected) {
-                    reject();
+                    reject(new Error(`Connection failed: ${port.error || 'Unknown Error'}`));
                     return;
                 }
 
