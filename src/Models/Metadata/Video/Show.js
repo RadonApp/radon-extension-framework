@@ -10,9 +10,11 @@ export class ShowCommon extends Common {
         title: new Item.Properties.Text({
             change: false,
             identifier: true
-        })
+        }),
 
-        // TODO year?
+        year: new Item.Properties.Integer({
+            change: false
+        })
     };
 }
 
@@ -28,6 +30,14 @@ export class ShowMetadata extends Metadata {
 
     set title(value) {
         this.set('title', value);
+    }
+
+    get year() {
+        return this.get('year');
+    }
+
+    set year(value) {
+        this.set('year', value);
     }
 }
 
@@ -46,5 +56,13 @@ export default class Show extends Item {
 
     set title(value) {
         this.set('title', value);
+    }
+
+    get year() {
+        return this.get('year');
+    }
+
+    set year(value) {
+        this.set('year', value);
     }
 }
