@@ -120,7 +120,7 @@ export class MessageClient extends EventEmitter {
             Log.debug('[%s] Reconnected', this.id);
 
             // Emit event
-            self.emit('reconnect', self);
+            this.emit('reconnect', this);
 
             // Reset state
             this._reconnecting = null;
