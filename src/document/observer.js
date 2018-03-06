@@ -126,6 +126,11 @@ class NodeObserver extends EventEmitter {
         // Observe children additions/removals
         this._observe(observer, node, { childList: true }, observer);
 
+        // Observe document loaded
+        if(node === document) {
+            document.addEventListener('DOMContentLoaded', this._onDocumentLoaded.bind(this));
+        }
+
         // Observe text nodes
         if(this.text) {
             ForEach(Array.from(node.childNodes), (node) => {
@@ -181,6 +186,15 @@ class NodeObserver extends EventEmitter {
     }
 
     // region Event Handlers
+
+    _onDocumentLoaded() {
+        Log.trace('[%s] Document Loaded', this.path);
+
+        // Emit current nodes
+        ForEach(document.childNodes, (node) => {
+            this.emit('child.added', node);
+        });
+    }
 
     _onMutations(mutations) {
         // Process mutations
