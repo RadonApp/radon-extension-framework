@@ -202,6 +202,56 @@ class NodeObserver extends EventEmitter {
         this.emit('mutation', event);
     }
 
+    all(selector = null) {
+        if(IsNil(selector)) {
+            selector = this.selector;
+        }
+
+        let result = [];
+
+        for(let i = 0; i < this.nodes.length; i++) {
+            let node = this.nodes[i];
+
+            if(node instanceof Element && node.matches(selector)) {
+                result.push(node);
+            }
+        }
+
+        return result;
+    }
+
+    children(selector) {
+        if(IsNil(selector)) {
+            throw new Error('Missing required "selector" parameter');
+        }
+
+        let result = [];
+
+        for(let i = 0; i < this.nodes.length; i++) {
+            let node = this.nodes[i];
+
+            result.push(...Array.from(node.querySelectorAll(selector)));
+        }
+
+        return result;
+    }
+
+    first(selector = null) {
+        if(IsNil(selector)) {
+            selector = this.selector;
+        }
+
+        for(let i = 0; i < this.nodes.length; i++) {
+            let node = this.nodes[i];
+
+            if(node instanceof Element && node.matches(selector)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
     // region Event Handlers
 
     _onDocumentLoaded() {
