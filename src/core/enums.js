@@ -1,6 +1,6 @@
 export var MediaTypes = {
     //
-    // Audio
+    // Music
     //
 
     Music: {
@@ -13,11 +13,11 @@ export var MediaTypes = {
     // Video
     //
 
-    Movie: 'movie',
+    Video: {
+        Movie: 'video/movie',
 
-    Television: {
-        Show: 'television/show',
-        Season: 'television/season',
-        Episode: 'television/episode'
+        Show: 'video/show',
+        Season: 'video/season',
+        Episode: 'video/episode'
     }
 };
