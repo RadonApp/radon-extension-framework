@@ -252,11 +252,19 @@ export default class Item extends Model {
         }
 
         // Create selectors
-        let selectors = [Map(this._getOrderedKeys({ prefix: options.prefix }), (selector) => ({
+        let selectors = [];
+
+        // Add keys
+        let keys = Map(this._getOrderedKeys({ prefix: options.prefix }), (selector) => ({
             ...base,
             ...selector
-        }))];
+        }));
 
+        if(!IsNil(keys) && Object.keys(keys).length > 0) {
+            selectors.push(keys);
+        }
+
+        // Add children
         ForEach(this.schema, (prop, key) => {
             if(!(prop instanceof Model.Properties.Reference)) {
                 return;
