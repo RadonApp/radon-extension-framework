@@ -5,6 +5,8 @@ import ForEach from 'lodash-es/forEach';
 import IsFunction from 'lodash-es/isFunction';
 import IsNil from 'lodash-es/isNil';
 
+import Log from '../core/logger';
+
 
 class Event {
     constructor(event, record, node) {
@@ -27,15 +29,18 @@ class NodeObserver extends EventEmitter {
         this.root = DefaultTo(options.root, null);
 
         this.children = DefaultTo(options.children, []);
-        this.nodes = DefaultTo(options.nodes, []);
 
         this.head = DefaultTo(options.head, false);
         this.tail = DefaultTo(options.tail, false);
 
         this.text = DefaultTo(options.text, false);
 
-        // Attributes
+        this._initialNodes = DefaultTo(options.nodes, []);
+
+        // Public Attributes
         this.observer = null;
+        this.started = false;
+        this.nodes = [];
 
         // Reset observer
         this.reset();
@@ -58,33 +63,31 @@ class NodeObserver extends EventEmitter {
     }
 
     start() {
-        // Start parent (if defined)
+        if(this.started) {
+            return this;
+        }
+
+        Log.trace('[%s] Start', this.path);
+
+        // Update state
+        this.started = true;
+
+        // Ensure parent has started observing
         if(!IsNil(this.parent)) {
             this.parent.start();
         }
 
-        // Ignore root records (no path)
-        if(IsNil(this.path)) {
-            return this;
-        }
+        // Add initial nodes
+        ForEach(this._initialNodes, (node) =>
+            this.add(node)
+        );
 
-        // Iterate over root nodes
-        ForEach(this.root.nodes, (root) => {
-            if(IsNil(this.path)) {
-                if(!this.tail) {
-                    throw new Error('No selector defined');
-                }
-
-                // Observe root node
-                this.observe(root);
-                return;
-            }
-
-            // Observe nodes matching the path
-            ForEach(Array.from(root.querySelectorAll(this.path)), (node) => {
-                this.observe(node);
+        // Process parent nodes (if parent exists)
+        if(!IsNil(this.parent)) {
+            ForEach(this.parent.nodes, (node) => {
+                this._parentChildAdded(node);
             });
-        });
+        }
 
         return this;
     }
