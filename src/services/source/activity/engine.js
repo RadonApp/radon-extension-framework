@@ -85,15 +85,7 @@ export default class ActivityEngine {
         // }
 
         // Retrieve metadata, and create session
-        return Promise.resolve(() => {
-            if(IsNil(this.options.getMetadata)) {
-                return true;
-            }
-
-            return Promise.resolve(this.options.getMetadata(item)).catch((err) => {
-                Log.error('Unable to get metadata: %s', item, err.message, err);
-            });
-        }).then(() => {
+        return this._getItem(item).then((item) => {
             // Create session
             this._currentSession = Session.create(item, {
                 clientId: this.messaging.client.id
@@ -164,7 +156,7 @@ export default class ActivityEngine {
 
         // Ignore stop action if the item matches the current session
         if(this._currentSession.valid && this._currentSession.item.matches(item)) {
-            Log.debug('Session item matches, ignoring close action');
+            Log.debug('Session item matches, ignoring open action');
             return false;
         }
 
@@ -565,6 +557,14 @@ export default class ActivityEngine {
 
         // Switch to stalled state
         return SessionState.stalled;
+    }
+
+    _getItem(item) {
+        if(IsNil(this.options.getMetadata)) {
+            return Promise.resolve(item);
+        }
+
+        return this.options.getMetadata(item);
     }
 
     _refreshItem(item) {
