@@ -1,4 +1,4 @@
-/* eslint-disable no-multi-spaces, key-spacing */
+/* eslint-disable no-console, no-multi-spaces, key-spacing */
 import IsNil from 'lodash-es/isNil';
 
 
@@ -166,23 +166,23 @@ export class Logger {
 
     _getFunction(level) {
         if(level === Levels.Error) {
-            return window.console.error;
+            return console.error;
         }
 
         if(level === Levels.Warning) {
-            return window.console.warn;
+            return console.warn;
         }
 
         if(level === Levels.Notice) {
-            return window.console.info;
+            return console.info;
         }
 
         if(level === Levels.Info) {
-            return window.console.log;
+            return console.log;
         }
 
         if(level === Levels.Debug || level === Levels.Trace) {
-            return window.console.debug;
+            return console.debug;
         }
 
         throw new Error('Unknown level: ' + level);
