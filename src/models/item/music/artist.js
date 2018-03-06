@@ -1,4 +1,5 @@
 import Item, {Common, Metadata} from '../core/base';
+import {MediaTypes} from '../../../core/enums';
 
 
 export class ArtistCommon extends Common {
@@ -29,7 +30,7 @@ export class ArtistMetadata extends Metadata {
 
 export default class Artist extends Item {
     static Metadata = ArtistMetadata;
-    static Type = 'music/artist';
+    static Type = MediaTypes.Music.Artist;
 
     static Schema = {
         ...Item.Schema,

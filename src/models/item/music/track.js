@@ -1,6 +1,7 @@
 import IsNil from 'lodash-es/isNil';
 
 import Item, {Common, Metadata} from '../core/base';
+import {MediaTypes} from '../../../core/enums';
 
 
 export class TrackCommon extends Common {
@@ -84,7 +85,7 @@ export class TrackMetadata extends Metadata {
 
 export default class Track extends Item {
     static Metadata = TrackMetadata;
-    static Type = 'music/track';
+    static Type = MediaTypes.Music.Track;
 
     static Schema = {
         ...Item.Schema,
@@ -94,11 +95,11 @@ export default class Track extends Item {
         // Children
         //
 
-        artist: new Item.Properties.Reference('music/artist', {
+        artist: new Item.Properties.Reference(MediaTypes.Music.Artist, {
             identifier: true
         }),
 
-        album: new Item.Properties.Reference('music/album', {
+        album: new Item.Properties.Reference(MediaTypes.Music.Album, {
             identifier: true
         })
     };

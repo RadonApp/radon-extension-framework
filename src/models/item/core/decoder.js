@@ -1,14 +1,16 @@
+/* eslint-disable no-multi-spaces, key-spacing */
 import IsNil from 'lodash-es/isNil';
 
 import {Artist, Album, Track} from '../music';
+import {MediaTypes} from '../../../core/enums';
 
 
 export default class ItemDecoder {
     static Items = {
         // Music
-        'music/artist': Artist,
-        'music/album': Album,
-        'music/track': Track
+        [MediaTypes.Music.Artist]:  Artist,
+        [MediaTypes.Music.Album]:   Album,
+        [MediaTypes.Music.Track]:   Track,
     };
 
     static fromDocument(...args) {
