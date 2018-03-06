@@ -157,6 +157,13 @@ class NodeObserver extends EventEmitter {
     }
 
     add(node) {
+        if(this.nodes.indexOf(node) >= 0) {
+            Log.debug('[%s] Duplicate node addition for:', this.path, node);
+            return;
+        }
+
+        Log.trace('[%s] Add:', this.path, node);
+
         // Observe node
         this.observe(node);
 
@@ -173,6 +180,13 @@ class NodeObserver extends EventEmitter {
     }
 
     remove(node) {
+        if(this.nodes.indexOf(node) < 0) {
+            Log.debug('[%s] Duplicate node removal for:', this.path, node);
+            return;
+        }
+
+        Log.trace('[%s] Remove:', this.path, node);
+
         // Observe node
         this.unobserve(node);
 
