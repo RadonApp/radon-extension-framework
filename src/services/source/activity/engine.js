@@ -91,6 +91,9 @@ export default class ActivityEngine {
                 clientId: this.messaging.client.id
             });
 
+            // Reset state
+            this._created = false;
+
             // Emit "created" event
             this.messaging.emit('activity.created', this._currentSession.toPlainObject());
         });
@@ -111,6 +114,9 @@ export default class ActivityEngine {
 
             // Update current session
             this._currentSession = session;
+
+            // Update state
+            this._created = true;
         });
     }
 
@@ -193,7 +199,7 @@ export default class ActivityEngine {
             return false;
         }
 
-        if(IsNil(this._currentSession)) {
+        if(IsNil(this._currentSession) || !this._created) {
             Log.trace('No active session, ignoring start action');
             return false;
         }
@@ -266,7 +272,7 @@ export default class ActivityEngine {
             return false;
         }
 
-        if(IsNil(this._currentSession)) {
+        if(IsNil(this._currentSession) || !this._created) {
             Log.trace('No active session, ignoring progress action');
             return false;
         }
