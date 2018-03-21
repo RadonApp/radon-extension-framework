@@ -2,7 +2,7 @@ import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import Log from 'neon-extension-framework/core/logger';
-import Storage from 'neon-extension-framework/storage';
+import {LocalStorage} from 'neon-extension-framework/storage';
 
 import {PreferencesContext} from './context';
 
@@ -14,7 +14,7 @@ export class Preferences {
     }
 
     get bucket() {
-        return Storage.context('preferences');
+        return LocalStorage.context('preferences');
     }
 
     get definitions() {

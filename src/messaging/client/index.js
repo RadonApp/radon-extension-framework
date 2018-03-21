@@ -2,10 +2,10 @@ import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 import IsString from 'lodash-es/isString';
 import Merge from 'lodash-es/merge';
+import Runtime from 'wes/runtime';
 import Uuid from 'uuid';
 
 import Log from 'neon-extension-framework/core/logger';
-import Messaging from 'neon-extension-browser/messaging';
 import {parseMessageName} from 'neon-extension-framework/messaging/core/helpers';
 
 import MessageClientChannel from './channel';
@@ -253,35 +253,25 @@ export class MessageClient extends EventEmitter {
 
         // Connect to broker
         try {
-            port = Messaging.connect({
+            port = Runtime.connect(Runtime.id, {
                 name: this.id
             });
         } catch(e) {
             return Promise.reject(e);
         }
 
-        // Wait 250ms to ensure connection was successful
-        return new Promise(function(resolve, reject) {
-            setTimeout(function() {
-                if(!port.connected) {
-                    reject(new Error(`Connection failed: ${port.error || 'Unknown Error'}`));
-                    return;
-                }
+        // Bind to events
+        port.onMessage.addListener(self._onMessage.bind(self));
+        port.onDisconnect.addListener(self._onDisconnected.bind(self));
 
-                // Bind to events
-                port.on('message', self._onMessage.bind(self));
-                port.on('disconnect', self._onDisconnected.bind(self));
+        // Update state
+        self._port = port;
 
-                // Update state
-                self._port = port;
+        // Emit event
+        self.emit('connect', self);
 
-                // Emit event
-                self.emit('connect', self);
-
-                // Resolve promise with port
-                resolve(port);
-            }, 250);
-        });
+        // Resolve promise with port
+        return Promise.resolve(port);
     }
 
     // endregion

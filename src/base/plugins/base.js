@@ -1,14 +1,11 @@
 import IsNil from 'lodash-es/isNil';
-import Merge from 'lodash-es/merge';
+import Permissions from 'wes/permissions';
 
-import DeclarativeContent from 'neon-extension-browser/declarative/content';
+import FrameworkPlugin from 'neon-extension-framework/core/plugin';
 import Log from 'neon-extension-framework/core/logger';
 import Messaging from 'neon-extension-framework/messaging';
-import Permissions from 'neon-extension-browser/permissions';
 import Preferences from 'neon-extension-framework/preferences';
-import Storage from 'neon-extension-framework/storage';
-import {PageStateMatcher} from 'neon-extension-browser/declarative/conditions';
-import {RequestContentScript} from 'neon-extension-browser/declarative/actions';
+import {LocalStorage} from 'neon-extension-framework/storage';
 
 
 export default class Plugin {
@@ -23,7 +20,7 @@ export default class Plugin {
         this.valid = this.validate();
 
         // Create storage context
-        this.storage = Storage.context(this.id);
+        this.storage = LocalStorage.context(this.id);
 
         // Create preferences context
         this.preferences = Preferences.context(this.id);
@@ -98,101 +95,33 @@ export default class Plugin {
     // region Content Scripts
 
     isContentScriptsRegistered() {
-        if(!DeclarativeContent.supported) {
-            Log.debug('Ignoring content script registration check, declarativeContent is not supported');
-            return Promise.resolve(true);
-        }
-
-        // Retrieve plugin content scripts
-        let contentScripts = this.contentScripts;
-
-        if(IsNil(contentScripts) || contentScripts.length < 1) {
-            return Promise.resolve(true);
-        }
-
-        // Create declarative rules
-        let {rules, rulesMap, ruleIds} = this._createDeclarativeRules(contentScripts);
-
-        // Retrieve existing content scripts
-        return DeclarativeContent.getRules(ruleIds).then((existingRules) => {
-            if(rules.length !== existingRules.length) {
-                return false;
-            }
-
-            // Build map of existing rules
-            let existingRulesMap = {};
-
-            existingRules.forEach((rule) => {
-                existingRulesMap[rule.id] = rule;
-            });
-
-            // Verify rules match
-            let matched = true;
-
-            Object.keys(rulesMap).forEach((ruleId) => {
-                let rule = rulesMap[ruleId];
-
-                // Retrieve existing rule
-                let existingRule = existingRulesMap[ruleId];
-
-                if(IsNil(existingRule)) {
-                    matched = false;
-                    return;
-                }
-
-                // Check if the rules match
-                if(!DeclarativeContent.matches(rule, existingRule)) {
-                    matched = false;
-                }
-            });
-
-            return matched;
+        // Check if content scripts have been registered
+        return FrameworkPlugin.messaging.service('contentScript').request('isRegistered', {
+            pluginId: this.id,
+            contentScripts: this.contentScripts
         });
     }
 
     registerContentScripts() {
-        if(!DeclarativeContent.supported) {
-            Log.debug('Ignoring content script registration, declarativeContent is not supported');
-            return Promise.resolve();
-        }
+        return this.removeContentScripts().then(() => {
+            Log.info('Registering content scripts', this.contentScripts);
 
-        // Retrieve plugin content scripts
-        let contentScripts = this.contentScripts;
-
-        if(IsNil(contentScripts) || contentScripts.length < 1) {
-            return Promise.resolve();
-        }
-
-        // Parse content scripts
-        let {rules, ruleIds} = this._createDeclarativeRules(contentScripts);
-
-        // Register content scripts
-        Log.info('Registering content scripts', rules);
-
-        return DeclarativeContent.removeRules(ruleIds)
-            .then(() => DeclarativeContent.addRules(rules));
+            // Register content scripts
+            return FrameworkPlugin.messaging.service('contentScript').request('register', {
+                pluginId: this.id,
+                contentScripts: this.contentScripts
+            });
+        });
     }
 
     removeContentScripts() {
-        if(!DeclarativeContent.supported) {
-            Log.debug('Ignoring content script removal, declarativeContent is not supported');
-            return Promise.resolve();
-        }
+        Log.info('Removing content scripts', this.contentScripts);
 
-        // Retrieve plugin content scripts
-        let contentScripts = this.contentScripts;
-
-        if(IsNil(contentScripts) || contentScripts.length < 1) {
-            return Promise.resolve();
-        }
-
-        // Parse content scripts
-        let {ruleIds} = this._createDeclarativeRules(contentScripts);
-
-        // Remove content scripts
-        Log.info('Removing content scripts', ruleIds);
-
-        return DeclarativeContent.removeRules(ruleIds);
+        // Unregister content scripts
+        return FrameworkPlugin.messaging.service('contentScript').request('unregister', {
+            pluginId: this.id,
+            contentScripts: this.contentScripts
+        });
     }
 
     // endregion
@@ -200,7 +129,7 @@ export default class Plugin {
     // region Permissions
 
     isPermissionsGranted() {
-        if(!Permissions.supported) {
+        if(!Permissions.$exists()) {
             return Promise.resolve(true);
         }
 
@@ -218,7 +147,7 @@ export default class Plugin {
     }
 
     requestPermissions() {
-        if(!Permissions.supported) {
+        if(!Permissions.$exists()) {
             return Promise.resolve();
         }
 
@@ -236,7 +165,7 @@ export default class Plugin {
     }
 
     removePermissions() {
-        if(!Permissions.supported) {
+        if(!Permissions.$exists()) {
             return Promise.resolve();
         }
 
@@ -254,73 +183,6 @@ export default class Plugin {
     }
 
     // endregion
-
-    // endregion
-
-    // region Private methods
-
-    _createDeclarativeRules(contentScripts) {
-        let rules = [];
-        let rulesMap = {};
-        let ruleIds = [];
-
-        // Create declarative rules from content scripts
-        contentScripts.forEach((script) => {
-            script = Merge({
-                id: null,
-                conditions: [],
-                css: [],
-                js: []
-            }, script);
-
-            if(script.id === null) {
-                Log.warn('Ignoring invalid content script: %O (invalid/missing "id" property)', script);
-                return;
-            }
-
-            // Add prefix to identifier
-            script.id = this.id + '/' + script.id;
-
-            // Add rule identifier
-            if(ruleIds.indexOf(script.id) !== -1) {
-                Log.warn('Content script with identifier %o has already been defined', script.id);
-                return;
-            }
-
-            ruleIds.push(script.id);
-
-            // Build rule
-            if(!Array.isArray(script.conditions) || script.conditions.length < 1) {
-                Log.warn('Ignoring invalid content script: %O (invalid/missing "conditions" property)', script);
-                return;
-            }
-
-            let rule = {
-                id: script.id,
-
-                actions: [
-                    new RequestContentScript({
-                        css: script.css,
-                        js: script.js
-                    })
-                ],
-                conditions: script.conditions.map((condition) => {
-                    return new PageStateMatcher(condition);
-                })
-            };
-
-            // Store rule
-            rules.push(rule);
-            rulesMap[script.id] = rule;
-        });
-
-        return {
-            rules: rules,
-            rulesMap: rulesMap,
-
-            ruleIds: ruleIds
-        };
-    }
 
     // endregion
 }

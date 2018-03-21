@@ -52,7 +52,7 @@ export class PreferencesContext {
     get(key) {
         // Retrieve preference value from storage
         return this.bucket.get(key).then((value) => {
-            if(value === null) {
+            if(IsNil(value)) {
                 return this._preferences.getDefaultValue(this.key(key));
             }
 
@@ -63,7 +63,7 @@ export class PreferencesContext {
     getBoolean(key) {
         // Retrieve preference value from storage
         return this.bucket.getBoolean(key).then((value) => {
-            if(value === null) {
+            if(IsNil(value)) {
                 return this._preferences.getDefaultValue(this.key(key));
             }
 
@@ -74,7 +74,7 @@ export class PreferencesContext {
     getFloat(key) {
         // Retrieve preference value from storage
         return this.bucket.getFloat(key).then((value) => {
-            if(value === null) {
+            if(IsNil(value)) {
                 return this._preferences.getDefaultValue(this.key(key));
             }
 
@@ -85,7 +85,7 @@ export class PreferencesContext {
     getInteger(key) {
         // Retrieve preference value from storage
         return this.bucket.getInteger(key).then((value) => {
-            if(value === null) {
+            if(IsNil(value)) {
                 return this._preferences.getDefaultValue(this.key(key));
             }
 
@@ -96,7 +96,7 @@ export class PreferencesContext {
     getObject(key) {
         // Retrieve preference value from storage
         return this.bucket.getObject(key).then((value) => {
-            if(value === null) {
+            if(IsNil(value)) {
                 return this._preferences.getDefaultValue(this.key(key));
             }
 
@@ -107,7 +107,7 @@ export class PreferencesContext {
     getString(key) {
         // Retrieve preference value from storage
         return this.bucket.getString(key).then((value) => {
-            if(value === null) {
+            if(IsNil(value)) {
                 return this._preferences.getDefaultValue(this.key(key));
             }
 
