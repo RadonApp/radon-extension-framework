@@ -91,6 +91,7 @@ module.exports = function(config) {
                         test: /\.js$/,
                         include: [
                             fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
+                            fs.realpathSync(path.resolve(__dirname, 'node_modules/wes')),
                             fs.realpathSync(path.resolve('tests/'))
                         ],
 
