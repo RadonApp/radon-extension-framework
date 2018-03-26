@@ -10,7 +10,7 @@ export default class ItemDecoder {
         // Music
         [MediaTypes.Music.Artist]:  Artist,
         [MediaTypes.Music.Album]:   Album,
-        [MediaTypes.Music.Track]:   Track,
+        [MediaTypes.Music.Track]:   Track
     };
 
     static fromDocument(...args) {
