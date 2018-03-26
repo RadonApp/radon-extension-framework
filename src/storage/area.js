@@ -22,7 +22,9 @@ export default class StorageArea extends EventEmitter {
         }
 
         // Bind to changed event
-        Storage.onChanged.addListener(this._onChanged.bind(this));
+        if(Storage.$exists() && Storage.$has('onChanged')) {
+            Storage.onChanged.addListener(this._onChanged.bind(this));
+        }
     }
 
     context(name) {
@@ -32,6 +34,10 @@ export default class StorageArea extends EventEmitter {
     // region Public Methods
 
     get(keys) {
+        if(!this._area.$has('get')) {
+            return Promise.resolve(null);
+        }
+
         return this._area.get(keys);
     }
 
@@ -109,6 +115,10 @@ export default class StorageArea extends EventEmitter {
     }
 
     put(key, value) {
+        if(!this._area.$has('set')) {
+            return Promise.resolve();
+        }
+
         return this._area.set({
             [key]: value
         });
