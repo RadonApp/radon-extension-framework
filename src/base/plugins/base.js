@@ -1,7 +1,6 @@
 import IsNil from 'lodash-es/isNil';
 import Permissions from 'wes/permissions';
 
-import FrameworkPlugin from 'neon-extension-framework/core/plugin';
 import Log from 'neon-extension-framework/core/logger';
 import Messaging from 'neon-extension-framework/messaging';
 import Preferences from 'neon-extension-framework/preferences';
@@ -96,7 +95,7 @@ export default class Plugin {
 
     isContentScriptsRegistered() {
         // Check if content scripts have been registered
-        return FrameworkPlugin.messaging.service('contentScript').request('isRegistered', {
+        return Messaging.channel('neon-extension').service('contentScript').request('isRegistered', {
             pluginId: this.id,
             contentScripts: this.contentScripts
         });
@@ -107,7 +106,7 @@ export default class Plugin {
             Log.info('Registering content scripts', this.contentScripts);
 
             // Register content scripts
-            return FrameworkPlugin.messaging.service('contentScript').request('register', {
+            return Messaging.channel('neon-extension').service('contentScript').request('register', {
                 pluginId: this.id,
                 contentScripts: this.contentScripts
             });
@@ -118,7 +117,7 @@ export default class Plugin {
         Log.info('Removing content scripts', this.contentScripts);
 
         // Unregister content scripts
-        return FrameworkPlugin.messaging.service('contentScript').request('unregister', {
+        return Messaging.channel('neon-extension').service('contentScript').request('unregister', {
             pluginId: this.id,
             contentScripts: this.contentScripts
         });
