@@ -134,9 +134,7 @@ describe('Album', () => {
 
             expect(selectors[0]).toEqual({
                 'type': 'music/album',
-                'keys.test.id': '2',
-
-                'artist._id': '1'
+                'keys.test.id': '2'
             });
 
             expect(selectors[1]).toEqual({
@@ -157,30 +155,21 @@ describe('Album', () => {
                 artist
             }).createSelectors();
 
-            expect(selectors.length).toBe(4);
+            expect(selectors.length).toBe(3);
 
             expect(selectors[0]).toEqual({
                 'type': 'music/album',
-                'keys.test.id': '2',
-
-                'artist.keys.test.id': '1'
+                'keys.test.id': '2'
             });
 
             expect(selectors[1]).toEqual({
-                'type': 'music/album',
-                'keys.test.id': '2',
-
-                'artist.keys.item.slug': 'gorillaz'
-            });
-
-            expect(selectors[2]).toEqual({
                 'type': 'music/album',
                 'keys.item.slug': 'humanz',
 
                 'artist.keys.test.id': '1'
             });
 
-            expect(selectors[3]).toEqual({
+            expect(selectors[2]).toEqual({
                 'type': 'music/album',
                 'keys.item.slug': 'humanz',
 

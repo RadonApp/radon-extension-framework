@@ -254,15 +254,22 @@ export default class Item extends Model {
         // Create selectors
         let selectors = [];
 
-        // Add keys
-        let keys = Map(this._getOrderedKeys({ prefix: options.prefix }), (selector) => ({
+        // Add key selectors
+        selectors.push(...Map(this._getKeys({ prefix: options.prefix }), (selector) => ({
             ...base,
             ...selector
-        }));
+        })));
 
-        if(!IsNil(keys) && Object.keys(keys).length > 0) {
-            selectors.push(keys);
+        // Ensure slug exists
+        if(IsNil(this.slug)) {
+            return selectors;
         }
+
+
+        // Build fallback selectors
+        let fallback = [
+            [{...base, [`${options.prefix || ''}keys.item.slug`]: this.slug}]
+        ];
 
         // Add children
         ForEach(this.schema, (prop, key) => {
@@ -293,7 +300,7 @@ export default class Item extends Model {
 
             // Include selectors
             if(!IsNil(result) && result.length > 0) {
-                selectors.push(result);
+                fallback.push(result);
             } else if(required) {
                 throw new Error('No "' + (options.prefix || '') + key + '" keys available');
             } else {
@@ -301,10 +308,12 @@ export default class Item extends Model {
             }
         });
 
-        // Merge selectors
-        return Map(product(...selectors), (selectors) =>
+        // Add fallback selectors
+        selectors.push(...Map(product(...fallback), (selectors) =>
             Merge({}, ...selectors)
-        );
+        ));
+
+        return selectors;
     }
 
     inherit(item, options) {
@@ -659,7 +668,7 @@ export default class Item extends Model {
         return result;
     }
 
-    _getOrderedKeys(options) {
+    _getKeys(options) {
         options = {
             prefix: null,
 
@@ -667,7 +676,7 @@ export default class Item extends Model {
         };
 
         // Build array of sources
-        let sources = Without(Object.keys(this.keys), 'item').concat(['item']);
+        let sources = Without(Object.keys(this.keys), 'item');
 
         // Build array of keys
         return Reduce(sources, (result, source) =>
