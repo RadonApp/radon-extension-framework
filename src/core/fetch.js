@@ -20,11 +20,25 @@ function getFunction(resolve) {
     return value;
 }
 
-const _Headers = get(() => content.Headers) || Headers;
-const _Request = get(() => content.Request) || Request;
-const _Response = get(() => content.Response) || Response;
+const _Headers = (
+    get(() => content.Headers) ||
+    get(() => Headers)
+);
 
-const _fetch = getFunction(() => content.fetch) || fetch;
+const _Request = (
+    get(() => content.Request) ||
+    get(() => Request)
+);
+
+const _Response = (
+    get(() => content.Response) ||
+    get(() => Response)
+);
+
+const _fetch = (
+    getFunction(() => content.fetch) ||
+    getFunction(() => fetch)
+);
 
 export {
     _Headers as Headers,
