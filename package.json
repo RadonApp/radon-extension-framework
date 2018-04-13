@@ -17,10 +17,6 @@
     "type": "git",
     "url": "https://github.com/NeApp/neon-extension-framework"
   },
-  "scripts": {
-    "test": "karma start --single-run --browsers PhantomJS_D2",
-    "test-watch": "karma start --browsers PhantomJS_D2 --auto-watch"
-  },
   "dependencies": {
     "slugify": "1.2.6"
   },
@@ -63,5 +59,9 @@
     "lodash-es": "^4.16.1",
     "uuid": "^2.0.3",
     "wes": "^1.0.0"
+  },
+  "scripts": {
+    "test": "karma start --single-run --browsers PhantomJS_D2",
+    "test-watch": "karma start --browsers PhantomJS_D2 --auto-watch"
   }
 }
