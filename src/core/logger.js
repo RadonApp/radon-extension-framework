@@ -1,5 +1,6 @@
 /* eslint-disable no-console, no-multi-spaces, key-spacing */
 import IsNil from 'lodash-es/isNil';
+import IsString from 'lodash-es/isString';
 
 
 const Levels = {
@@ -22,12 +23,16 @@ const LevelKeys = {
 
 
 export class Logger {
-    constructor(getPreferenceContext) {
-        if(IsNil(getPreferenceContext)) {
-            throw new Error('Missing required "resolver" parameter');
+    constructor(pluginId) {
+        if(IsNil(pluginId)) {
+            throw new Error('Missing required "pluginId" parameter');
         }
 
-        this._getPreferenceContext = getPreferenceContext;
+        if(!IsString(pluginId)) {
+            throw new Error('Invalid value provided for the "pluginId" parameter (expected string)');
+        }
+
+        this._pluginId = pluginId;
 
         this._level = null;
         this._queue = [];
@@ -65,7 +70,11 @@ export class Logger {
 
     // region Static methods
 
-    static create(key, resolver) {
+    static create(pluginId, key = null) {
+        if(IsNil(key)) {
+            key = pluginId;
+        }
+
         // Ensure `window.neon.loggers` object exists
         if(IsNil(window.neon)) {
             window.neon = {};
@@ -77,7 +86,7 @@ export class Logger {
 
         // Construct logger (if not already defined)
         if(IsNil(window.neon.loggers[key])) {
-            window.neon.loggers[key] = new Logger(resolver);
+            window.neon.loggers[key] = new Logger(pluginId);
         }
 
         return window.neon.loggers[key];
@@ -114,23 +123,39 @@ export class Logger {
         }
 
         // Retrieve preference context
-        let context = this._getPreferenceContext(this.preferences);
+        let context = this.preferences.context('neon-extension:debugging:logging');
 
         if(IsNil(context) || !context.exists('log_level')) {
+            console.warn('Unable to retrieve preference context, defaulting to trace');
             this._setLevel(Levels.Trace);
             return;
         }
 
-        // Subscribe to log level changes
-        context.onChanged('log_level', ({value}) => {
-            this._setLevel(value);
-        });
+        let update = () => {
+            return context.getObject('log_level').then(
+                (value) => this._updateLevel(value)
+            );
+        };
 
-        // Retrieve current log level
-        context.getString('log_level').then(
-            (level) => this._setLevel(level),
-            () => retry()
+        // Subscribe to log level changes
+        context.onChanged('log_level', () =>
+            update()
         );
+
+        // Set initial log level
+        update().catch(() => retry());
+    }
+
+    _updateLevel({levels, mode}) {
+        if(mode === 'advanced' && IsNil(levels[this._pluginId])) {
+            console.warn(`Unknown plugin "${this._pluginId}", defaulting to trace`);
+
+            // Default to trace logging
+            return this._setLevel(Levels.Trace);
+        }
+
+        // Update log level
+        return this._setLevel(levels[this._pluginId] || levels[null]);
     }
 
     _setLevel(key) {
@@ -221,6 +246,4 @@ export class Logger {
 }
 
 // Construct core/framework logger
-export default Logger.create('neon-extension', (preferences) =>
-    preferences.context('neon-extension:general:debugging')
-);
+export default Logger.create('neon-extension');
