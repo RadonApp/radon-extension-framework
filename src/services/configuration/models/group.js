@@ -28,6 +28,26 @@ export default class Group extends Model {
         return this.parent.id + ':' + this.name;
     }
 
+    get key() {
+        if(IsNil(this.parent)) {
+            throw new Error('Option hasn\'t been bound');
+        }
+
+        if(IsNil(this.parent.key)) {
+            return this.name;
+        }
+
+        return this.parent.key + '.' + this.name;
+    }
+
+    get namespace() {
+        if(IsNil(this.parent)) {
+            throw new Error('Option hasn\'t been bound');
+        }
+
+        return this.parent.namespace;
+    }
+
     get preferences() {
         if(IsNil(this.parent)) {
             throw new Error('Option hasn\'t been bound');

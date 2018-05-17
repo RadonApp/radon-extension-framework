@@ -32,6 +32,10 @@ export default class Plugin {
         throw new Error('Use the Plugin.isEnabled() method instead');
     }
 
+    get namespace() {
+        return `${this.id}/common`;
+    }
+
     get title() {
         if(this.manifest === null || IsNil(this.manifest.title)) {
             return this.id.replace('neon-extension-', '');

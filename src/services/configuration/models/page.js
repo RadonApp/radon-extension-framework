@@ -26,6 +26,18 @@ export default class Page extends Model {
         return this.plugin.id + ':' + this.name;
     }
 
+    get key() {
+        return null;
+    }
+
+    get namespace() {
+        if(!IsNil(this.name)) {
+            return `${this.plugin.id}/configuration/${this.name}`;
+        }
+
+        return `${this.plugin.id}/configuration`;
+    }
+
     get preferences() {
         if(IsNil(this.name)) {
             return this.plugin.preferences;
