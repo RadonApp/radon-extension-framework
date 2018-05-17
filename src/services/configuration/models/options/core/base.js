@@ -5,10 +5,8 @@ import {getProperty} from './helpers';
 
 
 export class Option extends Model {
-    constructor(plugin, type, name, label, options) {
+    constructor(plugin, type, name, options) {
         super(plugin, type, name);
-
-        this.label = label;
 
         this.parent = null;
 
@@ -94,7 +92,7 @@ export class Option extends Model {
 }
 
 export class PluginOption extends Option {
-    constructor(plugin, type, key, label, options) {
-        super(plugin, plugin.id + ':' + type, key, label, options);
+    constructor(plugin, type, key, options) {
+        super(plugin, plugin.id + ':' + type, key, options);
     }
 }

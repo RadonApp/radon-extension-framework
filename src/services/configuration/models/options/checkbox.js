@@ -2,8 +2,8 @@ import {Option} from './core/base';
 
 
 export default class CheckboxOption extends Option {
-    constructor(plugin, name, label, options) {
-        super(plugin, 'checkbox', name, label, options);
+    constructor(plugin, name, options) {
+        super(plugin, 'checkbox', name, options);
     }
 
     isChecked() {

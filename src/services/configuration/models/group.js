@@ -5,10 +5,9 @@ import Model from './base';
 
 
 export default class Group extends Model {
-    constructor(plugin, name, title, children, options) {
+    constructor(plugin, name, children, options) {
         super(plugin, 'group', name);
 
-        this.title = title;
         this.children = children;
 
         this.parent = null;

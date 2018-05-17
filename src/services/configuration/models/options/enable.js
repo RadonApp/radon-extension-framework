@@ -5,8 +5,8 @@ import {getProperty} from './core/helpers';
 
 
 export default class EnableOption extends Option {
-    constructor(plugin, name, label, options) {
-        super(plugin, 'enable', name, label, options);
+    constructor(plugin, name, options) {
+        super(plugin, 'enable', name, options);
     }
 
     isEnabled() {

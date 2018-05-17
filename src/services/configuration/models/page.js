@@ -5,10 +5,9 @@ import Model from './base';
 
 
 export default class Page extends Model {
-    constructor(plugin, name, title, children, options) {
+    constructor(plugin, name, children, options) {
         super(plugin, 'page', name);
 
-        this.title = title;
         this.children = children;
 
         // Parse options

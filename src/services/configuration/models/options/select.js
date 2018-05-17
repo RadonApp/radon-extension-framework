@@ -2,8 +2,8 @@ import {Option} from './core/base';
 
 
 export default class SelectOption extends Option {
-    constructor(plugin, name, label, choices, options) {
-        super(plugin, 'select', name, label, options);
+    constructor(plugin, name, choices, options) {
+        super(plugin, 'select', name, options);
 
         this.options.choices = choices;
     }
