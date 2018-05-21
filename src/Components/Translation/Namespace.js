@@ -162,18 +162,6 @@ export default class TranslationNamespace extends Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return (
-            // Properties
-            !IsEqual(this.props.ns, nextProps.ns) ||
-
-            // State
-            !IsEqual(this.state.namespaces, nextState.namespaces) ||
-            this.state.i18nLoadedAt !== nextState.i18nLoadedAt ||
-            this.state.ready !== nextState.ready
-        );
-    }
-
     loadNamespaces(namespaces, done = null) {
         // Load namespaces with i18n
         this.i18n.loadNamespaces(namespaces, () => {
