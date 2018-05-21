@@ -1,5 +1,9 @@
+import i18n from 'i18next';
 import IsNil from 'lodash-es/isNil';
+import Map from 'lodash-es/map';
+import Merge from 'lodash-es/merge';
 import Permissions from 'wes/permissions';
+import XHR from 'i18next-xhr-backend';
 
 import Log from 'neon-extension-framework/core/logger';
 import Messaging from 'neon-extension-framework/messaging';
@@ -68,6 +72,44 @@ export default class Plugin {
     // endregion
 
     // region Public methods
+
+    createI18n(namespaces = null, options = null) {
+        namespaces = Map(namespaces || [], (ns) =>
+            `${this.id}/${ns}`
+        );
+
+        return new Promise((resolve, reject) => {
+            i18n.use(XHR).init(Merge({
+                debug: true,
+                fallbackLng: 'en',
+
+                ns: [
+                    ...namespaces,
+
+                    `${this.id}/common`,
+                    'neon-extension/common'
+                ],
+
+                defaultNS: namespaces[0],
+
+                backend: {
+                    allowMultiLoading: false,
+                    loadPath: '/locales/{{lng}}/{{ns}}.json'
+                },
+
+                interpolation: {
+                    escapeValue: false
+                }
+            }, options || {}), (err, t) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(t);
+            });
+        });
+    }
 
     isEnabled() {
         if(!this.preferences.exists('enabled')) {
