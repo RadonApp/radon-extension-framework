@@ -1,0 +1,28 @@
+.PageHeader {
+  padding: 0 30px;
+
+  background-color: #F5F5F5;
+  border-bottom: 1px solid #D8D8D8;
+}
+
+.PageHeader-title {
+  padding: 16px 0 16px 8px;
+
+  h3 {
+    margin: 0;
+
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.PageHeader-option {
+  padding: 18px 6px 18px 0;
+
+  .switch {
+    height: 24px;
+
+    margin: 0;
+    padding: 0;
+  }
+}
