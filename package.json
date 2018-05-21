@@ -57,6 +57,8 @@
   "peerDependencies": {
     "eventemitter3": "^2.0.0",
     "lodash-es": "^4.16.1",
+    "prop-types": "^15.5.10",
+    "react-i18next": "^7.6.1",
     "uuid": "^2.0.3",
     "wes": "^1.0.0"
   },
