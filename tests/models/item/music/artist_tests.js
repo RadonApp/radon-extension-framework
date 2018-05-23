@@ -1,4 +1,4 @@
-import Artist from 'neon-extension-framework/models/item/music/artist';
+import Artist from 'neon-extension-framework/Models/Metadata/Music/Artist';
 
 
 describe('Artist', () => {

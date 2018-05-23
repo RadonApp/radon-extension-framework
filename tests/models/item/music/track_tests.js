@@ -1,5 +1,5 @@
-import ItemDecoder from 'neon-extension-framework/models/item/core/decoder';
-import {Artist, Album, Track} from 'neon-extension-framework/models/item/music';
+import ItemDecoder from 'neon-extension-framework/Models/Metadata/Core/Decoder';
+import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
 
 
 describe('Track', () => {
