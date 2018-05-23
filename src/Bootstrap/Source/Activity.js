@@ -1,4 +1,4 @@
-import Log from 'neon-extension-core/Core/Logger';
+import Log from 'neon-extension-framework/Core/Logger';
 import Registry from 'neon-extension-framework/Core/Registry';
 
 
