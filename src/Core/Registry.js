@@ -4,6 +4,7 @@ import IsString from 'lodash-es/isString';
 import Log from 'neon-extension-framework/Core/Logger';
 import Preferences from 'neon-extension-framework/Preferences';
 import {Page} from 'neon-extension-framework/Models/Configuration';
+import {Services, ServiceIds} from 'neon-extension-framework/Core/Constants';
 
 
 export const OptionTypes = [
@@ -91,6 +92,11 @@ export class Registry {
 
         options = options || {};
         options.disabled = !IsNil(options.disabled) ? options.disabled : false;
+
+        // Ensure service exists
+        if(ServiceIds.indexOf(type) < 0) {
+            throw new Error(`Unknown service: ${type}`);
+        }
 
         // Retrieve collection
         let services;
@@ -186,6 +192,12 @@ export class Registry {
             return false;
         }
 
+        // Ensure service exists
+        if(ServiceIds.indexOf(service.type) < 0) {
+            Log.error('Unknown service: %o', service.type);
+            return false;
+        }
+
         // Register service
         this.services[service.id] = service;
         this.servicesByType[service.type][service.id] = service;
@@ -194,7 +206,7 @@ export class Registry {
 
         // Service registration tasks
         try {
-            if(service.type === 'configuration') {
+            if(service.type === Services.Configuration) {
                 this.registerConfigurationService(service);
             }
         } catch(e) {

@@ -1,11 +1,12 @@
 import Log from 'neon-extension-framework/Core/Logger';
+import {Services} from 'neon-extension-framework/Core/Constants';
 
 import Service from '../Core/Base';
 
 
 export default class ScrobbleService extends Service {
     constructor(plugin, accepts) {
-        super(plugin, 'scrobble', 'destination/scrobble');
+        super(plugin, 'scrobble', Services.Destination.Scrobble);
 
         this.accepts = accepts;
     }

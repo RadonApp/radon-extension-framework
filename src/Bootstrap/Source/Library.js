@@ -1,15 +1,16 @@
 import Log from 'neon-extension-framework/Core/Logger';
 import Registry from 'neon-extension-framework/Core/Registry';
+import {Services} from 'neon-extension-framework/Core/Constants';
 
 
 function initialize() {
-    if(typeof Registry.servicesByType['source/library'] === 'undefined') {
+    if(typeof Registry.servicesByType[Services.Source.Library] === 'undefined') {
         Log.error('No "library" service available');
         return;
     }
 
     // Retrieve registered service identifiers
-    let serviceIds = Object.keys(Registry.servicesByType['source/library']);
+    let serviceIds = Object.keys(Registry.servicesByType[Services.Source.Library]);
 
     // Ensure only one service is defined
     if(serviceIds.length !== 1) {
@@ -18,7 +19,7 @@ function initialize() {
     }
 
     // Retrieve service
-    let service = Registry.servicesByType['source/library'][serviceIds[0]];
+    let service = Registry.servicesByType[Services.Source.Library][serviceIds[0]];
 
     // Ensure service hasn't already been initialized
     if(service.initialized) {
