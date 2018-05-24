@@ -61,11 +61,17 @@ export default class ActivityEngine {
         emitter.on('stopped',   this.stop.bind(this));
     }
 
-    create(item) {
+    create(item, options) {
+        options = {
+            force: false,
+
+            ...(options || {})
+        };
+
         Log.trace('Creating session (item: %o)', item);
 
         // Check if session has already been created
-        if(!IsNil(this._currentSession) && this._currentSession.item.matches(item)) {
+        if(!IsNil(this._currentSession) && this._currentSession.item.matches(item) && !options.force) {
             Log.debug('Session already exists for %o, triggering start action instead', item);
             return this.start();
         }
@@ -284,6 +290,19 @@ export default class ActivityEngine {
         // Detect current activity state (based on changes in watched time)
         let state = this._detectState(time);
 
+        // Calculate delta
+        let { delta, deltaPercent } = this._calculateDelta(time);
+
+        // Create new session when the item is repeated
+        if(deltaPercent < -90) {
+            return this.create(this._currentSession.item, { force: true });
+        }
+
+        // Create seek events
+        if(Math.abs(delta) > 15 * 1000) {
+            this.seek(time);
+        }
+
         // Update session
         this._currentSession.time = time;
 
@@ -345,9 +364,12 @@ export default class ActivityEngine {
         }
 
         // Trigger start action if the session hasn't been started yet
-        if(this._currentSession !== SessionState.playing) {
+        if(this._currentSession.state !== SessionState.playing) {
             return this.start();
         }
+
+        // Update session
+        this._currentSession.time = time;
 
         // Emit "seeked" event (if session is valid)
         if(this._currentSession.valid) {
@@ -497,6 +519,20 @@ export default class ActivityEngine {
     // endregion
 
     // region Private methods
+
+    _calculateDelta(time) {
+        if(this._currentSession.state !== SessionState.playing) {
+            return { delta: 0, deltaPercent: 0 };
+        }
+
+        let duration = this._currentSession.item.duration;
+
+        // Calculate delta
+        return {
+            delta: time - this._currentSession.time,
+            deltaPercent: ((time / duration) - (this._currentSession.time / duration)) * 100
+        };
+    }
 
     _cancelPause() {
         if(IsNil(this._pauseTimeout)) {
