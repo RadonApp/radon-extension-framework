@@ -80,7 +80,7 @@ export default class Plugin {
 
         return new Promise((resolve, reject) => {
             i18n.use(XHR).init(Merge({
-                debug: true,
+                debug: process.env['NODE_ENV'] === 'development',
                 fallbackLng: 'en',
 
                 ns: [
