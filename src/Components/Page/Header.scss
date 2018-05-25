@@ -5,8 +5,12 @@
   border-bottom: 1px solid #D8D8D8;
 }
 
+.PageHeader > .row {
+  max-width: 64rem;
+}
+
 .PageHeader-title {
-  padding: 16px 0 16px 8px;
+  padding: 1rem 2rem;
 
   h3 {
     margin: 0;
@@ -17,7 +21,7 @@
 }
 
 .PageHeader-option {
-  padding: 18px 6px 18px 0;
+  padding: 18px 2rem 18px 0;
 
   .switch {
     height: 24px;
