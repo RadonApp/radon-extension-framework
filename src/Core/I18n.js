@@ -55,6 +55,11 @@ export default class I18nManager {
     }
 
     createFormatters(lng = 'en') {
+        if(IsNil(window.Intl)) {
+            this.formatters = {};
+            return;
+        }
+
         // Create formatters for `lng`
         this.formatters = {
             decimal: window.Intl.NumberFormat(lng, {})
