@@ -4,6 +4,7 @@ import IsNil from 'lodash-es/isNil';
 import {MediaTypes} from 'neon-extension-framework/Core/Enums';
 
 import {Artist, Album, Track} from '../Music';
+import {Movie, Show, Season, Episode} from '../Video';
 
 
 export default class ItemDecoder {
@@ -11,7 +12,13 @@ export default class ItemDecoder {
         // Music
         [MediaTypes.Music.Artist]:  Artist,
         [MediaTypes.Music.Album]:   Album,
-        [MediaTypes.Music.Track]:   Track
+        [MediaTypes.Music.Track]:   Track,
+
+        // Video
+        [MediaTypes.Video.Movie]:   Movie,
+        [MediaTypes.Video.Show]:    Show,
+        [MediaTypes.Video.Season]:  Season,
+        [MediaTypes.Video.Episode]: Episode
     };
 
     static fromDocument(...args) {
