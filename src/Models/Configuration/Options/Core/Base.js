@@ -1,4 +1,5 @@
 import IsNil from 'lodash-es/isNil';
+import IsPlainObject from 'lodash-es/isPlainObject';
 
 import Model from 'neon-extension-framework/Models/Configuration/Core/Base';
 
@@ -8,6 +9,10 @@ import {getProperty} from './Helpers';
 export class Option extends Model {
     constructor(plugin, type, name, options) {
         super(plugin, type, name);
+
+        if(!IsNil(options) && !IsPlainObject(options)) {
+            throw new Error('Invalid value provided for the "options" parameter (expected an object)');
+        }
 
         this.parent = null;
 

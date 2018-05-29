@@ -1,5 +1,6 @@
 import ForEach from 'lodash-es/forEach';
 import IsNil from 'lodash-es/isNil';
+import IsPlainObject from 'lodash-es/isPlainObject';
 
 import Model from './Core/Base';
 
@@ -7,6 +8,14 @@ import Model from './Core/Base';
 export default class Page extends Model {
     constructor(plugin, name, children, options) {
         super(plugin, 'page', name);
+
+        if(IsNil(children) || !Array.isArray(children)) {
+            throw new Error('Invalid value provided for the "children" parameter (expected an array)');
+        }
+
+        if(!IsNil(options) && !IsPlainObject(options)) {
+            throw new Error('Invalid value provided for the "options" parameter (expected an object)');
+        }
 
         this.children = children;
 
