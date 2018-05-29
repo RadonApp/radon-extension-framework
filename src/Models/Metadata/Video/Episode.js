@@ -131,7 +131,7 @@ export default class Episode extends Item {
     createSelectors(options) {
         return super.createSelectors({
             children: {
-                'season': true
+                'season': false
             },
 
             ...(options || {})
