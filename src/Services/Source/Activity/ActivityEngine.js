@@ -78,7 +78,12 @@ export default class ActivityEngine {
                 Log.debug('Session already exists for %o, triggering start action instead', item);
 
                 // Trigger start action
-                return this.start();
+                if(this._currentSession.progress >= 1) {
+                    return this.start();
+                }
+
+                // Ignore event
+                return false;
             }
 
             if(active) {
