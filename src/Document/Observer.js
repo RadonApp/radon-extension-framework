@@ -21,8 +21,15 @@ class NodeObserver extends EventEmitter {
     constructor(options) {
         super();
 
+        this.attributes = new EventEmitter();
+
         // Parse options
-        options = options || {};
+        this.options = {
+            attributes: [],
+            text: false,
+
+            ...(options || {})
+        };
 
         this.parent = DefaultTo(options.parent, null);
         this.path = DefaultTo(options.path, null);
@@ -32,8 +39,6 @@ class NodeObserver extends EventEmitter {
 
         this.head = DefaultTo(options.head, false);
         this.tail = DefaultTo(options.tail, false);
-
-        this.text = DefaultTo(options.text, false);
 
         this._initialNodes = DefaultTo(options.nodes, []);
 
@@ -126,34 +131,30 @@ class NodeObserver extends EventEmitter {
     observe(node, observer = null) {
         observer = observer || this.observer;
 
-        // Observe children additions/removals
-        this._observe(observer, node, { childList: true }, observer);
+        // Build mutations object
+        let mutations = { childList: true };
+
+        if(this.options.text) {
+            mutations.characterData = true;
+            mutations.subtree = true;
+        }
+
+        if(this.options.attributes && this.options.attributes.length > 0) {
+            mutations.attributeFilter = this.options.attributes;
+        }
+
+        // Observe node
+        this._observe(observer, node, mutations);
 
         // Observe document loaded
         if(node === document) {
             document.addEventListener('DOMContentLoaded', this._onDocumentLoaded.bind(this));
         }
-
-        // Observe text nodes
-        if(this.text) {
-            ForEach(Array.from(node.childNodes), (node) => {
-                // Observe character changes
-                this._observe(observer, node, { characterData: true }, observer);
-            });
-        }
     }
 
     unobserve(node) {
-        // Observe children additions/removals
+        // Un-observe node
         this._unobserve(node);
-
-        // Observe text nodes
-        if(this.text) {
-            ForEach(Array.from(node.childNodes), (node) => {
-                // Observe character changes
-                this._unobserve(node);
-            });
-        }
     }
 
     add(node) {
@@ -173,10 +174,8 @@ class NodeObserver extends EventEmitter {
         });
 
         // Emit events
-        let event = new Event('added', this, node);
-
-        this.emit('added', event);
-        this.emit('mutation', event);
+        this.emit('added', new Event('added', this, node));
+        this.emit('mutation', new Event('mutation', this, node));
     }
 
     remove(node) {
@@ -196,10 +195,8 @@ class NodeObserver extends EventEmitter {
         });
 
         // Emit events
-        let event = new Event('removed', this, node);
-
-        this.emit('removed', event);
-        this.emit('mutation', event);
+        this.emit('removed', new Event('removed', this, node));
+        this.emit('mutation', new Event('mutation', this, node));
     }
 
     all(selector = null) {
@@ -252,6 +249,12 @@ class NodeObserver extends EventEmitter {
         return null;
     }
 
+    onAttributeChanged(type, callback) {
+        this.attributes.on(type, callback);
+
+        return this;
+    }
+
     // region Event Handlers
 
     _onDocumentLoaded() {
@@ -266,19 +269,30 @@ class NodeObserver extends EventEmitter {
     _onMutations(mutations) {
         // Process mutations
         ForEach(mutations, (mutation) => {
-            if(mutation.type === 'characterData') {
+            // Emit "mutation" event
+            this.emit('mutation', new Event('mutation', this, mutation.target));
+
+            // Process mutation
+            if(mutation.type === 'attributes') {
+                this._onAttributes(mutation);
+            } else if(mutation.type === 'characterData') {
                 this._onCharacterData(mutation);
             } else if(mutation.type === 'childList') {
                 this._onChildList(mutation);
+            } else {
+                Log.warn('[%s] Unknown mutation: %o', this.path, mutation);
             }
         });
     }
 
-    _onCharacterData(mutation) {
-        let event = new Event('changed', this, mutation.target);
+    _onAttributes(mutation) {
+        // Emit "changed" event
+        this.attributes.emit(mutation.attributeName, new Event('changed', this, mutation.target));
+    }
 
-        this.emit('changed', event);
-        this.emit('mutation', event);
+    _onCharacterData(mutation) {
+        // Emit "changed" event
+        this.emit('changed', new Event('changed', this, mutation.target));
     }
 
     _onChildList(mutation) {
@@ -368,6 +382,12 @@ class NodeObserver extends EventEmitter {
 
 export default class DocumentObserver {
     static observe(root, selector, options) {
+        options = {
+            start: true,
+
+            ...(options || {})
+        };
+
         // Ensure `root` is a node observer
         if(!(root instanceof NodeObserver)) {
             root = new NodeObserver({
@@ -411,6 +431,10 @@ export default class DocumentObserver {
             current = record;
         });
 
-        return current.start();
+        if(options.start) {
+            return current.start();
+        }
+
+        return current;
     }
 }
