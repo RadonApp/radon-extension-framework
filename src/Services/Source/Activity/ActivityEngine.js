@@ -70,16 +70,23 @@ export default class ActivityEngine {
 
         Log.trace('Creating session (item: %o)', item);
 
-        // Check if session has already been created
-        if(!IsNil(this._currentSession) && this._currentSession.item.matches(item) && !options.force) {
-            Log.debug('Session already exists for %o, triggering start action instead', item);
-            return this.start();
-        }
+        if(!IsNil(this._currentSession) && this._currentSession.valid) {
+            let active = this._currentSession.state !== SessionState.ended;
 
-        // Stop existing session
-        if(!IsNil(this._currentSession)) {
-            Log.debug('Stopping existing session: %o', this._currentSession);
-            this.stop();
+            // Check if session has already been created
+            if(this._currentSession.item.matches(item) && active && !options.force) {
+                Log.debug('Session already exists for %o, triggering start action instead', item);
+
+                // Trigger start action
+                return this.start();
+            }
+
+            if(active) {
+                Log.debug('Stopping existing session: %o', this._currentSession);
+
+                // Trigger stop action
+                this.stop();
+            }
         }
 
         // Ignore special episodes (and bonus content)
@@ -142,17 +149,10 @@ export default class ActivityEngine {
     }
 
     load(item) {
-        // Reset state if the current session isn't valid
-        if(this._currentSession && !this._currentSession.valid) {
-            this._currentSession = null;
-        }
+        Log.trace('Player loaded (item: %o)', item);
 
-        // Ensure session has been created
-        if(IsNil(this._currentSession)) {
-            return this.create(item);
-        }
-
-        return false;
+        // Trigger create action
+        return this.create(item);
     }
 
     // region Player
@@ -160,20 +160,8 @@ export default class ActivityEngine {
     open(item) {
         Log.trace('Player opened (item: %o)', item);
 
-        // Ignore stop action if there is currently no active session
-        if(IsNil(this._currentSession) || IsNil(this._currentSession.item)) {
-            Log.trace('No active session, ignoring open action');
-            return false;
-        }
-
-        // Ignore stop action if the item matches the current session
-        if(this._currentSession.valid && this._currentSession.item.matches(item)) {
-            Log.debug('Session item matches, ignoring open action');
-            return false;
-        }
-
-        // Trigger stop action
-        return this.stop();
+        // Trigger create action
+        return this.create(item);
     }
 
     close(item) {
@@ -225,7 +213,8 @@ export default class ActivityEngine {
                 return this.error('Unable to calculate session progress, no duration defined');
             }
 
-            return this.error('Unable to calculate session progress');
+            Log.debug('Session has no progress yet');
+            return false;
         }
 
         // Switch back to previous stalled state
