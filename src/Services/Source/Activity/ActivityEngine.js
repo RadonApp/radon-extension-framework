@@ -357,6 +357,13 @@ export default class ActivityEngine {
             return false;
         }
 
+        // Calculate delta
+        let { delta } = this._calculateDelta(time);
+
+        if(Math.abs(delta) <= 15 * 1000) {
+            return false;
+        }
+
         // Trigger start action if the session hasn't been started yet
         if(this._currentSession.state !== SessionState.playing) {
             return this.start();
