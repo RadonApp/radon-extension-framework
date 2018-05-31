@@ -1,4 +1,5 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import Debounce from 'lodash-es/debounce';
 import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
@@ -11,6 +12,9 @@ import Session, {SessionState} from 'neon-extension-framework/Models/Session';
 export default class ActivityEngine {
     constructor(plugin, options) {
         this.plugin = plugin;
+
+        // Create debounced create function
+        this.create = Debounce(this._create, 500);
 
         // Create activity messaging service
         this.messaging = Plugin.messaging.service('scrobble');
@@ -61,7 +65,7 @@ export default class ActivityEngine {
         emitter.on('stopped',   this.stop.bind(this));
     }
 
-    create(item, options) {
+    _create(item, options) {
         options = {
             force: false,
 
