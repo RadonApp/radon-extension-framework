@@ -5,6 +5,7 @@ before_install:
 - npm install coveralls
 script:
 - npm run test
+- npm run lint
 after_success:
 - cat ./Build/Coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 deploy:
