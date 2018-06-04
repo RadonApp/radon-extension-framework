@@ -3,6 +3,8 @@ node_js:
 - '7'
 install:
 - npm install
+- npm dedupe
+- npm ls
 - npm install coveralls
 script:
 - npm run test
