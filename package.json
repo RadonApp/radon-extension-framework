@@ -18,7 +18,15 @@
     "url": "https://github.com/NeApp/neon-extension-framework"
   },
   "dependencies": {
-    "slugify": "1.2.6"
+    "eventemitter3": "2.0.0",
+    "i18next": "11.3.1",
+    "i18next-xhr-backend": "1.5.1",
+    "lodash-es": "4.16.1",
+    "prop-types": "15.5.10",
+    "react-i18next": "7.6.1",
+    "slugify": "1.2.6",
+    "uuid": "2.0.3",
+    "wes": "1.0.0"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.32",
@@ -37,10 +45,7 @@
     "eslint-plugin-babel": "^4.1.2",
     "eslint-plugin-jasmine": "^2.10.1",
     "eslint-plugin-react": "^6.3.0",
-    "eventemitter3": "2.0.0",
     "file-loader": "^1.0.0",
-    "i18next": "11.3.1",
-    "i18next-xhr-backend": "1.5.1",
     "jasmine": "^2.8.0",
     "jasmine-promises": "^0.4.1",
     "karma": "^1.7.1",
@@ -52,24 +57,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-spec-reporter": "0.0.31",
     "karma-webpack": "^2.0.6",
-    "lodash-es": "4.16.1",
-    "prop-types": "15.5.10",
-    "react": "15.3.0",
-    "react-dom": "15.3.0",
-    "react-i18next": "7.6.1",
-    "uuid": "2.0.3",
-    "webpack": "^3.8.1",
-    "wes": "1.0.0"
-  },
-  "peerDependencies": {
-    "eventemitter3": "^2.0.0",
-    "i18next": "^11.3.1",
-    "i18next-xhr-backend": "^1.5.1",
-    "lodash-es": "^4.16.1",
-    "prop-types": "^15.5.10",
-    "react-i18next": "^7.6.1",
-    "uuid": "^2.0.3",
-    "wes": "^1.0.0"
+    "webpack": "^3.8.1"
   },
   "scripts": {
     "lint": "eslint .",
