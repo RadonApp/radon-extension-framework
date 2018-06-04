@@ -103,7 +103,11 @@ module.exports = function(config) {
 
             resolve: {
                 alias: {
-                    'neon-extension-framework': fs.realpathSync(__dirname)
+                    'neon-extension-framework': fs.realpathSync(__dirname),
+
+                    // Dependencies
+                    'lodash': 'lodash-es',
+                    'lodash-amd': 'lodash-es'
                 },
 
                 modules: [
