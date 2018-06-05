@@ -67,6 +67,14 @@ export default class Plugin {
         };
     }
 
+    get version() {
+        if(IsNil(this.manifest)) {
+            return null;
+        }
+
+        return this.manifest.version;
+    }
+
     // endregion
 
     // region Public methods
