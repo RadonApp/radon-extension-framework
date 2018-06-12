@@ -92,7 +92,12 @@ module.exports = function(config) {
                         ],
 
                         use: {
-                            loader: 'babel-loader'
+                            loader: 'babel-loader',
+                            options: {
+                                babelrc: true,
+                                extends: path.join(`${__dirname}/.babelrc`),
+                                cacheDirectory: true
+                            }
                         }
                     },
                     {
