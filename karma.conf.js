@@ -17,6 +17,7 @@ module.exports = function(config) {
         frameworks: ['jasmine'],
 
         browserNoActivityTimeout: 100 * 1000,
+        failOnEmptyTestSuite: false,
 
         files: [
             'node_modules/@babel/polyfill/dist/polyfill.js',
@@ -42,6 +43,7 @@ module.exports = function(config) {
 
             reporters: [
                 { type: 'html', subdir: '.', includeAllSources: true },
+                { type: 'json', subdir: '.', includeAllSources: true },
                 { type: 'lcovonly', subdir: '.', includeAllSources: true }
             ]
         },
