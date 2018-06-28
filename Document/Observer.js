@@ -160,6 +160,9 @@ class NodeObserver extends EventEmitter {
     add(node) {
         if(this.nodes.indexOf(node) >= 0) {
             Log.debug('[%s] Duplicate node addition for:', this.path, node);
+
+            // Emit "mutation" event
+            this.emit('mutation', new Event('mutation', this, node));
             return;
         }
 
@@ -181,6 +184,9 @@ class NodeObserver extends EventEmitter {
     remove(node) {
         if(this.nodes.indexOf(node) < 0) {
             Log.debug('[%s] Duplicate node removal for:', this.path, node);
+
+            // Emit "mutation" event
+            this.emit('mutation', new Event('mutation', this, node));
             return;
         }
 
