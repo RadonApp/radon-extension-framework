@@ -8,6 +8,7 @@ export default class Property {
 
         deferred: false,
         identifier: false,
+        match: false,
         required: false,
 
         // Handlers

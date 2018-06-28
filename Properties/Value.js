@@ -19,14 +19,18 @@ export default class ValueProperty extends Property {
         // TODO Validate `value`
 
         // Change Handler
-        if(!IsNil(target[key])) {
-            if(this.options.change === false) {
-                return false;
+        if(!IsNil(target[key]) && !this.shouldChangeValue(target[key], value)) {
+            if(this.options.match) {
+                let message = `${key}: ${JSON.stringify(value)} doesn't match ${JSON.stringify(target[key])}`;
+
+                if(!IsNil(options.item)) {
+                    throw new Error(`${options.item.constructor.name}.${message}`);
+                }
+
+                throw new Error(message);
             }
 
-            if(IsFunction(this.options.change) && !this.options.change(target[key], value)) {
-                return false;
-            }
+            return false;
         }
 
         // Update value
@@ -65,6 +69,18 @@ export default class ValueProperty extends Property {
 
     isEqual(a, b) {
         return a === b;
+    }
+
+    shouldChangeValue(current, value) {
+        if(this.options.change === false) {
+            return false;
+        }
+
+        if(IsFunction(this.options.change) && !this.options.change(current, value)) {
+            return false;
+        }
+
+        return true;
     }
 
     shouldCopyValue(value, options) {
