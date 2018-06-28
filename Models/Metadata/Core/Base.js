@@ -98,7 +98,10 @@ export default class Item extends Model {
         ...Model.Schema,
 
         keys: new Model.Properties.Index({
-            identifier: true
+            change: false,
+            identifier: true,
+
+            match: (source) => source !== 'item'
         }),
 
         // Timestamps
