@@ -14,7 +14,8 @@ export class EpisodeCommon extends Common {
         }),
 
         number: new Item.Properties.Integer({
-            change: false
+            change: false,
+            match: true
         }),
 
         duration: new Item.Properties.Integer({

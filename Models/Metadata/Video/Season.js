@@ -12,7 +12,8 @@ export class SeasonCommon extends Common {
         }),
 
         number: new Item.Properties.Integer({
-            change: false
+            change: false,
+            match: true
         }),
 
         year: new Item.Properties.Integer({
