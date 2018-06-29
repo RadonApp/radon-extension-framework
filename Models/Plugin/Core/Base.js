@@ -56,6 +56,14 @@ export default class Plugin {
         return this.manifest['content_scripts'] || [];
     }
 
+    get name() {
+        if(IsNil(this.manifest)) {
+            return null;
+        }
+
+        return this.manifest.name;
+    }
+
     get permissions() {
         if(this.manifest === null) {
             return [];
@@ -67,12 +75,32 @@ export default class Plugin {
         };
     }
 
+    get repository() {
+        if(IsNil(this.manifest)) {
+            return null;
+        }
+
+        return this.manifest.repository;
+    }
+
     get version() {
         if(IsNil(this.manifest)) {
             return null;
         }
 
         return this.manifest.version;
+    }
+
+    get versionName() {
+        if(IsNil(this.manifest)) {
+            return null;
+        }
+
+        if(IsNil(this.manifest.versionName)) {
+            return this.version;
+        }
+
+        return this.manifest.versionName;
     }
 
     // endregion
