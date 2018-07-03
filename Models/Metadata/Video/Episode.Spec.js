@@ -39,7 +39,6 @@ describe('Episode', () => {
             createdAt: 1000,
             updatedAt: 2000,
 
-            show,
             season
         });
 
