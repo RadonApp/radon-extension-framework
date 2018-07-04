@@ -431,6 +431,35 @@ export default class Item extends Model {
         return new this.constructor.Metadata(this, source);
     }
 
+    replace(data, options = null) {
+        options = {
+            format: 'document',
+
+            ...(options || {})
+        };
+
+        // Reset item
+        this._metadata = {};
+        this._values = {};
+
+        // Update metadata
+        ForEach(data.metadata, (values, source) => {
+            // Use `doc` as defaults (on document formats)
+            if(options.format === 'document') {
+                values = {
+                    ...data,
+                    ...values
+                };
+            }
+
+            // Update source values
+            this.resolve(source).apply(values, options);
+        });
+
+        // Update item values
+        this.apply(data, options);
+    }
+
     toDocument() {
         let doc = {};
 
@@ -599,25 +628,15 @@ export default class Item extends Model {
             );
         }
 
-        options = {
-            ...options,
-
-            format: 'document'
-        };
-
         // Create item
         let item = new this();
 
-        // Apply metadata values
-        ForEach(doc.metadata, (values, source) => {
-            item.resolve(source).apply({
-                ...doc,
-                ...values
-            }, options);
-        });
+        // Update `item` with document
+        item.replace(doc, {
+            ...options,
 
-        // Apply item values
-        item.apply(doc, options);
+            format: 'document'
+        });
 
         return item;
     }
@@ -643,13 +662,12 @@ export default class Item extends Model {
 
         let item = new this();
 
-        // Apply metadata values
-        ForEach(obj.metadata, (values, source) => {
-            item.resolve(source).apply(values, options);
-        });
+        // Update `item` with plain object
+        item.replace(obj, {
+            ...options,
 
-        // Apply item values
-        item.apply(obj, options);
+            format: 'plain'
+        });
 
         return item;
     }
