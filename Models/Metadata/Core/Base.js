@@ -163,68 +163,93 @@ export default class Item extends Model {
             throw new Error('Invalid value provided for the "item" parameter');
         }
 
-        let current = this.toDocument();
+        options = {
+            revert: true,
+            strict: true,
 
-        // Apply values
-        this.apply(this.extract(item.values, {
-            deferred: false,
-            reference: false
-        }), options || {});
+            ...(options || {})
+        };
 
-        ForEach(item.metadata, (values, name) => {
-            let source = this.resolve(name);
+        let previous;
 
-            source.apply(source.extract(values, {
-                deferred: false,
-                reference: false
-            }), options || {});
-        });
-
-        // Assign children
-        ForEach(this.schema, (prop, key) => {
-            if(!prop.reference) {
-                return;
-            }
-
-            let current = prop.get(this.values, key);
-
-            // Retrieve value
-            let value = prop.get(item.values, key);
-
-            if(IsNil(value)) {
-                return;
-            }
-
-            // Update child
-            if(!IsNil(current)) {
-                current.assign(value);
-            } else {
-                prop.set(this.values, key, value);
-            }
-        });
-
-        // Determine if item has changed
-        let changed = !IsEqual(current, this.toDocument());
-
-        // Ignore deferred values (if no other changes)
-        if(!changed) {
-            return false;
+        if(options.revert) {
+            previous = this.createState();
         }
 
-        // Apply deferred values
-        this.apply(this.extract(item.values, {
-            deferred: true,
-            reference: false
-        }), options || {});
+        try {
+            let current = this.toDocument();
 
-        ForEach(item.metadata, (values, name) => {
-            let source = this.resolve(name);
+            // Apply values
+            this.apply(this.extract(item.values, {
+                deferred: false,
+                reference: false
+            }), options);
 
-            source.apply(source.extract(values, {
+            ForEach(item.metadata, (values, name) => {
+                let source = this.resolve(name);
+
+                source.apply(source.extract(values, {
+                    deferred: false,
+                    reference: false
+                }), options);
+            });
+
+            // Assign children
+            ForEach(this.schema, (prop, key) => {
+                if(!prop.reference) {
+                    return;
+                }
+
+                let current = prop.get(this.values, key);
+
+                // Retrieve value
+                let value = prop.get(item.values, key);
+
+                if(IsNil(value)) {
+                    return;
+                }
+
+                // Update child
+                if(!IsNil(current)) {
+                    current.assign(value);
+                } else {
+                    prop.set(this.values, key, value);
+                }
+            });
+
+            // Determine if item has changed
+            let changed = !IsEqual(current, this.toDocument());
+
+            // Ignore deferred values (if no other changes)
+            if(!changed) {
+                return false;
+            }
+
+            // Apply deferred values
+            this.apply(this.extract(item.values, {
                 deferred: true,
                 reference: false
-            }), options || {});
-        });
+            }), options);
+
+            ForEach(item.metadata, (values, name) => {
+                let source = this.resolve(name);
+
+                source.apply(source.extract(values, {
+                    deferred: true,
+                    reference: false
+                }), options);
+            });
+        } catch(e) {
+            if(options.revert) {
+                this.revert(previous);
+            }
+
+            if(options.strict) {
+                throw e;
+            }
+
+            return false;
+        }
 
         return true;
     }
@@ -319,86 +344,118 @@ export default class Item extends Model {
         return selectors;
     }
 
+    createState() {
+        return {
+            metadata: CloneDeep(this._metadata),
+            values: CloneDeep(this._values)
+        };
+    }
+
     inherit(item, options) {
         if(!(item instanceof Model)) {
             throw new Error('Invalid value provided for the "item" parameter');
         }
 
-        let current = item.toDocument();
+        options = {
+            revert: true,
+            strict: true,
 
-        let metadata = this._metadata;
-        let values = this._values;
+            ...(options || {})
+        };
 
-        // Replace with `item` metadata and values
-        this._metadata = CloneDeep(item.metadata);
-        this._values = CloneDeep(item.values);
+        let previous;
 
-        // Apply values
-        this.apply(this.extract(values, {
-            deferred: false,
-            reference: false
-        }), options || {});
-
-        ForEach(metadata, (values, name) => {
-            let source = this.resolve(name);
-
-            source.apply(source.extract(values, {
-                deferred: false,
-                reference: false
-            }), options || {});
-        });
-
-        // Inherit children
-        ForEach(this.schema, (prop, key) => {
-            if(!prop.reference) {
-                return;
-            }
-
-            let current = prop.get(this.values, key);
-
-            // Retrieve value
-            let value = prop.get(values, key);
-
-            if(IsNil(value)) {
-                return;
-            }
-
-            // Update child
-            if(!IsNil(current)) {
-                current.inherit(value, {
-                    ...(options || {}),
-
-                    changes: {
-                        identifier: true
-                    }
-                });
-            } else {
-                prop.set(this.values, key, value);
-            }
-        });
-
-        // Determine if item has changed
-        let changed = !IsEqual(current, this.toDocument());
-
-        // Ignore deferred values (if no other changes)
-        if(!changed) {
-            return false;
+        if(options.revert) {
+            previous = this.createState();
         }
 
-        // Apply deferred values
-        this.apply(this.extract(values, {
-            deferred: true,
-            reference: false
-        }), options || {});
+        try {
+            let current = item.toDocument();
 
-        ForEach(metadata, (values, name) => {
-            let source = this.resolve(name);
+            let metadata = this._metadata;
+            let values = this._values;
 
-            source.apply(source.extract(values, {
+            // Replace with `item` metadata and values
+            this._metadata = CloneDeep(item.metadata);
+            this._values = CloneDeep(item.values);
+
+            // Apply values
+            this.apply(this.extract(values, {
+                deferred: false,
+                reference: false
+            }), options);
+
+            ForEach(metadata, (values, name) => {
+                let source = this.resolve(name);
+
+                source.apply(source.extract(values, {
+                    deferred: false,
+                    reference: false
+                }), options);
+            });
+
+            // Inherit children
+            ForEach(this.schema, (prop, key) => {
+                if(!prop.reference) {
+                    return;
+                }
+
+                let current = prop.get(this.values, key);
+
+                // Retrieve value
+                let value = prop.get(values, key);
+
+                if(IsNil(value)) {
+                    return;
+                }
+
+                // Update child
+                if(!IsNil(current)) {
+                    current.inherit(value, {
+                        ...options,
+
+                        changes: {
+                            identifier: true
+                        }
+                    });
+                } else {
+                    prop.set(this.values, key, value);
+                }
+            });
+
+            // Determine if item has changed
+            let changed = !IsEqual(current, this.toDocument());
+
+            // Ignore deferred values (if no other changes)
+            if(!changed) {
+                return false;
+            }
+
+            // Apply deferred values
+            this.apply(this.extract(values, {
                 deferred: true,
                 reference: false
-            }), options || {});
-        });
+            }), options);
+
+            ForEach(metadata, (values, name) => {
+                let source = this.resolve(name);
+
+                source.apply(source.extract(values, {
+                    deferred: true,
+                    reference: false
+                }), options);
+            });
+        } catch(e) {
+            if(options.revert) {
+                this.revert(previous);
+            }
+
+            if(options.strict) {
+                throw e;
+            }
+
+            return false;
+        }
 
         return true;
     }
@@ -458,6 +515,12 @@ export default class Item extends Model {
 
         // Update item values
         this.apply(data, options);
+    }
+
+    revert({ metadata, values }) {
+        // Revert to provided state
+        this._metadata = metadata || {};
+        this._values = values || {};
     }
 
     toDocument() {

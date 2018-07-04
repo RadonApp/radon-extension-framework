@@ -2,6 +2,35 @@ import Show from './Show';
 
 
 describe('Show', () => {
+    describe('assign', () => {
+        it('should revert changes on error', () => {
+            let show = Show.create('beta', {
+                keys: {
+                    id: 2
+                }
+            });
+
+            expect(() => show.assign(Show.create('beta', {
+                keys: {
+                    id: 3
+                },
+
+                title: 'Breaking Bad',
+                year: 2008
+            }))).toThrowError(
+                Error, 'Show.keys["beta"].id: 3 doesn\'t match 2'
+            );
+
+            expect(show.keys['beta'].id).toBe(2);
+            expect(show.title).toBeNull();
+            expect(show.year).toBeNull();
+
+            expect(show.resolve('beta').keys.id).toBe(2);
+            expect(show.resolve('beta').title).toBeNull();
+            expect(show.resolve('beta').year).toBeNull();
+        });
+    });
+
     describe('inherit', () => {
         let base = Show.create('alpha', {
             id: '1',
@@ -16,6 +45,26 @@ describe('Show', () => {
 
             createdAt: 1000,
             updatedAt: 2000
+        });
+
+        it('should revert changes on error', () => {
+            let show = Show.create('alpha', {
+                keys: {
+                    id: 2
+                }
+            });
+
+            expect(() => show.inherit(base)).toThrowError(
+                Error, 'Show.keys["alpha"].id: 2 doesn\'t match 1'
+            );
+
+            expect(show.keys['alpha'].id).toBe(2);
+            expect(show.title).toBeNull();
+            expect(show.year).toBeNull();
+
+            expect(show.resolve('alpha').keys.id).toBe(2);
+            expect(show.resolve('alpha').title).toBeNull();
+            expect(show.resolve('alpha').year).toBeNull();
         });
 
         describe('keys', () => {
