@@ -293,6 +293,13 @@ export default class ActivityEngine {
 
         // Create new session when the item is repeated
         if(deltaPercent < -90) {
+            // Wait until 10 seconds has been played
+            // (needs to be higher than the media change debounce time)
+            if(time < 10 * 1000) {
+                return false;
+            }
+
+            // Create session
             return this.create(this._currentSession.item, { force: true });
         }
 
