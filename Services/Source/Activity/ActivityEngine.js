@@ -72,7 +72,7 @@ export default class ActivityEngine {
             ...(options || {})
         };
 
-        Log.trace('Creating session (item: %o)', item);
+        Log.trace('Creating session (item: %o, force: %o)', item, options.force);
 
         if(!IsNil(this._currentSession) && this._currentSession.valid) {
             let active = this._currentSession.state !== SessionState.ended;
@@ -298,6 +298,8 @@ export default class ActivityEngine {
             if(time < 10 * 1000) {
                 return false;
             }
+
+            Log.debug('Media restarted, creating new session');
 
             // Create session
             return this.create(this._currentSession.item, { force: true });
