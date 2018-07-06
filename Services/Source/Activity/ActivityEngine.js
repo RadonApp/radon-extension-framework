@@ -8,7 +8,7 @@ import Merge from 'lodash-es/merge';
 import Log from '../../../Core/Logger';
 import Plugin from '../../../Core/Plugin';
 import Session, {SessionState} from '../../../Models/Session';
-// import {Episode} from '../../../Models/Metadata/Television';
+import {MediaTypes} from '../../../Core/Enums';
 
 
 const EventHandlers = [
@@ -124,12 +124,14 @@ export default class ActivityEngine {
         }
 
         // Ignore special episodes (and bonus content)
-        // if(item instanceof Episode && (item.number === 0 || item.season.number === 0)) {
-        //     Log.info('Ignoring special episode: %o', item);
-        //     this._currentSession = null;
-        //
-        //     return Promise.resolve();
-        // }
+        if(item.type === MediaTypes.Video.Episode && (item.number === 0 || item.season.number === 0)) {
+            Log.info('Ignored special episode: %o', item);
+
+            // Clear current session
+            this._currentSession = null;
+
+            return Promise.resolve();
+        }
 
         // Retrieve metadata, and create session
         return this._getItem(item).then((item) => {
