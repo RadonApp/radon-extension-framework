@@ -1,5 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Debounce from 'lodash-es/debounce';
+import ForEach from 'lodash-es/forEach';
+import IsFunction from 'lodash-es/isFunction';
 import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
@@ -9,12 +11,35 @@ import Session, {SessionState} from '../../../Models/Session';
 // import {Episode} from '../../../Models/Metadata/Television';
 
 
+const EventHandlers = [
+    'create',
+    'load',
+
+    'open',
+    'close',
+
+    'start',
+    'progress',
+    'seek',
+    'pause',
+    'stop'
+];
+
 export default class ActivityEngine {
     constructor(plugin, options) {
         this.plugin = plugin;
 
+        // Create event handlers
+        ForEach(EventHandlers, (name) => {
+            if(IsNil(this[name]) || !IsFunction(this[name])) {
+                throw new Error(`Unknown event handler: ${name}`);
+            }
+
+            this[name] = this._createEventHandler(name, this[name]);
+        });
+
         // Create debounced create function
-        this.create = Debounce(this._create, 500);
+        this.createDebounced = Debounce(this.create.bind(this), 500);
 
         // Create activity messaging service
         this.messaging = Plugin.messaging.service('scrobble');
@@ -50,7 +75,7 @@ export default class ActivityEngine {
     }
 
     bind(emitter) {
-        emitter.on('created',   this.create.bind(this));
+        emitter.on('created',   this.createDebounced.bind(this));
         emitter.on('loaded',    this.load.bind(this));
 
         // Player
@@ -65,7 +90,7 @@ export default class ActivityEngine {
         emitter.on('stopped',   this.stop.bind(this));
     }
 
-    _create(item, options) {
+    create(item, options) {
         options = {
             force: false,
 
@@ -108,6 +133,8 @@ export default class ActivityEngine {
 
         // Retrieve metadata, and create session
         return this._getItem(item).then((item) => {
+            Log.trace('Creating session with metadata: %o', item);
+
             // Create session
             this._currentSession = Session.create(item, {
                 clientId: this.messaging.client.id
@@ -161,7 +188,7 @@ export default class ActivityEngine {
         Log.trace('Player loaded (item: %o)', item);
 
         // Trigger create action
-        return this.create(item);
+        return this.createDebounced(item);
     }
 
     // region Player
@@ -170,7 +197,7 @@ export default class ActivityEngine {
         Log.trace('Player opened (item: %o)', item);
 
         // Trigger create action
-        return this.create(item);
+        return this.createDebounced(item);
     }
 
     close(item) {
@@ -302,7 +329,7 @@ export default class ActivityEngine {
             Log.debug('Media restarted, creating new session');
 
             // Create session
-            return this.create(this._currentSession.item, { force: true });
+            return this.createDebounced(this._currentSession.item, { force: true });
         }
 
         // Create seek events
@@ -572,6 +599,31 @@ export default class ActivityEngine {
         return true;
     }
 
+    _createEventHandler(name, target) {
+        return (...args) => {
+            let promise;
+
+            try {
+                promise = target.apply(this, args);
+            } catch(e) {
+                Log.error(
+                    'Unable to process event, "%s" handler raised: %s',
+                    name, (e && e.message) ? e.message : e
+                );
+
+                return Promise.reject(e);
+            }
+
+            // Catch rejected promise
+            return Promise.resolve(promise).catch((err) => {
+                Log.error(
+                    'Unable to process event, "%s" promise was rejected with: %s',
+                    name, (err && err.message) ? err.message : err
+                );
+            });
+        };
+    }
+
     _detectState(time) {
         // Ensure session and time is available
         if(IsNil(this._currentSession) || IsNil(this._currentSession.time)) {
@@ -617,10 +669,19 @@ export default class ActivityEngine {
 
     _getItem(item) {
         if(IsNil(this.options.getMetadata)) {
+            Log.debug('No "getMetadata" handler defined');
             return Promise.resolve(item);
         }
 
-        return this.options.getMetadata(item);
+        // Retrieve metadata from "getMetadata" handler
+        return Promise.resolve().then(() =>
+            this.options.getMetadata(item)
+        ).catch((err) => {
+            Log.warn('Unable to retrieve metadata: %s', (err && err.message) ? err.message : err);
+
+            // Reject promise
+            return Promise.reject(new Error('Unable to retrieve metadata'));
+        });
     }
 
     _refreshItem(item) {
