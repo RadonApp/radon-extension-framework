@@ -1,21 +1,21 @@
 {
-  "name": "neon-extension-framework",
+  "name": "@radon-extension/framework",
   "version": "2.1.0",
   "description": "Radon Extension: Framework",
   "keywords": [
-    "neon",
-    "neon-extension"
+    "radon",
+    "radon-extension"
   ],
-  "homepage": "https://github.com/NeApp/neon-extension",
+  "homepage": "https://github.com/RadonApp/radon-extension",
   "author": "Dean Gardiner <me@dgardiner.net>",
   "license": "GPL-3.0",
   "main": "./src",
   "bugs": {
-    "url": "https://github.com/NeApp/neon-extension/issues"
+    "url": "https://github.com/RadonApp/radon-extension/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/NeApp/neon-extension-framework"
+    "url": "https://github.com/RadonApp/radon-extension-framework"
   },
   "dependencies": {
     "eventemitter3": "^2.0.0",

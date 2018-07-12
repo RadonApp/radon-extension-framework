@@ -59,7 +59,7 @@ export class Logger {
     }
 
     get preferences() {
-        let preferences = require('neon-extension-framework/Preferences').default;
+        let preferences = require('@radon-extension/framework/Preferences').default;
 
         if(IsNil(preferences)) {
             return null;
