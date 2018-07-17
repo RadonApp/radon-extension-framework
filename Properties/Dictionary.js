@@ -6,6 +6,7 @@ import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
 import ValueProperty from './Value';
+import {PropertyConflictError} from './Core/Exceptions';
 
 
 export default class Dictionary extends ValueProperty {
@@ -71,10 +72,14 @@ export class Index extends Dictionary {
                         );
 
                         if(!IsNil(options.item)) {
-                            throw new Error(`${options.item.constructor.name}.${message}`);
+                            throw new PropertyConflictError(`${options.item.constructor.name}.${message}`, {
+                                property: key
+                            });
                         }
 
-                        throw new Error(message);
+                        throw new PropertyConflictError(message, {
+                            property: key
+                        });
                     }
 
                     return;
