@@ -136,7 +136,10 @@ describe('Utilities', () => {
             });
 
             it('should resolve title without tags', () => {
-                expect(resolveTitle('Sucker For Pain [Explicit] (with Logic, Ty Dolla $ign & X Ambassadors)')).toEqual([
+                expect(resolveTitle(
+                    'Sucker For Pain [Explicit] ' +
+                    '(with Logic, Ty Dolla $ign & X Ambassadors)'
+                )).toEqual([
                     'sucker for pain explicit with logic ty dolla ign and x ambassadors',
                     'sucker for pain explicit',
                     'sucker for pain'
@@ -144,7 +147,10 @@ describe('Utilities', () => {
             });
 
             it('should resolve title without artist', () => {
-                expect(resolveTitle('Bastille - World Gone Mad (from Bright: The Album) [Official Music Video]')).toEqual([
+                expect(resolveTitle(
+                    'Bastille - World Gone Mad ' +
+                    '(from Bright: The Album) [Official Music Video]'
+                )).toEqual([
                     'bastille world gone mad from bright the album official music video',
                     'bastille world gone mad',
                     'world gone mad',
