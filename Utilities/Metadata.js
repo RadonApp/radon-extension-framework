@@ -15,9 +15,12 @@ import {getRegexMatches} from './Regex';
 const SlugRemoveRegex = /[\>\<]/g;
 const SlugSpaceRegex = /(\s[~+_,\-\\\/!;:@]+\s)|((^|\s)[~+_,\-\\\/!;:@]+)|([~+_,\-\\\/!;:@]+($|\s))|([;:\|]+)/g;
 
-const TitleCreditsRegex = /\s?(?:\((?:with|feat\.?)\s(.*?)\)|\[(?:with|feat\.?)\s(.*?)\])/gi;
-const TitleFeaturedRegex = /\s(ft|feat)\.?.*/gi;
+const TitleFeaturedRegex = /\s(f(?:ea)?t)\.?.*/gi;
 const TitleTagsRegex = /\s?(\(.*?\)|\[.*?\])/gi;
+
+const TitleCreditsRegex = (
+    /\s?(?:\((?:with|f(?:ea)?t\.?)\s(.*?)\)|\[(?:with|f(?:ea)?t\.?)\s(.*?)\]|f(?:ea)?t\.?\s(.*))/gi
+);
 
 export function cleanTitle(value) {
     if(IsNil(value)) {

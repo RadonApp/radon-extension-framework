@@ -135,6 +135,15 @@ describe('Utilities', () => {
                 ])).toEqual([
                     { id: 1, title: 'Lil Wayne' }
                 ]);
+
+                expect(resolveArtists((
+                    'Gorgon City - Coming Home ft Maverick Sabre in the Live Lounge'
+                ), [
+                    { id: 1, title: 'Gorgon City' },
+                    { id: 2, title: 'Maverick Sabre' }
+                ])).toEqual([
+                    { id: 1, title: 'Gorgon City' }
+                ]);
             });
 
             it('should remove similar artists', () => {
