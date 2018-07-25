@@ -16,6 +16,7 @@ const SlugRemoveRegex = /[\>\<]/g;
 const SlugSpaceRegex = /(\s[~+_,\-\\\/!;:@]+\s)|((^|\s)[~+_,\-\\\/!;:@]+)|([~+_,\-\\\/!;:@]+($|\s))|([;:\|]+)/g;
 
 const TitleCreditsRegex = /\s?(?:\((?:with|feat\.?)\s(.*?)\)|\[(?:with|feat\.?)\s(.*?)\])/gi;
+const TitleFeaturedRegex = /\s(ft|feat)\.?.*/gi;
 const TitleTagsRegex = /\s?(\(.*?\)|\[.*?\])/gi;
 
 export function cleanTitle(value) {
@@ -132,8 +133,11 @@ export function resolveTitle(title) {
     // Add title without tags
     titles.push(cleanTitle(title = title.replace(TitleTagsRegex, '')));
 
+    // Add title without featured suffix
+    titles.push(cleanTitle(title = title.replace(TitleFeaturedRegex, '')));
+
     // Add title fragments (reversed)
-    ForEachRight(title.split(' - '), (fragment) => {
+    ForEachRight(title.split(/\s[-]\s/), (fragment) => {
         titles.push(cleanTitle(fragment));
     });
 

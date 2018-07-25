@@ -37,7 +37,7 @@ describe('Utilities', () => {
                 });
             });
 
-            it('should match without brackets', () => {
+            it('should match with brackets', () => {
                 expect(matchItemByTitle([
                     { title: 'Power And The Passion' }
                 ], 'Power And The Passion (Remastered Version)')).toEqual({
@@ -73,7 +73,7 @@ describe('Utilities', () => {
                 ).toBeTruthy();
             });
 
-            it('should match without artist', () => {
+            it('should match with artist', () => {
                 expect(matchTitle(
                     'Bastille - World Gone Mad (from Bright: The Album) [Official Music Video]',
                     'World Gone Mad'
@@ -85,9 +85,40 @@ describe('Utilities', () => {
                 )).toBeTruthy();
             });
 
-            it('should match without brackets', () => {
-                expect(matchTitle('Power And The Passion (Remastered Version)', 'Power And The Passion')).toBeTruthy();
-                expect(matchTitle('Power And The Passion', 'Power And The Passion (Remastered Version)')).toBeTruthy();
+            it('should match with featured suffix', () => {
+                expect(matchTitle(
+                    'Coming Home ft Maverick Sabre in the Live Lounge',
+                    'Coming Home'
+                )).toBeTruthy();
+
+                expect(matchTitle(
+                    'Coming Home',
+                    'Coming Home ft Maverick Sabre in the Live Lounge'
+                )).toBeTruthy();
+            });
+
+            it('should match with artist and featured suffix', () => {
+                expect(matchTitle(
+                    'Gorgon City - Coming Home ft Maverick Sabre in the Live Lounge',
+                    'Coming Home'
+                )).toBeTruthy();
+
+                expect(matchTitle(
+                    'Coming Home',
+                    'Gorgon City - Coming Home ft Maverick Sabre in the Live Lounge'
+                )).toBeTruthy();
+            });
+
+            it('should match with brackets', () => {
+                expect(matchTitle(
+                    'Power And The Passion (Remastered Version)',
+                    'Power And The Passion'
+                )).toBeTruthy();
+
+                expect(matchTitle(
+                    'Power And The Passion',
+                    'Power And The Passion (Remastered Version)'
+                )).toBeTruthy();
             });
         });
 
@@ -117,28 +148,31 @@ describe('Utilities', () => {
         });
 
         describe('resolveTitle', () => {
-            it('should resolve basic title', () => {
+            it('should resolve title', () => {
                 expect(resolveTitle('Sucker For Pain')).toEqual([
                     'sucker for pain'
                 ]);
             });
 
-            it('should resolve title without credits', () => {
-                expect(resolveTitle('Sucker For Pain (with Logic, Ty Dolla $ign & X Ambassadors)')).toEqual([
+            it('should resolve title with credits', () => {
+                expect(resolveTitle(
+                    'Sucker For Pain (with Logic, Ty Dolla $ign & X Ambassadors)'
+                )).toEqual([
                     'sucker for pain with logic ty dolla ign and x ambassadors',
                     'sucker for pain'
                 ]);
 
-                expect(resolveTitle('Sucker For Pain (feat. X Ambassadors, Ty Dolla $ign & Logic)')).toEqual([
+                expect(resolveTitle(
+                    'Sucker For Pain (feat. X Ambassadors, Ty Dolla $ign & Logic)'
+                )).toEqual([
                     'sucker for pain feat x ambassadors ty dolla ign and logic',
                     'sucker for pain'
                 ]);
             });
 
-            it('should resolve title without tags', () => {
+            it('should resolve title with tags', () => {
                 expect(resolveTitle(
-                    'Sucker For Pain [Explicit] ' +
-                    '(with Logic, Ty Dolla $ign & X Ambassadors)'
+                    'Sucker For Pain [Explicit] (with Logic, Ty Dolla $ign & X Ambassadors)'
                 )).toEqual([
                     'sucker for pain explicit with logic ty dolla ign and x ambassadors',
                     'sucker for pain explicit',
@@ -146,15 +180,34 @@ describe('Utilities', () => {
                 ]);
             });
 
-            it('should resolve title without artist', () => {
+            it('should resolve title with artist', () => {
                 expect(resolveTitle(
-                    'Bastille - World Gone Mad ' +
-                    '(from Bright: The Album) [Official Music Video]'
+                    'Bastille - World Gone Mad (from Bright: The Album) [Official Music Video]'
                 )).toEqual([
                     'bastille world gone mad from bright the album official music video',
                     'bastille world gone mad',
                     'world gone mad',
                     'bastille'
+                ]);
+            });
+
+            it('should resolve title with featured suffix', () => {
+                expect(resolveTitle(
+                    'Coming Home ft Maverick Sabre in the Live Lounge'
+                )).toEqual([
+                    'coming home ft maverick sabre in the live lounge',
+                    'coming home'
+                ]);
+            });
+
+            it('should resolve title with artist and featured suffix', () => {
+                expect(resolveTitle(
+                    'Gorgon City - Coming Home ft Maverick Sabre in the Live Lounge'
+                )).toEqual([
+                    'gorgon city coming home ft maverick sabre in the live lounge',
+                    'gorgon city coming home',
+                    'coming home',
+                    'gorgon city'
                 ]);
             });
         });
