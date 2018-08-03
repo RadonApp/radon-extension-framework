@@ -284,6 +284,9 @@ export default class ActivityEngine {
         // Update state
         this._currentSession.state = SessionState.playing;
 
+        // Update progress emitted timestamp (delay the first "progress" event by `options.progressInterval`)
+        this._progressEmittedAt = Date.now();
+
         // Emit "started" event (if session is valid)
         if(this._currentSession.valid) {
             this.messaging.emit('activity.started', this._currentSession.toPlainObject());
