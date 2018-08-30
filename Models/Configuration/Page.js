@@ -40,10 +40,10 @@ export default class Page extends Model {
 
     get namespace() {
         if(!IsNil(this.name)) {
-            return `${this.plugin.id}/configuration/${this.name}`;
+            return `${this.plugin.key}/configuration/${this.name}`;
         }
 
-        return `${this.plugin.id}/configuration`;
+        return `${this.plugin.key}/configuration`;
     }
 
     get preferences() {

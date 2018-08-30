@@ -35,7 +35,7 @@ export default class Plugin {
     }
 
     get namespace() {
-        return `${this.id}/common`;
+        return `${this.key}/common`;
     }
 
     get title() {
@@ -54,6 +54,18 @@ export default class Plugin {
         }
 
         return this.manifest['content_scripts'] || [];
+    }
+
+    get key() {
+        if(this.type === 'core') {
+            return 'core';
+        }
+
+        if(IsNil(this.manifest)) {
+            return null;
+        }
+
+        return this.manifest.key;
     }
 
     get name() {
@@ -120,7 +132,7 @@ export default class Plugin {
                     ...namespaces,
 
                     `${this.id}/common`,
-                    'neon-extension/common'
+                    'core/common'
                 ],
 
                 ...options

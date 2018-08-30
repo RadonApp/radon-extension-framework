@@ -9,7 +9,7 @@ export const Defaults = {
     debug: process.env['NODE_ENV'] === 'development',
     fallbackLng: 'en',
 
-    defaultNS: 'neon-extension/common',
+    defaultNS: 'core/common',
 
     backend: {
         allowMultiLoading: false,
