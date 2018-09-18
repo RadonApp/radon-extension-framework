@@ -121,7 +121,7 @@ export default class Plugin {
 
     createI18n(namespaces = null, options = null) {
         namespaces = Map(namespaces || [], (ns) =>
-            `${this.id}/${ns}`
+            `${this.key}/${ns}`
         );
 
         return new Promise((resolve, reject) => {
@@ -131,7 +131,7 @@ export default class Plugin {
                 ns: [
                     ...namespaces,
 
-                    `${this.id}/common`,
+                    `${this.key}/common`,
                     'core/common'
                 ],
 
