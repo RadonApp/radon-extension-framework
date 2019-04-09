@@ -71,7 +71,7 @@ describe('Season', () => {
 
                 expect(season.inherit(base)).toBe(true);
 
-                expect(season.title).toBe('Season 1');
+                expect(season.title).toBe('Season 2');
 
                 expect(season.resolve('alpha').title).toBe('Season 1');
                 expect(season.resolve('beta').title).toBe('Season 2');
@@ -84,11 +84,12 @@ describe('Season', () => {
                     number: 2
                 });
 
-                expect(() =>
-                    season.inherit(base)
-                ).toThrow(new Error(
-                    'Season.number: 2 doesn\'t match 1'
-                ));
+                expect(season.inherit(base)).toBe(true);
+
+                expect(season.number).toBe(2);
+
+                expect(season.resolve('alpha').number).toBe(1);
+                expect(season.resolve('beta').number).toBe(2);
             });
         });
 
@@ -100,7 +101,7 @@ describe('Season', () => {
 
                 expect(season.inherit(base)).toBe(true);
 
-                expect(season.year).toBe(2003);
+                expect(season.year).toBe(2004);
 
                 expect(season.resolve('alpha').year).toBe(2003);
                 expect(season.resolve('beta').year).toBe(2004);

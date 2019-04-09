@@ -58,7 +58,7 @@ describe('Movie', () => {
 
                 expect(movie.inherit(base)).toBe(true);
 
-                expect(movie.title).toBe('Bright');
+                expect(movie.title).toBe('Annihilation');
 
                 expect(movie.resolve('alpha').title).toBe('Bright');
                 expect(movie.resolve('beta').title).toBe('Annihilation');
@@ -73,7 +73,7 @@ describe('Movie', () => {
 
                 expect(movie.inherit(base)).toBe(true);
 
-                expect(movie.year).toBe(2017);
+                expect(movie.year).toBe(2018);
 
                 expect(movie.resolve('alpha').year).toBe(2017);
                 expect(movie.resolve('beta').year).toBe(2018);

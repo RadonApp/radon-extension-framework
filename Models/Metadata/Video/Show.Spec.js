@@ -107,7 +107,7 @@ describe('Show', () => {
 
                 expect(show.inherit(base)).toBe(true);
 
-                expect(show.title).toBe('Arrested Development');
+                expect(show.title).toBe('Unbreakable Kimmy Schmidt');
 
                 expect(show.resolve('alpha').title).toBe('Arrested Development');
                 expect(show.resolve('beta').title).toBe('Unbreakable Kimmy Schmidt');
@@ -122,7 +122,7 @@ describe('Show', () => {
 
                 expect(show.inherit(base)).toBe(true);
 
-                expect(show.year).toBe(2003);
+                expect(show.year).toBe(2004);
 
                 expect(show.resolve('alpha').year).toBe(2003);
                 expect(show.resolve('beta').year).toBe(2004);

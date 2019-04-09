@@ -82,7 +82,7 @@ describe('Episode', () => {
 
                 expect(episode.inherit(base)).toBe(true);
 
-                expect(episode.title).toBe('Top Banana');
+                expect(episode.title).toBe('Kimmy Gets a Job!');
 
                 expect(episode.resolve('alpha').title).toBe('Top Banana');
                 expect(episode.resolve('beta').title).toBe('Kimmy Gets a Job!');
@@ -90,16 +90,17 @@ describe('Episode', () => {
         });
 
         describe('number', () => {
-            it('should throw an error on conflicts', () => {
+            it('can be changed', () => {
                 let episode = Episode.create('beta', {
                     number: 3
                 });
 
-                expect(() =>
-                    episode.inherit(base)
-                ).toThrow(new Error(
-                    'Episode.number: 3 doesn\'t match 2'
-                ));
+                expect(episode.inherit(base)).toBe(true);
+
+                expect(episode.number).toBe(3);
+
+                expect(episode.resolve('alpha').number).toBe(2);
+                expect(episode.resolve('beta').number).toBe(3);
             });
         });
     });
