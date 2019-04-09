@@ -135,6 +135,10 @@ export default class ActivityEngine {
 
         // Retrieve metadata, and create session
         return this._getItem(item).then((item) => {
+            if(IsNil(item)) {
+                return;
+            }
+
             Log.trace('Creating session with metadata: %o', item);
 
             // Create session
