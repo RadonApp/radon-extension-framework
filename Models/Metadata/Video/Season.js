@@ -6,19 +6,9 @@ export class SeasonCommon extends Common {
     static Schema = {
         ...Common.Schema,
 
-        title: new Item.Properties.Text({
-            change: false,
-            identifier: true
-        }),
-
-        number: new Item.Properties.Integer({
-            change: false,
-            match: true
-        }),
-
-        year: new Item.Properties.Integer({
-            change: false
-        })
+        title: new Item.Properties.Text(),
+        number: new Item.Properties.Integer(),
+        year: new Item.Properties.Integer()
     };
 }
 

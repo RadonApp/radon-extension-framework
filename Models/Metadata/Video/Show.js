@@ -6,14 +6,8 @@ export class ShowCommon extends Common {
     static Schema = {
         ...Common.Schema,
 
-        title: new Item.Properties.Text({
-            change: false,
-            identifier: true
-        }),
-
-        year: new Item.Properties.Integer({
-            change: false
-        })
+        title: new Item.Properties.Text(),
+        year: new Item.Properties.Integer()
     };
 }
 
