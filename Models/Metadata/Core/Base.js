@@ -765,6 +765,10 @@ export default class Item extends Model {
         // Build array of keys
         return Reduce(sources, (result, source) =>
             Reduce(this.keys[source], (result, value, name) => {
+                if(IsNil(value) || !value) {
+                    return result;
+                }
+
                 let item = {};
 
                 item[(options.prefix || '') + 'keys.' + source + '.' + name] = value;
