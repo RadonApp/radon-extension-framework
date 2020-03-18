@@ -28,9 +28,11 @@ export function cleanTitle(value) {
     }
 
     return value
-        .replace(/&/g, 'and')      // Replace ampersand with "and"
-        .replace(/[^\w\s]/gi, '')  // Remove special characters
-        .replace(/\s+/g, ' ')      // Remove extra spaces
+        .replace(/&/g, 'and')                                      // Replace ampersand with "and"
+        .replace(/pt\./gi, 'part')                                 // Replace "pt." with "part"
+        .replace(/ft\./gi, 'featuring')     // Replace "pt." with "part"
+        .replace(/[^\w\s]/gi, '')           // Remove special characters
+        .replace(/\s+/g, ' ')               // Remove extra spaces
         .toLowerCase()
         .trim();
 }
