@@ -121,7 +121,6 @@ module.exports = function(config) {
                     '@radon-extension/framework': fs.realpathSync(__dirname),
 
                     // Dependencies
-                    'lodash': 'lodash-es',
                     'lodash-amd': 'lodash-es'
                 },
 
